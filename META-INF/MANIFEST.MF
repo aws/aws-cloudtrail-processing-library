@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: AWS CloudTrail Client Library for Java
+Bundle-SymbolicName: com.amazonaws.awscloudtrailclientlibrary;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Vendor: Amazon Technologies, Inc
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Require-Bundle: org.bouncycastle.bcprov-jdk15on;bundle-version="1.50",
+ org.bouncycastle.bcpkix-jdk15on;bundle-version="1.50",
+ com.amazonaws.sdk;bundle-version="1.7.1"
+Export-Package: com.amazonaws.services.cloudtrail,
+ com.amazonaws.services.cloudtrail.cloudtraillibrary,
+ com.amazonaws.services.cloudtrail.cloudtraillibrary.exceptions,
+ com.amazonaws.services.cloudtrail.cloudtraillibrary.impl,
+ com.amazonaws.services.cloudtrail.cloudtraillibrary.interfaces,
+ com.amazonaws.services.cloudtrail.cloudtraillibrary.model,
+ com.amazonaws.services.cloudtrail.cloudtraillibrary.progress
+ com.amazonaws.services.cloudtrail.cloudtraillibrary.serializer,
+ com.amazonaws.services.cloudtrail.cloudtraillibrary.signing,
+ com.amazonaws.services.cloudtrail.cloudtraillibrary.utils

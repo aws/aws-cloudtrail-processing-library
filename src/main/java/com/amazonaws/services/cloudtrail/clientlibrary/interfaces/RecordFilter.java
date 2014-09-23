@@ -14,21 +14,25 @@
  *******************************************************************************/
 package com.amazonaws.services.cloudtrail.clientlibrary.interfaces;
 
-import com.amazonaws.services.cloudtrail.clientlibrary.AWSCloudTrailClientConfiguration;
-import com.amazonaws.services.cloudtrail.clientlibrary.model.ClientRecord;
+import com.amazonaws.services.cloudtrail.clientlibrary.exceptions.CallbackException;
+import com.amazonaws.services.cloudtrail.clientlibrary.model.CloudTrailClientRecord;
 
 /**
- * RecordFilter is a call back function that hands a AWSCloudTrailRecord to user. User can determinate whether 
- * want to process this record or not. The filter() method is invoked before process records.
+ * RecordFilter is a call back function that hands a AWSCloudTrailRecord to user. User can determinate whether
+ * want to process this record or not. The filter() method is invoked before process records. Records
+ * filtered by RecordFilter will hand to RecordsProcessor. For performance, CloudTrailClientRecord is not
+ * cloned, caller should not change the content of record.
  */
 public interface RecordFilter{
-    
+
     /**
      * A method filter record.
-     * 
+     *
      * @param record
-     * @return true if the record should be processed by record reader.
+     * @return true if the record should be processed by AWSCloudTrailClientLibrary.
+     * @throws CallbackException when error happened during process CloudTrailClientRecords. AWSCloudTrailClientLibrary
+     *         will eventually hand this exception back to ExceptionHandler.
      */
-    public boolean filterRecord(ClientRecord record, AWSCloudTrailClientConfiguration config);
+    public boolean filterRecord(CloudTrailClientRecord record) throws CallbackException;
 
 }

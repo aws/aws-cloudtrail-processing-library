@@ -12,22 +12,22 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  *******************************************************************************/
-package com.amazonaws.services.cloudtrail.clientlibrary.impl;
+package com.amazonaws.services.cloudtrail.clientlibrary.serializer;
 
-import com.amazonaws.services.cloudtrail.clientlibrary.interfaces.SourceFilter;
+import java.io.IOException;
+
 import com.amazonaws.services.cloudtrail.clientlibrary.model.CloudTrailSource;
+import com.amazonaws.services.sqs.model.Message;
+import com.fasterxml.jackson.core.JsonParseException;
 
-/**
- * Default implementation of SourceFilter that simply return True for any CloudTrailSource
- */
-public class DefaultSourceFilter implements SourceFilter {
-
+public interface AWSCloudTrailSourceSerializer {
     /**
-     * All pass source filter
+     * Get CloudTrailSource from SQS message object.
+     *
+     * @return
+     * @throws MessageParsingException
+     * @throws IOException
+     * @throws JsonParseException
      */
-    @Override
-    public boolean filterSource(CloudTrailSource source) {
-        return true;
-    }
-
+    public CloudTrailSource getSource(Message sqsMessage) throws IOException;
 }

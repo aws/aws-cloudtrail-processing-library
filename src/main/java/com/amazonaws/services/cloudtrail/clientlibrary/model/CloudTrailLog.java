@@ -14,42 +14,36 @@
  *******************************************************************************/
 package com.amazonaws.services.cloudtrail.clientlibrary.model;
 
-
-
 /**
- * This an source that AWS CloudTrail published to users' topic.
+ * This a log that AWS CloudTrail published to user's SNS topic.
  */
 public class CloudTrailLog {
-    
-    /**
-     * AWSCloudTrailSource's signature verification state.
-     */
-    private SignatureVerificationName signatureVerification;
-    
     /**
      * The S3 bucket where log files are stored
      */
     private final String s3Bucket;
-    
+
     /**
      * S3 object keys
      */
     private String s3ObjectKey;
-    
+
     /**
-     * Constructs a new AWSCloudTrailSource object.
-     * 
-     * @param accountId AWS Account Id
+     * The CloudTrail log file size
+     */
+    private long logFileSize;
+
+    /**
+     * Constructs a new CloudTrailLog object.
+     *
      * @param s3Bucket The S3 bucket where log files are stored
      * @param s3ObjectKey The S3 object key
-     * @param handle An identifier associated with the act of receiving a SQS message
      */
     public CloudTrailLog(String s3Bucket, String s3ObjectKey) {
         this.s3Bucket = s3Bucket;
         this.s3ObjectKey = s3ObjectKey;
-        this.signatureVerification = SignatureVerificationName.SignatureNotVerified;
     }
-    
+
     /**
      * AWS S3 bucket name
      * @return AWS S3 bucket name
@@ -65,29 +59,79 @@ public class CloudTrailLog {
     public String getS3ObjectKey() {
         return s3ObjectKey;
     }
-    
+
     /**
-	 * @return the signatureVerification
-	 */
-	public SignatureVerificationName getSignatureVerification() {
-		return signatureVerification;
-	}
+     * CloudTrail log File size in bytes
+     * @return CloudTrail log file size
+     */
+    public long getLogFileSize() {
+        return logFileSize;
+    }
 
-	/**
-	 * @param signatureVerification the signatureVerification to set
-	 */
-	public void setSignatureVerification(
-			SignatureVerificationName signatureVerification) {
-		this.signatureVerification = signatureVerification;
-	}
+    /**
+     * Set Log file size when retrieve this information from S3 metadata
+     * @param logFileSize
+     */
+    public void setLogFileSize(long logFileSize) {
+        this.logFileSize = logFileSize;
+    }
 
-	/**
-	 * 
-	 */
-	@Override
-	public String toString() {
-		return "CloudTrailLog [signatureVerification=" + signatureVerification
-				+ ", s3Bucket=" + s3Bucket + ", s3ObjectKey=" + s3ObjectKey
-				+ "]";
-	}
+    /**
+     * Returns a string representation of this object; useful for testing and debugging.
+     */
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("CloudTrailLog [");
+        if (s3Bucket != null) {
+            builder.append("s3Bucket=");
+            builder.append(s3Bucket);
+            builder.append(", ");
+        }
+        if (s3ObjectKey != null) {
+            builder.append("s3ObjectKey=");
+            builder.append(s3ObjectKey);
+            builder.append(", ");
+        }
+        builder.append("logFileSize=");
+        builder.append(logFileSize);
+        builder.append("]");
+        return builder.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (int) (logFileSize ^ (logFileSize >>> 32));
+        result = prime * result
+                + ((s3Bucket == null) ? 0 : s3Bucket.hashCode());
+        result = prime * result
+                + ((s3ObjectKey == null) ? 0 : s3ObjectKey.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        CloudTrailLog other = (CloudTrailLog) obj;
+        if (logFileSize != other.logFileSize)
+            return false;
+        if (s3Bucket == null) {
+            if (other.s3Bucket != null)
+                return false;
+        } else if (!s3Bucket.equals(other.s3Bucket))
+            return false;
+        if (s3ObjectKey == null) {
+            if (other.s3ObjectKey != null)
+                return false;
+        } else if (!s3ObjectKey.equals(other.s3ObjectKey))
+            return false;
+        return true;
+    }
 }

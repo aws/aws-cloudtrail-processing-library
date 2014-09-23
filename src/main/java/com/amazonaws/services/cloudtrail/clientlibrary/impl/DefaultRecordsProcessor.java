@@ -14,20 +14,24 @@
  *******************************************************************************/
 package com.amazonaws.services.cloudtrail.clientlibrary.impl;
 
-import com.amazonaws.services.cloudtrail.clientlibrary.interfaces.SourceFilter;
-import com.amazonaws.services.cloudtrail.clientlibrary.model.CloudTrailSource;
+import java.util.List;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import com.amazonaws.services.cloudtrail.clientlibrary.interfaces.RecordsProcessor;
+import com.amazonaws.services.cloudtrail.clientlibrary.model.CloudTrailClientRecord;
 
 /**
- * Default implementation of SourceFilter that simply return True for any CloudTrailSource
+ * Default implementation of RecordsProcesssor that simply log each record.
  */
-public class DefaultSourceFilter implements SourceFilter {
+public class DefaultRecordsProcessor implements RecordsProcessor {
+    private static final Log logger = LogFactory.getLog(DefaultExceptionHandler.class);
 
-    /**
-     * All pass source filter
-     */
     @Override
-    public boolean filterSource(CloudTrailSource source) {
-        return true;
+    public void process(List<CloudTrailClientRecord> records) {
+        for (CloudTrailClientRecord record : records) {
+            logger.info(record);
+        }
     }
-
 }

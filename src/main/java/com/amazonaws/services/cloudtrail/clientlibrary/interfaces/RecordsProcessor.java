@@ -16,22 +16,24 @@ package com.amazonaws.services.cloudtrail.clientlibrary.interfaces;
 
 import java.util.List;
 
-import com.amazonaws.services.cloudtrail.clientlibrary.AWSCloudTrailClientConfiguration;
-import com.amazonaws.services.cloudtrail.clientlibrary.model.ClientRecord;
+import com.amazonaws.services.cloudtrail.clientlibrary.exceptions.CallbackException;
+import com.amazonaws.services.cloudtrail.clientlibrary.model.CloudTrailClientRecord;
 
 /**
- * Emitter is a call back function that hands a list of AWSCloudTrailRecord to user. User can determinate 
- * what to do with those record. The emit() method is invoked after RecordFilter is being called. 
- * Records filtered by RecordFilter will not emit out. The number of records in the list is configurable 
- * throw "recordBufferSize" property. Important, we may emit an empty list records.
+ * RecordsProcessor is a call back function that hands a list of AWSCloudTrailRecord to user. User can determinate
+ * what to do with those record. The process() method is invoked after RecordFilter is being called.
+ * Records filtered by RecordFilter will not be processed. The number of records in the list is configurable
+ * through "recordBufferSize" property.
  */
 public interface RecordsProcessor {
 
     /**
      * Process a list of AWSCloudTrailRecord records.
-     * 
+     *
      * @param records a list of AWSCloudTrailRecord instance
+     * @throws CallbackException when error happened during process CloudTrailClientRecords. AWSCloudTrailClientLibrary
+     *         will eventually hand this exception back to ExceptionHandler.
      */
-    public void process(List<ClientRecord> records, AWSCloudTrailClientConfiguration config);
+    public void process(List<CloudTrailClientRecord> records) throws CallbackException;
 
 }

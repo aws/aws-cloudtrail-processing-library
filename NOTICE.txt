@@ -1,6 +1,2 @@
 AWS CloudTrail Client Library
-<<<<<<< HEAD
-Copyright 2014 Amazon.com, Inc. or its affiliates. All Rights Reserve
-=======
-Copyright 2014-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved. 
->>>>>>> 68bb6fa999c3d428746b21cda920995f470196d5
+Copyright 2014-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.

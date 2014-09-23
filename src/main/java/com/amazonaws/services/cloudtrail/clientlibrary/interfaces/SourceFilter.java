@@ -14,22 +14,25 @@
  *******************************************************************************/
 package com.amazonaws.services.cloudtrail.clientlibrary.interfaces;
 
-import com.amazonaws.services.cloudtrail.clientlibrary.AWSCloudTrailClientConfiguration;
+import com.amazonaws.services.cloudtrail.clientlibrary.exceptions.CallbackException;
 import com.amazonaws.services.cloudtrail.clientlibrary.model.CloudTrailSource;
 
 /**
- * SourceFilter is a call back function that hands a cloned AWSCloudTrailSource to user. User can 
- * determinate whether want to process this source. The filter() method is invoked after 
- * polled SQS message from SQS queue and before process records inside.
+ * SourceFilter is a call back function that hands a CloudTrailSource to user. User can
+ * determinate whether want to process this source. The filter() method is invoked after
+ * polled SQS message from SQS queue and before process records. For performance, CloudTrailSource
+ * is not cloned, caller should not change the content of source.
  */
 public interface SourceFilter{
-    
+
     /**
      * A method filter source.
-     * 
-     * @param record
-     * @return true if the source should be processed by record reader.
+     *
+     * @param source
+     * @return true if the source should be processed by AWSCloudTrailClientLibrary.
+     * @throws CallbackException when error happened during process CloudTrailClientRecords. AWSCloudTrailClientLibrary
+     *         will eventually hand this exception back to ExceptionHandler.
      */
-    public boolean filterSource(CloudTrailSource source, AWSCloudTrailClientConfiguration config);
+    public boolean filterSource(final CloudTrailSource source) throws CallbackException;
 
 }

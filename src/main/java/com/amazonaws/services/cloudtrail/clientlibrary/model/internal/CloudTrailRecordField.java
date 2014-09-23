@@ -12,22 +12,44 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  *******************************************************************************/
-package com.amazonaws.services.cloudtrail.clientlibrary.impl;
-
-import com.amazonaws.services.cloudtrail.clientlibrary.interfaces.SourceFilter;
-import com.amazonaws.services.cloudtrail.clientlibrary.model.CloudTrailSource;
+package com.amazonaws.services.cloudtrail.clientlibrary.model.internal;
 
 /**
- * Default implementation of SourceFilter that simply return True for any CloudTrailSource
+ * Internal user only.
  */
-public class DefaultSourceFilter implements SourceFilter {
-
-    /**
-     * All pass source filter
-     */
-    @Override
-    public boolean filterSource(CloudTrailSource source) {
-        return true;
-    }
-
+public enum CloudTrailRecordField {
+    Records,
+    accessKeyId,
+    accountId,
+    additionalEventData,
+    apiVersion,
+    arn,
+    ARN,
+    attributes,
+    awsRegion,
+    errorCode,
+    errorMessage,
+    eventID,
+    eventName,
+    eventSource,
+    eventTime,
+    eventType,
+    eventVersion,
+    federatedProvider,
+    invokedBy,
+    principalId,
+    readOnly,
+    recipientAccountId,
+    requestID,
+    requestParameters,
+    resources,
+    responseElements,
+    sessionContext,
+    sessionIssuer,
+    sourceIPAddress,
+    type,
+    userAgent,
+    userIdentity,
+    userName,
+    webIdFederationData
 }

@@ -12,22 +12,33 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  *******************************************************************************/
-package com.amazonaws.services.cloudtrail.clientlibrary.impl;
+package com.amazonaws.services.cloudtrail.clientlibrary.progress;
 
-import com.amazonaws.services.cloudtrail.clientlibrary.interfaces.SourceFilter;
-import com.amazonaws.services.cloudtrail.clientlibrary.model.CloudTrailSource;
+import com.amazonaws.services.sqs.model.Message;
 
-/**
- * Default implementation of SourceFilter that simply return True for any CloudTrailSource
- */
-public class DefaultSourceFilter implements SourceFilter {
+public class BasicParseMessageInfo implements ProgressMessageInfo {
+    private boolean isSuccess;
+    private Message message;
 
     /**
-     * All pass source filter
+     * Provide basic message parsing information
+     *
+     * @param message the SQS message
+     * @param isSuccess whether successfully parsed SQS message
      */
-    @Override
-    public boolean filterSource(CloudTrailSource source) {
-        return true;
+    public BasicParseMessageInfo(Message message, boolean isSuccess) {
+        super();
+        this.isSuccess = isSuccess;
+        this.message = message;
     }
 
+    @Override
+    public Message getMessage() {
+        return this.message;
+    }
+
+    @Override
+    public boolean isSuccess() {
+        return this.isSuccess;
+    }
 }

@@ -12,22 +12,23 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  *******************************************************************************/
-package com.amazonaws.services.cloudtrail.clientlibrary.impl;
+package com.amazonaws.services.cloudtrail.clientlibrary.model.internal;
 
-import com.amazonaws.services.cloudtrail.clientlibrary.interfaces.SourceFilter;
-import com.amazonaws.services.cloudtrail.clientlibrary.model.CloudTrailSource;
-
-/**
- * Default implementation of SourceFilter that simply return True for any CloudTrailSource
- */
-public class DefaultSourceFilter implements SourceFilter {
-
+public class Resource extends CloudTrailDataStore {
     /**
-     * All pass source filter
+     * Get resource ARN
+     *
+     * @return
      */
-    @Override
-    public boolean filterSource(CloudTrailSource source) {
-        return true;
+    public String getArn() {
+        return (String) get(CloudTrailRecordField.ARN.name());
     }
 
+    /**
+     * Get resource associated account ID
+     * @return
+     */
+    public String getAccountId() {
+        return (String) get(CloudTrailRecordField.accountId.name());
+    }
 }

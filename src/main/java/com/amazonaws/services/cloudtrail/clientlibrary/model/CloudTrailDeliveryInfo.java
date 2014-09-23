@@ -12,22 +12,11 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  *******************************************************************************/
-package com.amazonaws.services.cloudtrail.clientlibrary.impl;
-
-import com.amazonaws.services.cloudtrail.clientlibrary.interfaces.SourceFilter;
-import com.amazonaws.services.cloudtrail.clientlibrary.model.CloudTrailSource;
+package com.amazonaws.services.cloudtrail.clientlibrary.model;
 
 /**
- * Default implementation of SourceFilter that simply return True for any CloudTrailSource
+ * A skeleton class used for providing CloudTrail delivery information
  */
-public class DefaultSourceFilter implements SourceFilter {
-
-    /**
-     * All pass source filter
-     */
-    @Override
-    public boolean filterSource(CloudTrailSource source) {
-        return true;
-    }
+public interface CloudTrailDeliveryInfo {
 
 }

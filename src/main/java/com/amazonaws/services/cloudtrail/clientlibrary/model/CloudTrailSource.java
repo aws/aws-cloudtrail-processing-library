@@ -1,59 +1,28 @@
+/*******************************************************************************
+ * Copyright (c) 2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Amazon Software License (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ * http://aws.amazon.com/asl/
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ *******************************************************************************/
 package com.amazonaws.services.cloudtrail.clientlibrary.model;
 
-import java.util.List;
+import java.util.Map;
 
 /**
- * Each message poll from SQS will end up as a Source object. 
- *
+ * A skeleton class used for source filter. When use it, user should cast it to specific subclass.
  */
-public class CloudTrailSource {
+public interface CloudTrailSource {
     /**
-     * AWS Account ID
+     * Retrieve CloudTrailSource attributes
+     * @return
      */
-    private final String accountId;
-    
-    /**
-     * An identifier associated with the act of receiving a SQS message. When
-     * deleting a SQS message, we provide the last received receipt handle to
-     * delete the message.
-     */
-    private final String handle;
-    
-    private final List<CloudTrailLog> logs;
-
-	public CloudTrailSource(String accountId, String handle, List<CloudTrailLog> logs) {
-		this.accountId = accountId;
-		this.handle = handle;
-		this.logs = logs;
-	}
-
-	/**
-	 * @return the accountId
-	 */
-	public String getAccountId() {
-		return accountId;
-	}
-
-	/**
-	 * @return the handle
-	 */
-	public String getHandle() {
-		return handle;
-	}
-
-	/**
-	 * @return the sources
-	 */
-	public List<CloudTrailLog> getLogs() {
-		return logs;
-	}
-    
-	/**
-	 * 
-	 */
-	@Override
-	public String toString() {
-		return "CloudTrailSource [accountId=" + accountId + ", handle=" + handle
-				+ ", logs=" + logs + "]";
-	}    
+    public Map<String, String> getSourceAttributes();
 }

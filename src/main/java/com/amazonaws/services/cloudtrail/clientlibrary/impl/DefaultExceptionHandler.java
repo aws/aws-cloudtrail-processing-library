@@ -1,37 +1,33 @@
+/*******************************************************************************
+ * Copyright (c) 2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Amazon Software License (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ * http://aws.amazon.com/asl/
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ *******************************************************************************/
 package com.amazonaws.services.cloudtrail.clientlibrary.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.cloudtrail.clientlibrary.AWSCloudTrailClientConfiguration;
 import com.amazonaws.services.cloudtrail.clientlibrary.exceptions.ClientLibraryException;
-import com.amazonaws.services.cloudtrail.clientlibrary.exceptions.MessageDeletingException;
-import com.amazonaws.services.cloudtrail.clientlibrary.exceptions.MessageParsingException;
 import com.amazonaws.services.cloudtrail.clientlibrary.interfaces.ExceptionHandler;
-import com.amazonaws.services.sqs.AmazonSQSClient;
 
+/**
+ * Default implementation of ExceptionHandler that simply log exception.
+ */
 public class DefaultExceptionHandler implements ExceptionHandler {
-	private static final Log logger = LogFactory.getLog(DefaultProgressReporter.class);
+    private static final Log logger = LogFactory.getLog(DefaultExceptionHandler.class);
 
-	@Override
-	public void handleException(ClientLibraryException exception, AWSCloudTrailClientConfiguration config) {
-		logger.error(exception.getMessage(), exception);
-		
-		AmazonSQSClient sqs = new AmazonSQSClient(config.awsCredentialsProvider);
-		sqs.setRegion(Region.getRegion(Regions.fromName(config.sqsRegion)));
-		String receiptHandle = null;
-		
-		if (exception instanceof MessageParsingException) {
-			receiptHandle = ((MessageParsingException) exception).getSqsMessage().getReceiptHandle();
-		} else if (exception instanceof MessageDeletingException) {
-			receiptHandle = ((MessageDeletingException) exception).getBatch().getHandle();
-		} 
-		
-		if (receiptHandle != null) {
-			sqs.deleteMessage(config.sqsUrl, receiptHandle);
-		}
-	}
-
+    @Override
+    public void handleException(ClientLibraryException exception) {
+        logger.error(exception.getMessage(), exception);
+    }
 }

@@ -12,22 +12,23 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  *******************************************************************************/
-package com.amazonaws.services.cloudtrail.clientlibrary.impl;
+package com.amazonaws.services.cloudtrail.clientlibrary.exceptions;
 
-import com.amazonaws.services.cloudtrail.clientlibrary.interfaces.SourceFilter;
-import com.amazonaws.services.cloudtrail.clientlibrary.model.CloudTrailSource;
+import com.amazonaws.services.cloudtrail.clientlibrary.progress.ProgressStatus;
 
 /**
- * Default implementation of SourceFilter that simply return True for any CloudTrailSource
+ * The exception from call back to implementation of AWSCloudTrailClientLibrary interfaces.
  */
-public class DefaultSourceFilter implements SourceFilter {
+public class CallbackException extends ClientLibraryException{
 
-    /**
-     * All pass source filter
-     */
-    @Override
-    public boolean filterSource(CloudTrailSource source) {
-        return true;
+    private static final long serialVersionUID = -2425808722370565843L;
+
+    public CallbackException(String message, ProgressStatus status) {
+        super(message, status);
     }
 
+
+    public CallbackException(String message, Exception e, ProgressStatus status) {
+        super(message, e, status);
+    }
 }

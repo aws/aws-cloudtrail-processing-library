@@ -14,17 +14,16 @@
  *******************************************************************************/
 package com.amazonaws.services.cloudtrail.clientlibrary.impl;
 
-import com.amazonaws.services.cloudtrail.clientlibrary.AWSCloudTrailClientConfiguration;
 import com.amazonaws.services.cloudtrail.clientlibrary.interfaces.RecordFilter;
-import com.amazonaws.services.cloudtrail.clientlibrary.model.ClientRecord;
+import com.amazonaws.services.cloudtrail.clientlibrary.model.CloudTrailClientRecord;
 
 /**
- * Default all pass RecordFilter implementation.
+ * Default implementation of RecordFilter that simply return True for any CloudTrailClientRecord
  */
 public class DefaultRecordFilter implements RecordFilter {
 
     @Override
-    public boolean filterRecord(ClientRecord record, AWSCloudTrailClientConfiguration config) {
+    public boolean filterRecord(CloudTrailClientRecord record) {
         return true;
     }
 }

@@ -20,19 +20,39 @@ import org.apache.commons.logging.LogFactory;
 import com.amazonaws.services.cloudtrail.clientlibrary.AWSCloudTrailClientExecutor;
 
 /**
- * Sample App build on top of AWS CloudTrail client library
+ * Sample app build on top of AWS CloudTrail client library
  */
 public class App {
-	private final static Log logger = LogFactory.getLog(App.class);
-	
-    public static void main( String[] args ) throws InterruptedException{
-        logger.info("Begining sample code in brazil.");
-		
-        AWSCloudTrailClientExecutor executor = new AWSCloudTrailClientExecutor("/sample/awscloudtrailclientlib.properties");
-        executor.setRecordsEmitter(new MyLogEmitter());
-        executor.setProgressReporter(new MyProgressReporter());
+    public static void main(String[] args) throws InterruptedException{
+        final Log logger = LogFactory.getLog(App.class);
+
+        final AWSCloudTrailClientExecutor executor = new AWSCloudTrailClientExecutor.Builder(new MyLogProcessor(), "/sample/simon.properties")
+                        .withProgressReporter(new MyProgressReporter())
+                        .build();
         executor.start();
-        Thread.sleep(20*1000);
-        executor.stop();
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                logger.info("Shut Down Hook is called.");
+                executor.stop();
+            }
+        });
+
+        // Register a Default Uncaught Exception Handler. Shutdown hook will be called on System.exit.
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                logger.error("Handled by global Exception handler. " + e.getMessage() + " " + t.getName());
+                System.exit(1);
+
+//                //Can optionally restart another executor and start
+//                AWSCloudTrailClientExecutor executor = new AWSCloudTrailClientExecutor(new MyLogProcessor(), "/sample/awscloudtrailclientlib.properties");
+//                executor.setProgressReporter(new MyProgressReporter());
+//                executor.start();
+            }
+        });
+
+//        Thread.sleep(60*1000);
+//        executor.stop();
     }
 }

@@ -14,19 +14,32 @@
  *******************************************************************************/
 package com.amazonaws.services.cloudtrail.clientlibrary.exceptions;
 
+import com.amazonaws.services.cloudtrail.clientlibrary.progress.ProgressStatus;
+
 /**
- * This exception can be thrown when calling user's implemented call back function.
- *
+ * This exception is subject to be handled by implementation of ExceptionHandler.
+ * Based on different scenario that error happened different ProgressStatus will be handed to ExceptionHandler.
  */
 public class ClientLibraryException extends Exception {
-	
-	private static final long serialVersionUID = 8757412348402829171L;
-	
-	public ClientLibraryException(String message) {
-		super(message);
-	}
-	
-	public ClientLibraryException(String message, Exception e) {
-		super(message, e);
-	}
+    private static final long serialVersionUID = 8757412348402829171L;
+
+    /**
+     * Progress status when exception happened.
+     */
+    private ProgressStatus status;
+
+    public ClientLibraryException(String message, ProgressStatus status) {
+        super(message);
+    }
+
+    public ClientLibraryException(String message, Exception e, ProgressStatus status) {
+        super(message, e);
+    }
+
+    /**
+     * @return the status when exception happened.
+     */
+    public ProgressStatus getStatus() {
+        return status;
+    }
 }

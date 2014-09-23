@@ -6,9 +6,7 @@
     <packaging>jar</packaging>
     <name>AWS CloudTrail Client Library for Java</name>
     <version>1.0.0</version>
-    <description>
-
-    </description>
+    <description>AWS CloudTrail Client Library for Java helps Java developers to easily consume and process log files from AWS CloudTrail.</description>
     <url>https://aws.amazon.com/cloudtrail</url>
 
     <scm>
@@ -24,7 +22,7 @@
     </licenses>
 
     <properties>
-        <aws-java-sdk.version>1.7.1</aws-java-sdk.version>
+        <aws-java-sdk.version>1.8.10.2</aws-java-sdk.version>
     </properties>
 
     <dependencies>

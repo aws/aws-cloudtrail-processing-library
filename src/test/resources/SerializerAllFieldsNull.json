@@ -1,0 +1,69 @@
+{
+    "Records": [
+        {
+            "eventVersion": "1.1",
+            "userIdentity": null,
+            "eventTime": null,
+            "eventSource": null,
+            "eventName": null,
+            "awsRegion": null,
+            "sourceIPAddress": null,
+            "userAgent": null,
+            "errorCode": null,
+            "errorMessage": null,
+            "requestParameters": null,
+            "responseElements": null,
+            "resources": null,
+            "apiVersion": null,
+            "eventType": null,
+            "recipientAccountId":null
+        },
+        {
+            "eventVersion": "1.2",
+            "userIdentity": {
+                "type": "userIdentityType2",
+                "principalId": "userIdentityPrincipalId2",
+                "arn": "userIdentityArn2",
+                "accountId": "userIdentityAccountId2",
+                "accessKeyId": "userIdentityAccessKeyId2",
+                "userName": "userIdentityUserName2"
+            },
+            "eventTime": "2013-11-01T00:00:00Z",
+            "eventSource": "eventSource2",
+            "eventName": "eventName2",
+            "awsRegion": "awsRegion2",
+            "sourceIPAddress": "sourceIPAddress2",
+            "userAgent": "userAgent2",
+            "errorCode": "errorCode2",
+            "errorMessage": "errorMessage2",
+            "requestParameters": {
+                "parameters": [
+                    {
+                        "isModifiable": false,
+                        "parameterValue": "2",
+                        "parameterName": "extra_float_digits"
+                    }
+                ],
+                "parameterGroupName": "my-redshift-parameter-group"
+            },
+            "responseElements": null,
+            "resources": [
+                {
+                    "ARN": "arn:aws:iam:sample1",
+                    "accountId": "acccountId1"
+                },
+                {
+                    "ARN": "arn:aws:iam:sample2",
+                    "accountId": "acccountId2"
+                },
+                {
+                    "ARN": "arn:aws:iam:sample3",
+                    "accountId": "acccountId3"
+                }
+            ],
+            "apiVersion": "apiVersion2",
+            "eventType": "AwsApiCall",
+            "recipientAccountId": "recipientAccountId2"
+        }
+    ]
+}

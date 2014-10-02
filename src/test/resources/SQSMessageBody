@@ -1,0 +1,11 @@
+{
+    "Type": "Notification",
+    "MessageId": "6a18da96-bcc5-52f2-b5e9-91006caecea2",
+    "TopicArn": "arn:aws:sns:us-east-1:950229139741:eagle-canary-iad-prod-sns",
+    "Message": "{\"s3Bucket\":\"my-test-bucket\",\"s3ObjectKey\":[\"myprefix/AWSLogs/123456789012/CloudTrail/us-east-1/2014/03/09/123456789012_CloudTrail_us-east-1_20140309T2015Z_996mpJdKNLd1Yvzl.json.gz\", \"myprefix/AWSLogs/123456789012/CloudTrail/us-east-1/2014/03/09/123456789012_CloudTrail_us-east-1_20140309T2015Z_996mpJdKNLd1Yvzl.json.gz\"]}",
+    "Timestamp": "2014-03-09T20:25:15.990Z",
+    "SignatureVersion": "1",
+    "Signature": "YuZFzHukPXQNOQ9+4gLBtr3s7CUEI+3/4nmUM8zD/StYEvQ/uSLlXbLGu3CukMFaeCRrl51k8NkHSYoYANhTfLya/gPlnNfPnXDANzcT2KLLhoDSzJVRSvWx5hoxlgvBThR94ed/UmLYDSm04Pts1htCArrN0gXzrZlv0shkvIz9HgTXxw/u0REy6ajxHAdKaH5AhCtPEu64Edzg5ppz5PRnPwA32FI2lxTHlcTaBHUz/MM82omZlRLeaMusBLaUtkXbHJJ4MXq1ymzsXXt4lN0geRG2x4ZBrd2+1/o9TYLDT2WYwvX1cR46kM3/jWmvlcemaD/tZ5LlIhltiXJ7TQ==",
+    "SigningCertURL": "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-e372f8ca30337fdb084e8ac449342c77.pem",
+    "UnsubscribeURL": "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:950229139741:eagle-canary-iad-prod-sns:e8cc3e67-6e10-4192-a9d1-983b8601ef2e"
+}

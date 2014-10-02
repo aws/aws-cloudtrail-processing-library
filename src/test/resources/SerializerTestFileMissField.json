@@ -1,0 +1,139 @@
+{
+    "Records": [
+        {
+            "eventVersion": "1.1",
+            "userIdentity": {
+                "type": "userIdentityType1",
+                "principalId": "userIdentityPrincipalId1",
+                "arn": "userIdentityArn1",
+                "accountId": "userIdentityAccountId1",
+                "accessKeyId": "userIdentityAccessKeyId1",
+                "userName": "userIdentityUserName1"
+            },
+            "eventTime": "2013-11-01T00:00:00Z",
+            "eventSource": "eventSource1",
+            "eventName": "eventName1",
+            "awsRegion": "awsRegion1",
+            "sourceIPAddress": "sourceIPAddress1",
+            "userAgent": "userAgent1",
+            "errorCode": "errorCode1",
+            "errorMessage": "errorMessage1",
+            "requestParameters": {
+                "clusterIdentifier": "my-redshift-cluster"
+            },
+            "responseElements": {
+                "loggingEnabled": false
+            },
+            "resources": [
+                {
+                    "ARN": "arn:aws:iam:sample1",
+                    "accountId": "acccountId1"
+                },
+                {
+                    "ARN": "arn:aws:iam:sample2",
+                    "accountId": "acccountId2"
+                }
+            ],
+            "apiVersion": "apiVersion1",
+            "eventType": "AwsApiCall",
+            "recipientAccountId": "recipientAccountId1"
+        },
+        {
+            "eventVersion": "1.2",
+            "userIdentity": {
+                "type": "userIdentityType2",
+                "principalId": "userIdentityPrincipalId2",
+                "arn": "userIdentityArn2",
+                "accountId": "userIdentityAccountId2",
+                "accessKeyId": "userIdentityAccessKeyId2",
+                "userName": "userIdentityUserName2"
+            },
+            "eventTime": "2013-11-01T00:00:00Z",
+            "eventSource": "eventSource2",
+            "eventName": "eventName2",
+            "awsRegion": "awsRegion2",
+            "sourceIPAddress": "sourceIPAddress2",
+            "userAgent": "userAgent2",
+            "errorCode": "errorCode2",
+            "errorMessage": "errorMessage2",
+            "requestParameters": {
+                "parameters": [
+                    {
+                        "isModifiable": false,
+                        "parameterValue": "2",
+                        "parameterName": "extra_float_digits"
+                    }
+                ],
+                "parameterGroupName": "my-redshift-parameter-group"
+            },
+            "resources": [],
+            "responseElements": null,
+            "apiVersion": "apiVersion2",
+            "eventType": "AwsApiCall",
+            "recipientAccountId": "recipientAccountId2"
+        },
+        {
+            "eventVersion": "1.3",
+            "userIdentity": {
+                "sessionContext": {
+                    "attributes": {
+                        "key1": "value1",
+                        "key2": "value2"
+                    }
+                }
+            },
+            "eventTime": "2013-11-01T00:00:00Z",
+            "eventSource": "eventSource3",
+            "eventName": "eventName3",
+            "awsRegion": "awsRegion3",
+            "sourceIPAddress": "sourceIPAddress3",
+            "userAgent": "userAgent3",
+            "errorCode": "errorCode3",
+            "errorMessage": "errorMessage3",
+            "requestParameters": null,
+            "responseElements": null,
+            "resources": null,
+            "apiVersion": "apiVersion3",
+            "eventType": "AwsApiCall",
+            "recipientAccountId": "recipientAccountId3"
+        },
+        {
+            "eventVersion": "1.4",
+            "userIdentity": {
+                "type": "userIdentityType4",
+                "principalId": "userIdentityPrincipalId4",
+                "arn": "userIdentityArn4",
+                "accountId": "userIdentityAccountId4",
+                "accessKeyId": "userIdentityAccessKeyId4",
+                "sessionContext": {
+                    "attributes": {
+                        "key1": "value1",
+                        "key2": "value2"
+                    },
+                    "sessionIssuer": {
+                        "type": "sessionIssuerType4",
+                        "principalId": "sessionIssuerPrincipalId4",
+                        "arn": "sessionIssuerArn4",
+                        "accountId": "sessionIssuerAccountId4",
+                        "userName": "sessionIssuerUserName4"
+                    }
+                }
+            },
+            "eventTime": "ThisIsAWrongEventTime",
+            "eventSource": "eventSource4",
+            "eventName": "eventName4",
+            "awsRegion": "awsRegion4",
+            "sourceIPAddress": "sourceIPAddress4",
+            "userAgent": "userAgent4",
+            "errorCode": "errorCode4",
+            "errorMessage": "errorMessage4",
+            "requestParameters": null,
+            "responseElements": {
+                "_return": true
+            },
+            "apiVersion": "apiVersion4",
+            "eventType": "AwsApiCall",
+            "recipientAccountId": "recipientAccountId4"
+        }
+    ]
+}

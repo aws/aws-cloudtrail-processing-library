@@ -1,2 +1,2 @@
-AWS CloudTrail Client Library
+AWS CloudTrail Processing Library
 Copyright 2014-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.

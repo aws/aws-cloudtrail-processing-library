@@ -1,0 +1,68 @@
+{
+    "Records": [
+        {
+            "eventVersion": "1.1",
+            "userIdentity": {
+                "type": "userIdentityType1",
+                "principalId": "userIdentityPrincipalId1",
+                "arn": "userIdentityArn1",
+                "accountId": "userIdentityAccountId1",
+                "accessKeyId": "userIdentityAccessKeyId1",
+                "newFieldStringType": "newFieldString1",
+                "newFieldsObjectType": {
+                    "newFieldsKey1": "newFieldsObject1",
+                    "newFieldsKey2": "newFieldsObject2"
+                },
+                "sessionContext": {
+                    "attributes": {
+                        "key1": "value1",
+                        "key2": "value2"
+                    },
+                    "sessionIssuer": {
+                        "type": "sessionIssuerType1",
+                        "principalId": "sessionIssuerPrincipalId1",
+                        "arn": "sessionIssuerArn1",
+                        "accountId": "sessionIssuerAccountId1",
+                        "userName": "sessionIssuerUserName1"
+                    },
+                    "webIdFederationData": {
+                        "federatedProvider": "webIdFederationDataFederatedProvider1",
+                        "attributes": {
+                            "key1": "value1",
+                            "key2": "value2"
+                        }
+                    }
+                }
+            },
+            "eventTime": "2013-11-01T00:00:00Z",
+            "eventSource": "eventSource1",
+            "eventName": "eventName1",
+            "awsRegion": "awsRegion1",
+            "sourceIPAddress": "sourceIPAddress1",
+            "userAgent": "userAgent1",
+            "errorCode": "errorCode1",
+            "errorMessage": "errorMessage1",
+            "requestParameters": {
+                "regionSet": {}
+            },
+            "responseElements": null,
+            "resources": [
+                {
+                    "ARN": "arn:aws:iam:sample1",
+                    "accountId": "acccountId1"
+                },
+                {
+                    "ARN": "arn:aws:iam:sample2",
+                    "accountId": "acccountId2"
+                },
+                {
+                    "ARN": "arn:aws:iam:sample3",
+                    "accountId": "acccountId3"
+                }
+            ],
+            "apiVersion": "apiVersion1",
+            "eventType": "AwsApiCall",
+            "recipientAccountId": "recipientAccountId1"
+        }
+    ]
+}

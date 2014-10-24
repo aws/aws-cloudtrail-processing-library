@@ -1,38 +1,41 @@
 /*******************************************************************************
- * Copyright (c) 2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
- * Licensed under the Amazon Software License (the "License").
+ * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
  * A copy of the License is located at
  *
- * http://aws.amazon.com/asl/
+ *  http://aws.amazon.com/apache2.0
  *
  * or in the "license" file accompanying this file. This file is distributed
  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
- *******************************************************************************/
+ ******************************************************************************/
+
 package com.amazonaws.services.cloudtrail.processinglibrary.interfaces;
 
 import com.amazonaws.services.cloudtrail.processinglibrary.exceptions.ProcessingLibraryException;
 
 /**
- * ExceptionHandler is a call back function that handles exception cases during processing
- * CloudTrail log files.
- *
- * The handleException() method is invoked in 6 different cases:
- *
- * 1. Error happened at polling messages from SQS
- * 2. Error happened at parsing message from SQS
- * 3. Error happened at deleting messages from SQS
- * 4. Error happened at downloading CloudTrail log file
- * 5. Error happened at parsing CloudTrail log file
- * 6. Uncaught Exception happened.
- *
- * ClientLibraryException contains execution context - ProgressStatus. Depends on when the error happened,
- * PorgressStatus provides different informations.
- *
- * See {@link com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus} for more information.
+ * Provides a callback function that handles exceptions that occured while
+ * processing AWS CloudTrail log files.
+ * <p>
+ * The <code>handleException()</code> method is invoked when exceptions are
+ * raised in these cases:
+ * <p>
+ * <ol>
+ *   <li>while polling messages from SQS</li>
+ *   <li>while parsing message from SQS</li>
+ *   <li>while deleting messages from SQS</li>
+ *   <li>while downloading an AWS CloudTrail log file</li>
+ *   <li>while parsing the AWS CloudTrail log file</li>
+ *   <li>any uncaught exception</li>
+ * </ol>
+ * <p>
+ * A {@link ProcessingLibraryException} contains execution context in the held
+ * {@link ProgressStatus} object, which can be obtained by calling the
+ * exception's <code>getStatus()</code> method.
  */
 public interface ExceptionHandler {
     public void handleException(ProcessingLibraryException exception) ;

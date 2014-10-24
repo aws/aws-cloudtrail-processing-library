@@ -1,17 +1,18 @@
 /*******************************************************************************
- * Copyright (c) 2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
- * Licensed under the Amazon Software License (the "License").
+ * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
  * A copy of the License is located at
  *
- * http://aws.amazon.com/asl/
+ *  http://aws.amazon.com/apache2.0
  *
  * or in the "license" file accompanying this file. This file is distributed
  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
- *******************************************************************************/
+ ******************************************************************************/
+
 package com.amazonaws.services.cloudtrail.processinglibrary.serializer;
 
 import java.io.IOException;
@@ -22,6 +23,7 @@ import java.util.List;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailLog;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.SQSBasedSource;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.SourceAttributeKeys;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
 import com.amazonaws.services.sqs.model.Message;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -77,7 +79,7 @@ public class DefaultSourceSerializer implements SourceSerializer {
         }
 
         //set accountId as message attribute
-        sqsMessage.addAttributesEntry("accountId", accountId);
+        sqsMessage.addAttributesEntry(SourceAttributeKeys.ACCOUNT_ID.getAttributeKey(), accountId);
 
         return new SQSBasedSource(sqsMessage, cloudTrailLogs);
     }

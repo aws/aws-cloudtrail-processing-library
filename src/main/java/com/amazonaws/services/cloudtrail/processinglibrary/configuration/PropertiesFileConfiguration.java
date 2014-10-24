@@ -1,17 +1,18 @@
 /*******************************************************************************
- * Copyright (c) 2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
- * Licensed under the Amazon Software License (the "License").
+ * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
  * A copy of the License is located at
  *
- * http://aws.amazon.com/asl/
+ *  http://aws.amazon.com/apache2.0
  *
  * or in the "license" file accompanying this file. This file is distributed
  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
- *******************************************************************************/
+ ******************************************************************************/
+
 package com.amazonaws.services.cloudtrail.processinglibrary.configuration;
 
 import java.io.IOException;
@@ -22,13 +23,18 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.ClasspathPropertiesFileCredentialsProvider;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
 
-public class ClasspathPropertiesFileProcessingConfiguration implements ProcessingConfiguration{
-    /**
-     * configuration property name
-     */
+/**
+ * A class used to obtain AWS CloudTrail Processing Library configuration
+ * information from a classpath properties file.
+ * <p>
+ * In addition to this class, you can use {@link ClientConfiguration}
+ * to manually set configuration options.
+ */
+public class PropertiesFileConfiguration implements ProcessingConfiguration{
+    /* configuration file property names */
     public static final String ENABLE_RAW_RECORD_INFO = "enableRawRecordInfo";
     public static final String VERIFY_CLOUD_TRAIL_LOG_FILE = "verifyCloudTrailLogFile";
-    public static final String N_RECORDS_PER_EMIT = "nRecordsPerEmit";
+    public static final String MAX_RECORDS_PER_EMIT = "maxRecordsPerEmit";
     public static final String THREAD_COUNT = "threadCount";
     public static final String VISIBILITY_TIMEOUT = "visibilityTimeout";
     public static final String S3_REGION = "s3Region";
@@ -37,12 +43,12 @@ public class ClasspathPropertiesFileProcessingConfiguration implements Processin
     public static final String ACCESS_KEY = "accessKey";
     public static final String SQS_URL = "sqsUrl";
 
-    private static final String ERROR_CREDENTIALS_PROVIDER_NULL = "CredentialsProvider is null. Either put your " +
-            "access key and secret key in configuration file in your class path, or set it in the " +
+    private static final String ERROR_CREDENTIALS_PROVIDER_NULL = "The CredentialsProvider is null. Either set your " +
+            "access key and secret key in a configuration file in your class path, or set it in the " +
             "configuration object you passed in.";
 
     /**
-     * The URL of a SQS Queue that subscribed to CloudTrail.
+     * The URL of the SQS Queue to use to get CloudTrail logs.
      */
     private String sqsUrl = null;
 
@@ -75,12 +81,12 @@ public class ClasspathPropertiesFileProcessingConfiguration implements Processin
     /**
      * The duration in seconds to wait for thread pool termination before issue shutDownNow.
      */
-    private int threadTerminationDelay = DEFAULT_THREAD_TERMINATION_DELAY;
+    private int threadTerminationDelaySeconds = DEFAULT_THREAD_TERMINATION_DELAY_SECONDS;
 
     /**
      * Max number of AWSCloudTrailClientRecord that buffered before emit.
      */
-    private int nRecordsPerEmit = DEFAULT_N_RECORDS_PER_EMIT;
+    private int maxRecordsPerEmit = DEFAULT_MAX_RECORDS_PER_EMIT;
 
     /**
      * Whether to enable raw record in CloudTrailDeliveryInfo
@@ -88,11 +94,12 @@ public class ClasspathPropertiesFileProcessingConfiguration implements Processin
     private boolean enableRawRecordInfo = DEFAULT_ENABLE_RAW_RECORD_INFO;
 
     /**
-     * Used by lower level API and high level API to create an instance of AWSCloudTrailRecordReaderConfiguration
+     * Used by lower level API and high level API to create an instance of
+     * {@link AWSCloudTrailRecordReaderConfiguration}
      *
-     * @param prop
+     * @param propertiesFile the classpath properties file to load.
      */
-    public ClasspathPropertiesFileProcessingConfiguration(String propertiesFile) {
+    public PropertiesFileConfiguration(String propertiesFile) {
         //load properties from configuration properties file
         Properties prop = this.loadProperty(propertiesFile);
 
@@ -113,91 +120,94 @@ public class ClasspathPropertiesFileProcessingConfiguration implements Processin
 
         this.threadCount = this.getIntProperty(prop, THREAD_COUNT);
 
-        this.nRecordsPerEmit = this.getIntProperty(prop, N_RECORDS_PER_EMIT);
+        this.maxRecordsPerEmit = this.getIntProperty(prop, MAX_RECORDS_PER_EMIT);
         this.enableRawRecordInfo = this.getBooleanProperty(prop, ENABLE_RAW_RECORD_INFO);
     }
 
     /**
-     * @return the sqsUrl
+     * {@inheritDoc}
      */
     public String getSqsUrl() {
         return sqsUrl;
     }
 
     /**
-     * @return the sqsRegion
+     * {@inheritDoc}
      */
     public String getSqsRegion() {
         return sqsRegion;
     }
 
     /**
-     * @return the visibilityTimeout
+     * {@inheritDoc}
      */
     public int getVisibilityTimeout() {
         return visibilityTimeout;
     }
 
     /**
-     * @return the s3Region
+     * {@inheritDoc}
      */
     public String getS3Region() {
         return s3Region;
     }
 
     /**
-     * @return the threadCount
+     * {@inheritDoc}
      */
     public int getThreadCount() {
         return threadCount;
     }
 
     /**
-     * @return the threadTerminationDelay
+     * {@inheritDoc}
      */
-    public int getThreadTerminationDelay() {
-        return threadTerminationDelay;
+    public int getThreadTerminationDelaySeconds() {
+        return threadTerminationDelaySeconds;
     }
 
     /**
-     * @return the nRecordsPerEmit
+     * {@inheritDoc}
      */
-    public int getNRecordsPerEmit() {
-        return nRecordsPerEmit;
+    public int getMaxRecordsPerEmit() {
+        return maxRecordsPerEmit;
     }
 
     /**
-     * @return the enableRawRecordInfo
+     * {@inheritDoc}
      */
     public boolean isEnableRawRecordInfo() {
         return enableRawRecordInfo;
     }
 
     /**
-     * @return the awsCredentialsProvider
+     * {@inheritDoc}
      */
     public AWSCredentialsProvider getAwsCredentialsProvider() {
         return awsCredentialsProvider;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void validate() {
         LibraryUtils.checkArgumentNotNull(this.getAwsCredentialsProvider(), ERROR_CREDENTIALS_PROVIDER_NULL);
         LibraryUtils.checkArgumentNotNull(this.getSqsUrl(), "SQS URL is null.");
-        LibraryUtils.checkArgumentNotNull(this.getNRecordsPerEmit(),  "Credential is null.");
+        LibraryUtils.checkArgumentNotNull(this.getMaxRecordsPerEmit(),  "Credential is null.");
         LibraryUtils.checkArgumentNotNull(this.getS3Region(),  "S3Region is null.");
         LibraryUtils.checkArgumentNotNull(this.getSqsRegion(),  "sqsRegion is null.");
         LibraryUtils.checkArgumentNotNull(this.getSqsUrl(),  "sqsUrl is null.");
         LibraryUtils.checkArgumentNotNull(this.getThreadCount(),  "threadCount is null.");
-        LibraryUtils.checkArgumentNotNull(this.getThreadTerminationDelay(),  "threadTerminationDelay is null.");
+        LibraryUtils.checkArgumentNotNull(this.getThreadTerminationDelaySeconds(),  "threadTerminationDelaySeconds is null.");
         LibraryUtils.checkArgumentNotNull(this.getVisibilityTimeout(),  "visibilityTimeout is null.");
     }
 
     /**
-     * Load properties from a property file in class path.
+     * Load properties from a classpath property file.
      *
-     * @param propertiesFile
-     * @return
+     * @param propertiesFile the classpath properties file to use.
+     * @return a {@Properties} object containing the properties set in the file.
      */
     private Properties loadProperty(String propertiesFile) {
         Properties prop = new Properties();

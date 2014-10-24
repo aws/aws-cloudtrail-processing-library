@@ -1,17 +1,18 @@
 /*******************************************************************************
- * Copyright (c) 2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
- * Licensed under the Amazon Software License (the "License").
+ * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
  * A copy of the License is located at
  *
- * http://aws.amazon.com/asl/
+ *  http://aws.amazon.com/apache2.0
  *
  * or in the "license" file accompanying this file. This file is distributed
  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
- *******************************************************************************/
+ ******************************************************************************/
+
 package com.amazonaws.services.cloudtrail.processinglibrary.model;
 
 import java.util.Date;
@@ -25,15 +26,20 @@ import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.UserId
 
 
 /**
- * The CloudTrail record contains information about requests for resources in your account, what
- * services were accessed, what action was performed, and any parameters for the action. The request
- * also helps determine who made the request. The event data is enclosed in a Records array.
+ * The CloudTrail record contains information about requests for resources in
+ * your account.
+ * <p>
+ * Information provided includes what services were accessed, what action
+ * was performed, and any parameters for the action. The request also provides
+ * information about who made the request.
+ * <p>
+ * The event data is enclosed in a {@link Records} array.
  *
- * See{@link http://docs.aws.amazon.com/awscloudtrail/latest/userguide/event_reference_top_level.html}
+ * @see <a href="http://docs.aws.amazon.com/awscloudtrail/latest/userguide/event_reference_top_level.html">CloudTrail Event Reference</a>
  */
 public class CloudTrailRecord extends CloudTrailDataStore{
     /**
-     * Get event version.
+     * Get the event version.
      *
      * @return The version of the log event format. The current version is 1.02.
      */
@@ -42,9 +48,9 @@ public class CloudTrailRecord extends CloudTrailDataStore{
     }
 
     /**
-     * Get UserIdentity object.
+     * Get the UserIdentity object held by this instance.
      *
-     * See {@link http://docs.aws.amazon.com/awscloudtrail/latest/userguide/event_reference_user_identity.html}
+     * @see <a href="http://docs.aws.amazon.com/awscloudtrail/latest/userguide/event_reference_user_identity.html">userIdentity Element</a>
      * @return Information about the user that made a request.
      */
     public UserIdentity getUserIdentity() {
@@ -52,7 +58,7 @@ public class CloudTrailRecord extends CloudTrailDataStore{
     }
 
     /**
-     * Get event timestamp.
+     * Get the event timestamp for this record.
      *
      * @return The date and time the request was made, in coordinated universal time (UTC).
      */
@@ -61,9 +67,10 @@ public class CloudTrailRecord extends CloudTrailDataStore{
     }
 
     /**
-     * Get event name.
+     * Get the event name for this record.
      *
-     * @return The requested action, which is one of the actions listed in the API Reference for the service.
+     * @see <a href="http://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_Operations.html">AWS CloudTrail Actions</a>
+     * @return The event name, an AWS CloudTrail action as listed in its API Reference.
      */
     public String getEventName() {
         return (String) this.get(CloudTrailRecordField.eventName.name());
@@ -71,17 +78,17 @@ public class CloudTrailRecord extends CloudTrailDataStore{
 
 
     /**
-     * Get event source.
+     * Get the event source for this record.
      *
-     * @return The service that the request was made to. For example, a call to Amazon EC2 is listed
-     * in the eventSource field as ec2.amazonaws.com.
+     * @return The service that the request was made to. For example, a call to
+     *    Amazon EC2 is listed in the eventSource field as ec2.amazonaws.com.
      */
     public String getEventSource() {
         return (String) this.get(CloudTrailRecordField.eventSource.name());
     }
 
     /**
-     * Get AWS region.
+     * Get the AWS region for this record.
      *
      * @return The AWS region that the request was made to.
      */
@@ -90,39 +97,42 @@ public class CloudTrailRecord extends CloudTrailDataStore{
     }
 
     /**
-     * Get event source IP address.
+     * Get the source IP address for this record.
      *
-     * @return The apparent IP address that the request was made from. For actions that originate
-     * from the service console, the address reported is for the underlying customer resource,
-     * not the console web server. For services in AWS, only the DNS name is displayed.
+     * @return The apparent IP address that the request was made from. For
+     *    actions that originate from the service console, the address reported
+     *    is for the underlying customer resource, not the console web server.
+     *    For services in AWS, only the DNS name is displayed.
      */
     public String getSourceIPAddress() {
         return (String) this.get(CloudTrailRecordField.sourceIPAddress.name());
     }
 
     /**
-     * Get event user agent.
+     * Get the event user agent for this record.
      *
-     * @return The agent through which the request was made, such as the AWS Management Console or
-     * an AWS SDK.
+     * @return The agent through which the request was made, such as the AWS
+     *   Management Console or an AWS SDK.
      */
     public String getUserAgent() {
         return (String) this.get(CloudTrailRecordField.userAgent.name());
     }
 
     /**
-     * Get request ID.
+     * Get the request ID.
      *
-     * @return GUID generated by the service being called to uniquely identify the request.
+     * @return a GUID generated by the service being called to uniquely identify
+     *    the request.
      */
     public UUID getRequestId() {
         return (UUID) this.get(CloudTrailRecordField.requestID.name());
     }
 
     /**
-     * Get APIccall error code.
+     * Get the API call error code.
      *
-     * @return The AWS service error if the request returns an error. Null if no error.
+     * @return The AWS service error if the request returns an error, or
+     *    <code>null</code> if no error was returned.
      */
     public String getErrorCode() {
         return (String) this.get(CloudTrailRecordField.errorCode.name());
@@ -130,10 +140,13 @@ public class CloudTrailRecord extends CloudTrailDataStore{
 
     /**
      * Get API call error message.
+     * <p>
+     * This message includes messages for authorization failures. For such
+     * messages, CloudTrail captures the message logged by the service in its
+     * exception handling.
      *
-     * @return If the request returns an error, the description of the error. This message includes messages
-     * for authorization failures. For such messages, CloudTrail captures the message logged by the service
-     * in its exception handling. Null if no error.
+     * @return If the request returns an error, the description of the error, or
+     *   <code>null</code> if there was no error.
      */
     public String getErrorMessage() {
         return (String) this.get(CloudTrailRecordField.errorMessage.name());
@@ -141,9 +154,12 @@ public class CloudTrailRecord extends CloudTrailDataStore{
 
     /**
      * Get API call request parameters.
+     * <p>
+     * API Request parameters are specific to both the AWS service and the API
+     * action that is being called. Refer to the API reference for the service
+     * identified in the request for more details about the parameters.
      *
-     * @return The parameters, if any, that were sent with the request. These are fully documented in the
-     * API Reference documentation for the appropriate AWS service.
+     * @return The parameters, if any, that were sent with the request.
      */
     public String getRequestParameters() {
         return (String) this.get(CloudTrailRecordField.requestParameters.name());
@@ -151,18 +167,22 @@ public class CloudTrailRecord extends CloudTrailDataStore{
 
     /**
      * Get API call response elements.
+     * <p>
+     * If an action does not change state (for example, a request to
+     * <code>get</code> or <code>list</code> objects), this element is omitted.
+     * Response elements, like request parameters, are documented in the API
+     * Reference documentation for the AWS service identified in the response.
      *
-     * @return The response element for actions that make changes (create, update, or delete actions).
-     * If an action does not change state (for example, a request to get or list objects), this element
-     * is omitted. These are fully documented in the API Reference documentation for the appropriate
-     * AWS service.
+     * @return The response element for actions that make changes (such as the
+     *    <code>create</code>, <code>update</code>, or <code>delete</code>
+     *    actions).
      */
     public String getResponseElements() {
         return (String) this.get(CloudTrailRecordField.responseElements.name());
     }
 
     /**
-     * Get additional data.
+     * Get additional API data.
      *
      * @return Additional API call data set by AWS services.
      */
@@ -171,29 +191,32 @@ public class CloudTrailRecord extends CloudTrailDataStore{
     }
 
     /**
-     * Get event ID
+     * Get the event ID.
+     * <p>
+     * You can use this value to identify a single event. For example, you can
+     * use the ID as a primary key to retrieve log data from a searchable
+     * database.
      *
-     * @return GUID generated by CloudTrail to uniquely identify each event. You can use this value
-     * to identify a single event. For example, you can use the ID as a primary key to retrieve log
-     * data from a searchable database.
+     * @return A GUID generated by CloudTrail to uniquely identify each event.
      */
     public UUID getEventId() {
         return (UUID) this.get(CloudTrailRecordField.eventID.name());
     }
 
     /**
-     * Check whether the application is a read only operation.
+     * Check whether the operation is read-only.
      *
-     * @return true indicate this operation is a read only operation.
+     * @return <code>true</code> if the operation identified in the log is
+     *   read-only.
      */
     public Boolean isReadOnly() {
         return (Boolean) this.get(CloudTrailRecordField.readOnly.name());
     }
 
     /**
-     * Get the resources.
+     * Get the resources used in the operation.
      *
-     * @return A list of resources that is visited by this operation.
+     * @return A list of resources used in this operation.
      */
     @SuppressWarnings("unchecked")
     public List<Resource> getResources() {
@@ -201,38 +224,42 @@ public class CloudTrailRecord extends CloudTrailDataStore{
     }
 
     /**
-     * Get AWS account ID from UserIdentity.
+     * Get the AWS account ID from UserIdentity.
+     * <p>
+     * If the request was made using temporary security credentials, this is the
+     * account that owns the IAM user or role that was used to obtain
+     * credentials.
      *
      * @return The account that owns the entity that granted permissions for the request.
-     * If the request was made using temporary security credentials, this is the account
-     * that owns the IAM user or role that was used to obtain credentials.
      */
     public String getAccountId() {
         return (String) this.get(CloudTrailRecordField.accountId.name());
     }
 
     /**
-     * Get event type
-     * @return Identifies the type of event that generated the event record.
+     * Get the event type.
+     *
+     * @return Identifies the type of event that generated the record.
      */
     public String getEventType() {
         return (String) this.get(CloudTrailRecordField.eventType.name());
     }
 
     /**
-     * Get API version
+     * Get the API version.
      *
-     * @return Identifies the API version number associated with the AwsApiCall eventType value.
+     * @return the API version associated with the AWS API call's eventType
+     *    value.
      */
     public String getApiVersion() {
         return (String) this.get(CloudTrailRecordField.apiVersion.name());
     }
 
     /**
-     * Get recipient account ID
+     * Get the recipient account ID
      *
-     * @return Represents the account ID that received this event. Currently (1.02) this will be the
-     * same as the userIdentity Element accountId value.
+     * @return the account ID that received this event. This will be the same as
+     *    the User Identity Element's accountId value.
      */
     public String getRecipientAccountId() {
         return (String) this.get(CloudTrailRecordField.recipientAccountId.name());

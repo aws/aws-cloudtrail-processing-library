@@ -1,17 +1,18 @@
 /*******************************************************************************
- * Copyright (c) 2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
- * Licensed under the Amazon Software License (the "License").
+ * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
  * A copy of the License is located at
  *
- * http://aws.amazon.com/asl/
+ *  http://aws.amazon.com/apache2.0
  *
  * or in the "license" file accompanying this file. This file is distributed
  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
- *******************************************************************************/
+  ******************************************************************************/
+
 package com.amazonaws.services.cloudtrail.processinglibrary.manager;
 
 import static org.junit.Assert.assertEquals;
@@ -128,9 +129,9 @@ public class SqsManagerTest {
 
         ArgumentCaptor<ProgressStatus> status = ArgumentCaptor.forClass(ProgressStatus.class);
         verify(this.progressReporter, times(2)).reportEnd(status.capture(), any(Object.class));
-        assertEquals(ProgressState.parseMessage, status.getValue().getState());
-        assertTrue(status.getValue().getStatusInfo() instanceof BasicParseMessageInfo);
-        assertTrue(status.getValue().getStatusInfo().isSuccess());
+        assertEquals(ProgressState.parseMessage, status.getValue().getProgressState());
+        assertTrue(status.getValue().getProgressInfo() instanceof BasicParseMessageInfo);
+        assertTrue(status.getValue().getProgressInfo().isSuccess());
     }
 
     @Test
@@ -142,9 +143,9 @@ public class SqsManagerTest {
         verify(this.exceptionHandler, times(1)).handleException(any(ProcessingLibraryException.class));
         verify(this.progressReporter, times(1)).reportEnd(status.capture(), any(Object.class));
 
-        assertEquals(ProgressState.pollQueue, status.getValue().getState());
-        assertTrue(status.getValue().getStatusInfo() instanceof BasicPollQueueInfo);
-        assertFalse(status.getValue().getStatusInfo().isSuccess());
+        assertEquals(ProgressState.pollQueue, status.getValue().getProgressState());
+        assertTrue(status.getValue().getProgressInfo() instanceof BasicPollQueueInfo);
+        assertFalse(status.getValue().getProgressInfo().isSuccess());
     }
 
     /**
@@ -172,8 +173,8 @@ public class SqsManagerTest {
         ArgumentCaptor<ProgressStatus> status = ArgumentCaptor.forClass(ProgressStatus.class);
         verify(this.progressReporter, times(1)).reportEnd(status.capture(), any(Object.class));
 
-        assertEquals(ProgressState.parseMessage, status.getValue().getState());
-        assertTrue(status.getValue().getStatusInfo() instanceof BasicParseMessageInfo);
-        assertFalse(status.getValue().getStatusInfo().isSuccess());
+        assertEquals(ProgressState.parseMessage, status.getValue().getProgressState());
+        assertTrue(status.getValue().getProgressInfo() instanceof BasicParseMessageInfo);
+        assertFalse(status.getValue().getProgressInfo().isSuccess());
     }
 }

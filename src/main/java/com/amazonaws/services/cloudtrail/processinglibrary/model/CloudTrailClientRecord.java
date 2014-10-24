@@ -1,40 +1,36 @@
 /*******************************************************************************
- * Copyright (c) 2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
- * Licensed under the Amazon Software License (the "License").
+ * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
  * A copy of the License is located at
  *
- * http://aws.amazon.com/asl/
+ *  http://aws.amazon.com/apache2.0
  *
  * or in the "license" file accompanying this file. This file is distributed
  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
- *******************************************************************************/
+ ******************************************************************************/
+
 package com.amazonaws.services.cloudtrail.processinglibrary.model;
 
 
 /**
- * This class wrap AWSCloudTrailRecord and AWSCloudTrailRecordDeliveryInfo.
- *
+ * Provides AWS CLoudTrail log information to your {@link RecordProcessor}'s <code>process</code> method.
  */
 public class CloudTrailClientRecord {
-    /**
-     * An instance of AWSCloudTrailRecord.
-     */
+    /** An instance of CloudTrailRecord. */
     private CloudTrailRecord record;
 
-    /**
-     * An instance of AWSCloudTrailRecordDeliveryInfo.
-     */
+    /** An instance of AWSCloudTrailRecordDeliveryInfo. */
     private CloudTrailDeliveryInfo deliveryInfo;
 
     /**
-     * AWSCloudTrailClientRecord constructor
+     * Initializes a CloudTrailClientRecord object.
      *
-     * @param record
-     * @param deliveryInfo
+     * @param record The {@link CloudTrailRecord} to process.
+     * @param deliveryInfo A {@CloudTrailDeliveryInfo} object that can provide delivery information about the record.
      */
     public CloudTrailClientRecord(CloudTrailRecord record, CloudTrailDeliveryInfo deliveryInfo) {
         this.record = record;
@@ -42,23 +38,28 @@ public class CloudTrailClientRecord {
     }
 
     /**
-     * Get an instance of AWSCloudTrailRecord
-     * @return
+     * Get the {@link CloudTrailRecord} used to initialize this object.
+     * @return the <code>CloudTrailRecord</code> held by this instance.
      */
     public CloudTrailRecord getRecord() {
         return record;
     }
 
     /**
-     * Get an instance of AWSCloudTrailRecordDeliveryInfo
-     * @return
+     * Get the {@ CloudTrailDeliveryInfo} used to initialize this object.
+     * @return the <code>CloudTrailDeliveryInfo</code>.
      */
     public CloudTrailDeliveryInfo getDeliveryInfo() {
         return deliveryInfo;
     }
 
     /**
-     * Returns a string representation of this object; useful for testing and debugging.
+     * Returns a string representation of this object; useful for testing and
+     * debugging.
+     *
+     * @return A string with the format:
+     *    <code>{ record: "recordvalue", deliveryInfo: "deliveryinfo" }</code>.
+     *    A field will not be rendered if its value is <code>null</code>.
      */
     @Override
     public String toString() {
@@ -72,6 +73,11 @@ public class CloudTrailClientRecord {
         return builder.toString();
     }
 
+    /**
+     * Returns a hash code for the object.
+     *
+     * @return the object's hash code value.
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -82,6 +88,12 @@ public class CloudTrailClientRecord {
         return result;
     }
 
+    /**
+     * Complares this <code>CloudTrailClientRecord</code> object with another.
+     *
+     * @return <code>true</code> if they represent the same record;
+     *   <code>false</code> * otherwise.
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj)

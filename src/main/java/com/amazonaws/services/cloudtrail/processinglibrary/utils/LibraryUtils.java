@@ -1,17 +1,18 @@
 /*******************************************************************************
- * Copyright (c) 2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
- * Licensed under the Amazon Software License (the "License").
+ * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
  * A copy of the License is located at
  *
- * http://aws.amazon.com/asl/
+ *  http://aws.amazon.com/apache2.0
  *
  * or in the "license" file accompanying this file. This file is distributed
  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
- *******************************************************************************/
+ ******************************************************************************/
+
 package com.amazonaws.services.cloudtrail.processinglibrary.utils;
 
 import java.io.ByteArrayOutputStream;
@@ -20,6 +21,9 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 
+/**
+ * Utility methods used by the AWS CloudTrail Processing Library.
+ */
 public class LibraryUtils {
 
     private static final String UNDER_SCORE = "_";
@@ -29,8 +33,12 @@ public class LibraryUtils {
     private static final String UTC_TIME_ZONE = "UTC";
 
     /**
-     * Check argument is not null, throw exception when condition failed.
-     * @param argument
+     * Check that an object is not <code>null</code>; throw an exception if it
+     * is.
+     *
+     * @param argument the Object to check.
+     * @param message a description string that will be sent in the exception.
+     * @throws IllegalStateException
      */
     public static void checkArgumentNotNull(Object argument, String message) {
         if (argument == null) {
@@ -39,9 +47,12 @@ public class LibraryUtils {
     }
 
     /**
-     * Check condition, if satisfied, then {@link IllegalStateException} will be thrown
-     * @param condition
-     * @param message
+     * Check a conditional value or expression, if <code>true</code>, throw an
+     * exception.
+     *
+     * @param condition the boolean value or expression to check.
+     * @param message a description string that will be sent in the exception.
+     * @throws IllegalStateException
      */
     public static void checkCondition(boolean condition, String message) {
         if (condition) {
@@ -66,12 +77,17 @@ public class LibraryUtils {
     }
 
     /**
-     * Split a http representation of s3 url to bucket name and object key. Example:
+     * Split an HTTP representation of an Amazon S3 URL to bucket name and object key.
+     * <p>
+     * For example:
+     * <pre>
      * input: s3ObjectHttpUrl = http://s3-us-west-2.amazonaws.com/mybucket/myobjectpath1/myobjectpath2/myobject.extension
      * output: {"mybucket", "myobjectpath1/myobjectpath2/myobject.extension"}
+     * </pre>
      *
-     * @param s3ObjectHttpUrl
-     * @return
+     * @param s3ObjectHttpUrl the URL of the S3 object to split.
+     * @return a two-element string array: the first element is the bucket name,
+     *    and the second element is the object key.
      */
     public static String[] toBucketNameObjectKey(String s3ObjectHttpUrl) {
         if (s3ObjectHttpUrl == null) {
@@ -90,12 +106,16 @@ public class LibraryUtils {
     }
 
     /**
-     * S3 object key contains account Id, extract it. Example:
+     * Excract the account ID from an S3 object key.
+     * <p>
+     * For example:
+     * <pre>
      * input: https://s3-us-west-2.amazonaws.com/mybucket/AWSLogs/123456789012/CloudTrail/us-east-1/2014/02/14/123456789012_CloudTrail_us-east-1_20140214T2230Z_K0UsfksWvF8TBJZy.json.gz
      * output: 1234567890
+     * </pre>
      *
-     * @param objectKey
-     * @return
+     * @param objectKey The object key to query.
+     * @return the account ID used to access the object.
      */
     public static String extractAccountIdFromObjectKey(String objectKey) {
         if (objectKey == null) {
@@ -127,6 +147,9 @@ public class LibraryUtils {
         }
     };
 
+    /**
+     * Returns a timestamp.
+     */
     public static SimpleDateFormat getUtcSdf() {
         return utcSdf.get();
     }

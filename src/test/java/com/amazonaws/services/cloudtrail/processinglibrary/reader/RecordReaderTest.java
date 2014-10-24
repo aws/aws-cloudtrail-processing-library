@@ -1,17 +1,18 @@
 /*******************************************************************************
- * Copyright (c) 2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
- * Licensed under the Amazon Software License (the "License").
+ * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
  * A copy of the License is located at
  *
- * http://aws.amazon.com/asl/
+ *  http://aws.amazon.com/apache2.0
  *
  * or in the "license" file accompanying this file. This file is distributed
  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
- *******************************************************************************/
+  ******************************************************************************/
+
 package com.amazonaws.services.cloudtrail.processinglibrary.reader;
 
 import static org.junit.Assert.assertEquals;
@@ -54,7 +55,6 @@ import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailLog;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.SQSBasedSource;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressState;
-import com.amazonaws.services.cloudtrail.processinglibrary.reader.RecordReader;
 import com.amazonaws.services.cloudtrail.processinglibrary.serializer.RecordSerializerTest;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
 import com.amazonaws.services.s3.model.S3Object;
@@ -144,7 +144,7 @@ public class RecordReaderTest {
         when(sqsManager.pollQueue()).thenReturn(sqsMessages);
         when(sqsManager.parseMessage(sqsMessages)).thenReturn(sources);
 
-        when(this.configuration.getNRecordsPerEmit()).thenReturn(10);
+        when(this.configuration.getMaxRecordsPerEmit()).thenReturn(10);
 
         InputStream inputStream = RecordSerializerTest.class.getResourceAsStream(testFilePath);
         S3ObjectInputStream s3InputStream = new S3ObjectInputStream(inputStream, httpRequestBase);
@@ -183,7 +183,7 @@ public class RecordReaderTest {
         when(this.sourceFilter.filterSource(source1)).thenReturn(true);
         when(this.recordFilter.filterRecord(any(CloudTrailClientRecord.class))).thenReturn(true);
 
-        when(this.configuration.getNRecordsPerEmit()).thenReturn(10);
+        when(this.configuration.getMaxRecordsPerEmit()).thenReturn(10);
 
         recordReader.processSource(source1);
 
@@ -198,7 +198,7 @@ public class RecordReaderTest {
         when(this.sourceFilter.filterSource(source1)).thenReturn(true);
         when(this.recordFilter.filterRecord(any(CloudTrailClientRecord.class))).thenReturn(true);
 
-        when(this.configuration.getNRecordsPerEmit()).thenReturn(4);
+        when(this.configuration.getMaxRecordsPerEmit()).thenReturn(4);
 
         recordReader.processSource(source1);
 
@@ -214,7 +214,7 @@ public class RecordReaderTest {
         when(this.sourceFilter.filterSource(source1)).thenReturn(true);
         when(this.recordFilter.filterRecord(any(CloudTrailClientRecord.class))).thenReturn(false);
 
-        when(this.configuration.getNRecordsPerEmit()).thenReturn(5);
+        when(this.configuration.getMaxRecordsPerEmit()).thenReturn(5);
 
         recordReader.processSource(source1);
 
@@ -227,7 +227,7 @@ public class RecordReaderTest {
         when(this.sourceFilter.filterSource(source1)).thenReturn(true);
         when(this.recordFilter.filterRecord(any(CloudTrailClientRecord.class))).thenReturn(false).thenReturn(true);
 
-        when(this.configuration.getNRecordsPerEmit()).thenReturn(5);
+        when(this.configuration.getMaxRecordsPerEmit()).thenReturn(5);
 
         recordReader.processSource(source1);
 
@@ -247,7 +247,7 @@ public class RecordReaderTest {
         when(this.sourceFilter.filterSource(source1)).thenReturn(true);
         doThrow(new RuntimeException()).when(this.recordFilter).filterRecord(any(CloudTrailClientRecord.class));
 
-        when(this.configuration.getNRecordsPerEmit()).thenReturn(5);
+        when(this.configuration.getMaxRecordsPerEmit()).thenReturn(5);
 
         recordReader.processSource(source1);
 
@@ -266,7 +266,7 @@ public class RecordReaderTest {
         when(this.recordFilter.filterRecord(any(CloudTrailClientRecord.class))).thenReturn(true);
         doThrow(new RuntimeException()).when(this.recordsProcessor).process(anyListOf(CloudTrailClientRecord.class));
 
-        when(this.configuration.getNRecordsPerEmit()).thenReturn(5);
+        when(this.configuration.getMaxRecordsPerEmit()).thenReturn(5);
 
         recordReader.processSource(source1);
 
@@ -305,7 +305,7 @@ public class RecordReaderTest {
 
         when(this.recordFilter.filterRecord(any(CloudTrailClientRecord.class))).thenReturn(true);
 
-        when(this.configuration.getNRecordsPerEmit()).thenReturn(5);
+        when(this.configuration.getMaxRecordsPerEmit()).thenReturn(5);
 
         recordReader.processSource(source1);
 
@@ -322,6 +322,7 @@ public class RecordReaderTest {
      * Test a source has multiple logs. Filter record from the first log fail due to IOException
      * and process the second log success. Message is not deleted.
      */
+    @SuppressWarnings("unchecked")
     @Test
     public void testProcessRecordMultipleLogsFirstOneFailAtFilterWithIOException() throws CallbackException{
         when(this.sourceFilter.filterSource(source1)).thenReturn(true);
@@ -349,7 +350,7 @@ public class RecordReaderTest {
         //first filter has exception while second one success
         when(this.recordFilter.filterRecord(any(CloudTrailClientRecord.class))).thenThrow(IOException.class).thenReturn(true);
 
-        when(this.configuration.getNRecordsPerEmit()).thenReturn(10);
+        when(this.configuration.getMaxRecordsPerEmit()).thenReturn(10);
 
         recordReader.processSource(source1);
 
@@ -391,7 +392,7 @@ public class RecordReaderTest {
         //first processor has exception while second one success
         doThrow(RuntimeException.class).doNothing().when(this.recordsProcessor).process(anyListOf(CloudTrailClientRecord.class));
 
-        when(this.configuration.getNRecordsPerEmit()).thenReturn(10);
+        when(this.configuration.getMaxRecordsPerEmit()).thenReturn(10);
 
         try {
             recordReader.processSource(source1);

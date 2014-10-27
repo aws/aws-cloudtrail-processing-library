@@ -27,6 +27,8 @@
 
     <properties>
         <aws-java-sdk.version>1.8.10.2</aws-java-sdk.version>
+        <junit.version>4.10</junit.version>
+        <mockito.version>1.9.5</mockito.version>
     </properties>
 
     <dependencies>
@@ -34,6 +36,16 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk</artifactId>
             <version>${aws-java-sdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>${mockito.version}</version>
         </dependency>
     </dependencies>
 

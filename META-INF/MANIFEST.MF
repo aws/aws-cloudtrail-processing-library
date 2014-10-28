@@ -5,7 +5,7 @@ Bundle-SymbolicName: com.amazonaws.awscloudtrailprocessinglibrary;singleton:=tru
 Bundle-Version: 1.0.0
 Bundle-Vendor: Amazon Technologies, Inc
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Require-Bundle: com.amazonaws.sdk;bundle-version="1.8.10.2"
+Require-Bundle: com.amazonaws.sdk;bundle-version="1.9.3"
 Export-Package: com.amazonaws.services.cloudtrail,
  com.amazonaws.services.cloudtrail.processinglibrary,
  com.amazonaws.services.cloudtrail.processinglibrary.configuration,

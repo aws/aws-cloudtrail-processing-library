@@ -3,10 +3,12 @@
 .. |sqs| replace:: Amazon SQS
 .. |s3| replace:: Amazon S3
 
+
 AWS CloudTrail Processing Library
 =================================
 
-The **|library|** is a Java client library that makes it easy to build an application that reads and processes CloudTrail log files in a fault tolerant and highly scalable manner.
+The |library| is a Java client library that makes it easy to build an application that reads and processes
+CloudTrail log files in a fault tolerant and highly scalable manner.
 
 * `CloudTrail Product Page <http://aws.amazon.com/cloudtrail/>`_
 * `CloudTrail Forum <https://forums.aws.amazon.com/forum.jspa?forumID=168/>`_
@@ -20,18 +22,33 @@ Features
 
 * Serializes the events in JSON format to Plain Old Java Objects (POJO).
 
-* Provides interfaces to implement your own business logic.
+* Provides interfaces to implement your own business logic for selecting which events to process, processing events,
+  handling errors, and handling log processing status updates.
+
 
 Getting Started
 ---------------
 
-**Minimum Requirements**
+Minimum Requirements
+~~~~~~~~~~~~~~~~~~~~
 
 * **AWS Java SDK 1.8**: In order to use the |library|, you'll need the `AWS Java SDK`__.
 * **Java 1.7**: The |library| requires `Java 1.7 (Java SE 7)`__ or later.
 
 .. __: https://github.com/aws/aws-sdk-java
 .. __: http://www.oracle.com/technetwork/java/javase/overview/index.html
+
+
+Documentation
+~~~~~~~~~~~~~
+
+To learn how to use the |library| to build a CloudTrail log processor in Java, read the documentation:
+
+* `Using the CloudTrail Processing Library`__ in the *AWS CloudTrail User Guide*.
+* `AWS CloudTrail Processing Library Reference`__
+
+.. __: http://docs.aws.amazon.com/awscloudtrail/latest/userguide/using_processing_lib_top_level.html
+.. __: http://docs.aws.amazon.com/awscloudtrail/latest/processinglib
 
 
 Building From Source
@@ -45,9 +62,8 @@ build, use this command::
 .. __: http://maven.apache.org/
 
 
-
 Release Notes
 -------------
 
-Release 1.0 (November 3, 2014)
+Library Release 1.0.0 (November 3, 2014)
 Initial release.

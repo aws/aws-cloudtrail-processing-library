@@ -25,16 +25,16 @@ import java.util.Map;
  */
 public class SessionContext extends CloudTrailDataStore{
     public SessionIssuer getSessionIssuer() {
-        return (SessionIssuer) this.get(CloudTrailRecordField.sessionIssuer.name());
+        return (SessionIssuer) this.get(CloudTrailEventField.sessionIssuer.name());
     }
 
     /**
      * Get Web IdentitySessionContext
      *
-     * @return
+     * @return {@link WebIdentitySessionContext}
      */
     public WebIdentitySessionContext getWebIdFederationData() {
-        return (WebIdentitySessionContext) this.get(CloudTrailRecordField.webIdFederationData.name());
+        return (WebIdentitySessionContext) this.get(CloudTrailEventField.webIdFederationData.name());
     }
 
     /**
@@ -44,6 +44,6 @@ public class SessionContext extends CloudTrailDataStore{
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public Map<String, String> getAttributes() {
-        return (Map) this.get(CloudTrailRecordField.attributes.name());
+        return (Map) this.get(CloudTrailEventField.attributes.name());
     }
 }

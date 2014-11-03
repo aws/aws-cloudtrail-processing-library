@@ -25,6 +25,11 @@ public enum ProgressState {
     pollQueue,
 
     /**
+     * Report progress when parsing a message from SQS queue.
+     */
+    parseMessage,
+
+    /**
      * Report progress when deleting a message from SQS queue.
      */
     deleteMessage,
@@ -33,11 +38,6 @@ public enum ProgressState {
      * Report progress when deleting a filtered out message from SQS queue.
      */
     deleteFilteredMessage,
-
-    /**
-     * Report progress when parsing a message from SQS queue.
-     */
-    parseMessage,
 
     /**
      * Report progress when processing source

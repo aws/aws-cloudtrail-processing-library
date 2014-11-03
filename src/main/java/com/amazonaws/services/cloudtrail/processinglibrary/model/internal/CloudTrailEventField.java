@@ -13,13 +13,44 @@
  * permissions and limitations under the License.
  ******************************************************************************/
 
-package com.amazonaws.services.cloudtrail.processinglibrary.model;
+package com.amazonaws.services.cloudtrail.processinglibrary.model.internal;
 
 /**
- * A skeleton class used for providing CloudTrail delivery information.
- * <p>
- * CloudTrail delivery information is provided when raw record information is enabled in the configuration parameters.
+ * Internal use only.
  */
-public interface CloudTrailDeliveryInfo {
-
+public enum CloudTrailEventField {
+    Records,
+    accessKeyId,
+    accountId,
+    additionalEventData,
+    apiVersion,
+    arn,
+    ARN,
+    attributes,
+    awsRegion,
+    errorCode,
+    errorMessage,
+    eventID,
+    eventName,
+    eventSource,
+    eventTime,
+    eventType,
+    eventVersion,
+    federatedProvider,
+    invokedBy,
+    principalId,
+    readOnly,
+    recipientAccountId,
+    requestID,
+    requestParameters,
+    resources,
+    responseElements,
+    sessionContext,
+    sessionIssuer,
+    sourceIPAddress,
+    type,
+    userAgent,
+    userIdentity,
+    userName,
+    webIdFederationData
 }

@@ -37,8 +37,8 @@ public class LibraryUtils {
      * is.
      *
      * @param argument the Object to check.
-     * @param message a description string that will be sent in the exception.
-     * @throws IllegalStateException
+     * @param message a description string that will be sent with the exception.
+     * @throws IllegalStateException if the passed-in object is <code>null</code>.
      */
     public static void checkArgumentNotNull(Object argument, String message) {
         if (argument == null) {
@@ -50,9 +50,9 @@ public class LibraryUtils {
      * Check a conditional value or expression, if <code>true</code>, throw an
      * exception.
      *
-     * @param condition the boolean value or expression to check.
-     * @param message a description string that will be sent in the exception.
-     * @throws IllegalStateException
+     * @param condition a boolean value or an expression to check.
+     * @param message a description string that will be sent with the exception.
+     * @throws IllegalStateException if the condition expression is <code>true</code>.
      */
     public static void checkCondition(boolean condition, String message) {
         if (condition) {
@@ -61,10 +61,12 @@ public class LibraryUtils {
     }
 
     /**
-     * Convenient function to convert InputSteam to byte array.
-     * @param inputStream
-     * @return
-     * @throws IOException
+     * Convert an
+     * <a href="http://docs.oracle.com/javase/7/docs/api/java/io/InputStream.html">InputSteam</a> to a byte array.
+     *
+     * @param inputStream the <code>InputStream</code> to convert.
+     * @return a byte array containing the data from the input stream.
+     * @throws IOException if the <code>InputStream</code> could not be converted.
      */
     public static byte[] toByteArray(InputStream inputStream) throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -106,7 +108,7 @@ public class LibraryUtils {
     }
 
     /**
-     * Excract the account ID from an S3 object key.
+     * Extract the account ID from an S3 object key.
      * <p>
      * For example:
      * <pre>
@@ -135,8 +137,8 @@ public class LibraryUtils {
     }
 
     /**
-     * SimpleDateFormat is not thread safe, and define it as static ThreadLocal to
-     * synchronize is less expensive to create SimpleDateFormat object every time.
+     * SimpleDateFormat is not thread safe. Defining it as a static ThreadLocal to synchronize is less expensive than
+     * creating a SimpleDateFormat object each time.
      */
     private static ThreadLocal<SimpleDateFormat> utcSdf = new ThreadLocal<SimpleDateFormat>() {
         @Override
@@ -148,7 +150,10 @@ public class LibraryUtils {
     };
 
     /**
-     * Returns a timestamp.
+     * Get a timestamp in
+     * <a href="http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html">SimpleDateFormat</a>.
+     *
+     * @return the current timestamp.
      */
     public static SimpleDateFormat getUtcSdf() {
         return utcSdf.get();

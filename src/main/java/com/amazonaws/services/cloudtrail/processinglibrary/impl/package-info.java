@@ -14,6 +14,6 @@
  ******************************************************************************/
 
 /**
- * Package information go here...
+ * Default implementation of call back interfaces.
  */
 package com.amazonaws.services.cloudtrail.processinglibrary.impl;

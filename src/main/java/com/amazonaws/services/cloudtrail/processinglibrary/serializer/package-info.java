@@ -14,6 +14,6 @@
  ******************************************************************************/
 
 /**
- * Package information go here...
+ * Serialize events or sources.
  */
 package com.amazonaws.services.cloudtrail.processinglibrary.serializer;

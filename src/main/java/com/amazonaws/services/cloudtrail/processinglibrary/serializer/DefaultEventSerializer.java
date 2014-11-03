@@ -17,23 +17,30 @@ package com.amazonaws.services.cloudtrail.processinglibrary.serializer;
 
 import java.io.IOException;
 
-import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailDeliveryInfo;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailLog;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.LogDeliveryInfo;
 import com.fasterxml.jackson.core.JsonParser;
 
-public class DefaultRecordSerializer extends AbstractRecordSerializer{
+public class DefaultEventSerializer extends AbstractEventSerializer{
     private CloudTrailLog ctLog;
 
-    public DefaultRecordSerializer(CloudTrailLog ctLog, JsonParser jsonParser) throws IOException {
+    /**
+     * Default implementation of {@link EventSerializer}
+     *
+     * @param ctLog
+     * @param jsonParser
+     * @throws IOException
+     */
+    public DefaultEventSerializer(CloudTrailLog ctLog, JsonParser jsonParser) throws IOException {
         super(jsonParser);
         this.ctLog = ctLog;
         this.readArrayHeader();
     }
 
     @Override
-    public CloudTrailDeliveryInfo getDeliveryInfo(int charStart, int charEnd) {
-        CloudTrailDeliveryInfo deliveryInfo = new LogDeliveryInfo(ctLog, -1, -1, null);
+    public CloudTrailEventMetadata getMetadata(int charStart, int charEnd) {
+        CloudTrailEventMetadata deliveryInfo = new LogDeliveryInfo(ctLog, -1, -1, null);
         return deliveryInfo;
     }
 }

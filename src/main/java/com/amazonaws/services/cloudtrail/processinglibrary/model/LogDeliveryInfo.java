@@ -18,25 +18,25 @@ package com.amazonaws.services.cloudtrail.processinglibrary.model;
 /**
  * CloudTrail log delivery information
  */
-public class LogDeliveryInfo implements CloudTrailDeliveryInfo{
+public class LogDeliveryInfo implements CloudTrailEventMetadata{
     private CloudTrailLog log;
     private int charStart;
     private int charEnd;
-    private String rawRecord;
+    private String rawEvent;
 
     /**
      * The log delivery information.
      *
-     * @param log that record was coming from.
-     * @param charStart the 0-based location of the record's starting character "{" and -1 when enableRawRecordInfo is false.
-     * @param charEnd the 0-based location of the record's ending character "}" and -1 when enableRawRecordInfo is false.
-     * @param rawRecord the CloudTrail record in raw String - as it is in the log file and null when enableRawRecordInfo is false.
+     * @param log that event was coming from.
+     * @param charStart the 0-based location of the event's starting character "{" and -1 when enableRawEventInfo is false.
+     * @param charEnd the 0-based location of the event's ending character "}" and -1 when enableRawEventInfo is false.
+     * @param rawEvent the CloudTrail event in raw String - as it is in the log file and null when enableRawEventInfo is false.
      */
-    public LogDeliveryInfo(CloudTrailLog log, int charStart, int charEnd, String rawRecord) {
+    public LogDeliveryInfo(CloudTrailLog log, int charStart, int charEnd, String rawEvent) {
         this.log = log;
         this.charStart = charStart;
         this.charEnd = charEnd;
-        this.rawRecord = rawRecord;
+        this.rawEvent = rawEvent;
     }
 
     /**
@@ -47,24 +47,24 @@ public class LogDeliveryInfo implements CloudTrailDeliveryInfo{
     }
 
     /**
-     * @return the location of the record's starting character
+     * @return the location of the event's starting character
      */
     public long getCharStart() {
         return charStart;
     }
 
     /**
-     * @return the location of the record's ending character
+     * @return the location of the event's ending character
      */
     public long getCharEnd() {
         return charEnd;
     }
 
     /**
-     * @return the CloudTrail record in raw String - as it is in the log file
+     * @return the CloudTrail event in raw String - as it is in the log file
      */
-    public String getRawRecord() {
-        return rawRecord;
+    public String getRawEvent() {
+        return rawEvent;
     }
 
     @Override
@@ -81,9 +81,9 @@ public class LogDeliveryInfo implements CloudTrailDeliveryInfo{
         builder.append(", charEnd: ");
         builder.append(charEnd);
         builder.append(", ");
-        if (rawRecord != null) {
-            builder.append("rawRecord: ");
-            builder.append(rawRecord);
+        if (rawEvent != null) {
+            builder.append("rawEvent: ");
+            builder.append(rawEvent);
         }
         builder.append("}");
         return builder.toString();
@@ -96,7 +96,7 @@ public class LogDeliveryInfo implements CloudTrailDeliveryInfo{
         result = prime * result + (int) (charEnd ^ (charEnd >>> 32));
         result = prime * result + (int) (charStart ^ (charStart >>> 32));
         result = prime * result + ((log == null) ? 0 : log.hashCode());
-        result = prime * result + ((rawRecord == null) ? 0 : rawRecord.hashCode());
+        result = prime * result + ((rawEvent == null) ? 0 : rawEvent.hashCode());
         return result;
     }
 
@@ -118,10 +118,10 @@ public class LogDeliveryInfo implements CloudTrailDeliveryInfo{
                 return false;
         } else if (!log.equals(other.log))
             return false;
-        if (rawRecord == null) {
-            if (other.rawRecord != null)
+        if (rawEvent == null) {
+            if (other.rawEvent != null)
                 return false;
-        } else if (!rawRecord.equals(other.rawRecord))
+        } else if (!rawEvent.equals(other.rawEvent))
             return false;
         return true;
     }

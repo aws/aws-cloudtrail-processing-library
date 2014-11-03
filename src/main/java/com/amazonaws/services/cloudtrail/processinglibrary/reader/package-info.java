@@ -14,6 +14,6 @@
  ******************************************************************************/
 
 /**
- * Package information go here...
+ * Classes responsible for processing a stream of events.
  */
 package com.amazonaws.services.cloudtrail.processinglibrary.reader;

@@ -22,7 +22,7 @@ public class SessionIssuer extends CloudTrailDataStore{
      * @return The source of the temporary security credentials, such as "Root", "IAMUser", or "Role"
      */
     public String getType() {
-        return (String) this.get(CloudTrailRecordField.type.name());
+        return (String) this.get(CloudTrailEventField.type.name());
     }
 
     /**
@@ -31,7 +31,7 @@ public class SessionIssuer extends CloudTrailDataStore{
      * @return The internal ID of the entity that was used to get credentials.
      */
     public String getPrincipalId() {
-        return (String) this.get(CloudTrailRecordField.principalId.name());
+        return (String) this.get(CloudTrailEventField.principalId.name());
     }
 
     /**
@@ -40,7 +40,7 @@ public class SessionIssuer extends CloudTrailDataStore{
      * @return The ARN of the source (account, IAM user, or role) that was used to get temporary security credentials.
      */
     public String getArn() {
-        return (String) this.get(CloudTrailRecordField.arn.name());
+        return (String) this.get(CloudTrailEventField.arn.name());
     }
 
     /**
@@ -49,7 +49,7 @@ public class SessionIssuer extends CloudTrailDataStore{
      * @return The account that owns the entity that was used to get credentials.
      */
     public String getAccountId() {
-        return (String) this.get(CloudTrailRecordField.accountId.name());
+        return (String) this.get(CloudTrailEventField.accountId.name());
     }
 
     /**
@@ -58,6 +58,6 @@ public class SessionIssuer extends CloudTrailDataStore{
      * @return The friendly name of the user or role.
      */
     public String getUserName() {
-        return (String) this.get(CloudTrailRecordField.userName.name());
+        return (String) this.get(CloudTrailEventField.userName.name());
     }
 }

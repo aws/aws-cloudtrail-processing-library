@@ -29,15 +29,15 @@ public class SampleApp {
 
         //create AWSCloudTrailProcessingExecutor and start it
         final AWSCloudTrailProcessingExecutor executor = new AWSCloudTrailProcessingExecutor
-                        .Builder(new SampleRecordsProcessor(), "/sample/awscloudtrailprocessinglibrary.properties")
+                        .Builder(new SampleEventsProcessor(), "/sample/awscloudtrailprocessinglibrary.properties")
                         .withSourceFilter(new SampleSourceFilter())
-                        .withRecordFilter(new SampleRecordFilter())
+                        .withEventFilter(new SampleEventFilter())
                         .withProgressReporter(new SampleProgressReporter())
                         .withExceptionHandler(new SampleExceptionHandler())
                         .build();
         executor.start();
 
-        // add shut down hook to gracefully stop exeuctor.
+        // add shut down hook to gracefully stop executor (optional)
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 logger.info("Shut Down Hook is called.");
@@ -45,18 +45,19 @@ public class SampleApp {
             }
         });
 
-        // register a Default Uncaught Exception Handler. Shutdown hook will be called on System.exit.
+        // register a Default Uncaught Exception Handler (optional)
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
                 logger.error("Handled by global Exception handler. " + e.getMessage() + " " + t.getName());
-                System.exit(1);
 
-                //can optionally restart another executor and start.
+                //Two options here:
+                //First, we can call System.exit(1); in such case shut down hook will be called.
+                //Second, we can optionally restart another executor and start.
                 final AWSCloudTrailProcessingExecutor executor = new AWSCloudTrailProcessingExecutor
-                        .Builder(new SampleRecordsProcessor(), "/sample/awscloudtrailprocessinglibrary.properties")
+                        .Builder(new SampleEventsProcessor(), "/sample/awscloudtrailprocessinglibrary.properties")
                         .withSourceFilter(new SampleSourceFilter())
-                        .withRecordFilter(new SampleRecordFilter())
+                        .withEventFilter(new SampleEventFilter())
                         .withProgressReporter(new SampleProgressReporter())
                         .withExceptionHandler(new SampleExceptionHandler())
                         .build();
@@ -64,7 +65,7 @@ public class SampleApp {
             }
         });
 
-        //can optionally limit running time, or remove both lines so it is running forever.
+        //can optionally limit running time, or remove both lines so it is running forever. (optional)
         Thread.sleep(24 * 60 * 60 *1000);
         executor.stop();
     }

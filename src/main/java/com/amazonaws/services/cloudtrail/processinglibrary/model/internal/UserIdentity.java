@@ -27,7 +27,7 @@ public class UserIdentity extends CloudTrailDataStore{
      * @return The type of the principal that made the call
      */
     public String getIdentityType() {
-        return (String) this.get(CloudTrailRecordField.type.name());
+        return (String) this.get(CloudTrailEventField.type.name());
     }
 
     /**
@@ -38,7 +38,7 @@ public class UserIdentity extends CloudTrailDataStore{
      * the AssumeRole, AssumeRoleWIthWebIdentity, or GetFederationToken API call.
      */
     public String getPrincipalId() {
-        return (String) this.get(CloudTrailRecordField.principalId.name());
+        return (String) this.get(CloudTrailEventField.principalId.name());
     }
 
     /**
@@ -47,7 +47,7 @@ public class UserIdentity extends CloudTrailDataStore{
      * @return The Amazon Resource Name (ARN) of the principal that made the call.
      */
     public String getARN() {
-        return (String) this.get(CloudTrailRecordField.arn.name());
+        return (String) this.get(CloudTrailEventField.arn.name());
     }
 
     /**
@@ -58,7 +58,7 @@ public class UserIdentity extends CloudTrailDataStore{
      * is the account that owns the IAM user or role that was used to obtain credentials.
      */
     public String getAccountId() {
-        return (String) this.get(CloudTrailRecordField.accountId.name());
+        return (String) this.get(CloudTrailEventField.accountId.name());
     }
 
     /**
@@ -69,7 +69,7 @@ public class UserIdentity extends CloudTrailDataStore{
      * the temporary credentials.
      */
     public String getAccessKeyId() {
-        return (String) this.get(CloudTrailRecordField.accessKeyId.name());
+        return (String) this.get(CloudTrailEventField.accessKeyId.name());
     }
 
     /**
@@ -78,7 +78,7 @@ public class UserIdentity extends CloudTrailDataStore{
      * @return Friendly name of the principal that made the call.
      */
     public String getUserName() {
-        return (String) this.get(CloudTrailRecordField.userName.name());
+        return (String) this.get(CloudTrailEventField.userName.name());
     }
 
     /**
@@ -88,16 +88,16 @@ public class UserIdentity extends CloudTrailDataStore{
      * Scaling or AWS Elastic Beanstalk, the name of the service
      */
     public String getInvokedBy() {
-        return (String) this.get(CloudTrailRecordField.invokedBy.name());
+        return (String) this.get(CloudTrailEventField.invokedBy.name());
     }
 
     /**
      * Get session context
      *
-     * @return If the request was made with temporary security credentials, an element
+     * @return {@link SessionContext} If the request was made with temporary security credentials, an element
      * that provides information about the session that was created for those credentials
      */
     public SessionContext getSessionContext() {
-        return (SessionContext) this.get(CloudTrailRecordField.sessionContext.name());
+        return (SessionContext) this.get(CloudTrailEventField.sessionContext.name());
     }
 }

@@ -28,30 +28,29 @@ import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.cloudtrail.processinglibrary.configuration.ProcessingConfiguration;
 import com.amazonaws.services.cloudtrail.processinglibrary.configuration.PropertiesFileConfiguration;
-import com.amazonaws.services.cloudtrail.processinglibrary.factory.RecordReaderFactory;
+import com.amazonaws.services.cloudtrail.processinglibrary.factory.EventReaderFactory;
 import com.amazonaws.services.cloudtrail.processinglibrary.factory.ThreadPoolFactory;
 import com.amazonaws.services.cloudtrail.processinglibrary.impl.DefaultExceptionHandler;
 import com.amazonaws.services.cloudtrail.processinglibrary.impl.DefaultProgressReporter;
-import com.amazonaws.services.cloudtrail.processinglibrary.impl.DefaultRecordFilter;
-import com.amazonaws.services.cloudtrail.processinglibrary.impl.DefaultRecordsProcessor;
+import com.amazonaws.services.cloudtrail.processinglibrary.impl.DefaultEventFilter;
+import com.amazonaws.services.cloudtrail.processinglibrary.impl.DefaultEventsProcessor;
 import com.amazonaws.services.cloudtrail.processinglibrary.impl.DefaultSourceFilter;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ExceptionHandler;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ProgressReporter;
-import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.RecordFilter;
-import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.RecordsProcessor;
+import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.EventFilter;
+import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.EventsProcessor;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.SourceFilter;
 import com.amazonaws.services.cloudtrail.processinglibrary.manager.S3Manager;
 import com.amazonaws.services.cloudtrail.processinglibrary.manager.SqsManager;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
-import com.amazonaws.services.cloudtrail.processinglibrary.reader.RecordReader;
+import com.amazonaws.services.cloudtrail.processinglibrary.reader.EventReader;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.sqs.AmazonSQSClient;
 
 /**
  * AWS CloudTrail Processing Library's main execution logic. This class loads a user's configuration and
- * creates an {@link AWSCloudTrailClientRecordReaderFactory} object which spawns a {@link
- * AWSCloudTrailClientRecordReader} to process log files.
+ * creates an {@link EventReaderFactory} object which spawns a {@link EventReader} to process log files.
  * <p>
  * It has two thread pools: <code>scheduledThreadPool</code>, which is a single-threaded scheduled
  * thread pool used to poll SQS for messages, and <code>mainThreadPool</code>, which has a
@@ -66,13 +65,13 @@ public class AWSCloudTrailProcessingExecutor {
      */
     private static final int EXECUTION_DELAY = 1; //1 nanosecond
 
-    private static final String ERROR_CONFIGURATION_NULL = "ProcessingConfiguraiton object is null. " +
+    private static final String ERROR_CONFIGURATION_NULL = "ProcessingConfiguration object is null. " +
             "Either pass in a class path property file path or directly pass in a ProcessingConfiguration object";
 
     private ProcessingConfiguration config;
     private SourceFilter sourceFilter;
-    private RecordFilter recordFilter;
-    private RecordsProcessor recordsProcessor;
+    private EventFilter eventFilter;
+    private EventsProcessor eventsProcessor;
     private ProgressReporter progressReporter;
     private ExceptionHandler exceptionHandler;
 
@@ -87,13 +86,13 @@ public class AWSCloudTrailProcessingExecutor {
      */
     private ExecutorService mainThreadPool;
 
-    private RecordReaderFactory readerFactory;
+    private EventReaderFactory readerFactory;
 
     private AWSCloudTrailProcessingExecutor(Builder builder) {
         this.config = builder.config;
         this.sourceFilter = builder.sourceFilter;
-        this.recordFilter = builder.recordFilter;
-        this.recordsProcessor = builder.recordsProcessor;
+        this.eventFilter = builder.eventFilter;
+        this.eventsProcessor = builder.eventsProcessor;
         this.progressReporter = builder.progressReporter;
         this.exceptionHandler = builder.exceptionHandler;
 
@@ -106,20 +105,18 @@ public class AWSCloudTrailProcessingExecutor {
      * Start processing AWS CloudTrail logs.
      */
     public void start() {
-        logger.info("Started AWSCloudTrailClientLibrary.");
+        logger.info("Started AWSCloudTrailProcessingLibrary.");
         this.ValidateBeforeStart();
         scheduledThreadPool.scheduleAtFixedRate(new ScheduledJob(this.readerFactory), 0L, EXECUTION_DELAY, TimeUnit.MICROSECONDS);
     }
 
     /**
      * Stop processing AWS CloudTrail logs.
-     *
-     * @throws InterruptedException
      */
     public void stop() {
         stopThreadPool(this.mainThreadPool);
         stopThreadPool(this.scheduledThreadPool);
-        logger.info("Stopped AWSCloudTrailClientLibrary.");
+        logger.info("Stopped AWSCloudTrailProcessingLibrary.");
     }
 
     /**
@@ -160,10 +157,10 @@ public class AWSCloudTrailProcessingExecutor {
      * suppress any subsequent executions. Therefore, we try/catch a Throwable here.
      */
     private class ScheduledJob implements Runnable {
-        private RecordReaderFactory recordReaderFactory;
+        private EventReaderFactory eventReaderFactory;
 
-        public ScheduledJob (RecordReaderFactory recordReaderFactory) {
-            this.recordReaderFactory = recordReaderFactory;
+        public ScheduledJob (EventReaderFactory eventReaderFactory) {
+            this.eventReaderFactory = eventReaderFactory;
         }
 
         /**
@@ -171,7 +168,7 @@ public class AWSCloudTrailProcessingExecutor {
          */
         public void run() {
             try {
-                final RecordReader reader = recordReaderFactory.createReader();
+                final EventReader reader = eventReaderFactory.createReader();
                 List<CloudTrailSource> sources = reader.getSources();
                 for (final CloudTrailSource source : sources) {
 
@@ -197,16 +194,16 @@ public class AWSCloudTrailProcessingExecutor {
 
         private ProcessingConfiguration config;
 
-        //provide default implementation to AWSCloudTrailClientLibrary interfaces.
+        //provide default implementation to AWSCloudTrailProcessingLibrary interfaces.
         private SourceFilter sourceFilter = new DefaultSourceFilter();
-        private RecordFilter recordFilter = new DefaultRecordFilter();
-        private RecordsProcessor recordsProcessor = new DefaultRecordsProcessor();
+        private EventFilter eventFilter = new DefaultEventFilter();
+        private EventsProcessor eventsProcessor = new DefaultEventsProcessor();
         private ProgressReporter progressReporter = new DefaultProgressReporter();
         private ExceptionHandler exceptionHandler = new DefaultExceptionHandler();
 
         private ScheduledExecutorService scheduledThreadPool;
         private ExecutorService mainThreadPool;
-        private RecordReaderFactory readerFactory;
+        private EventReaderFactory readerFactory;
 
         private String propertyFilePath;
         private AmazonS3Client s3Client;
@@ -215,35 +212,34 @@ public class AWSCloudTrailProcessingExecutor {
         /**
          * Builder for {@link AWSCloudTrailProcessingExecutor}.
          *
-         * @param recordsProcessor The {@link RecordsProcessor} instance that will process {@link
-         *                         CloudTrailClientRecords}.
-         * @param propertyFilePath The path to a property file containing the AWS CloudTrail
-         *                         Processing Library's configuration.
+         * @param eventsProcessor The {@link interfaces.EventsProcessor} that will process
+         *     {@link model.CloudTrailEvent}s.
+         * @param propertyFilePath The path to a property file containing the AWS CloudTrail Processing Library's
+         *     configuration.
          */
-        public Builder(RecordsProcessor recordsProcessor, String propertyFilePath) {
-            this.recordsProcessor = recordsProcessor;
+        public Builder(EventsProcessor eventsProcessor, String propertyFilePath) {
+            this.eventsProcessor = eventsProcessor;
             this.propertyFilePath= propertyFilePath;
         }
 
         /**
-         * Builder for AWSCloudTrailProcessingExecutor
+         * Builder for {@link AWSCloudTrailProcessingExecutor}.
          *
-         * @param recordsProcessor The {@link RecordsProcessor} instance that will process {@link
-         *                         CloudTrailClientRecords}.
-         * @param config An {@link ProcessingConfiguration} instance that provides the
-         *               library's configuration details.
+         * @param eventsProcessor The {@link interfaces.EventsProcessor} instance that will process
+         *     {@link model.CloudTrailEvent}s.
+         * @param config An {@link configuration.ProcessingConfiguration} instance that provides the library's
+         *     configuration details.
          */
-        public Builder(RecordsProcessor recordsProcessor, ProcessingConfiguration config) {
-            this.recordsProcessor = recordsProcessor;
+        public Builder(EventsProcessor eventsProcessor, ProcessingConfiguration config) {
+            this.eventsProcessor = eventsProcessor;
             this.config = config;
         }
 
         /**
-         * Applies a user-defined {@link SourceFilter} to this instance.
+         * Applies a user-defined {@link interfaces.SourceFilter} to this instance.
          *
          * @param sourceFilter The <code>SourceFilter</code> that will be used to filter
-         *                     {@link CloudTrailSource} records.
-         *
+         *                     {@link model.CloudTrailSource} source.
          * @return This <code>Builder</code> instance, using the specified <code>SourceFilter</code>.
          */
         public Builder withSourceFilter(SourceFilter sourceFilter) {
@@ -252,20 +248,19 @@ public class AWSCloudTrailProcessingExecutor {
         }
 
         /**
-         * Applies a user-defined {@link RecordFilter} to this instance.
+         * Applies a user-defined {@link interfaces.EventFilter} to this instance.
          *
-         * @param recordFilter The <code>RecordFilter</code> that will be used to filter {@link
-         *                     CloudTrailClientRecord}s.
-         *
-         * @return This <code>Builder</code> instance, using the specified <code>RecordFilter</code>.
+         * @param eventFilter The <code>EventFilter</code> that will be used to filter
+         *                    {@link model.CloudTrailEvent}s.
+         * @return This <code>Builder</code> instance, using the specified <code>EventFilter</code>.
          */
-        public Builder withRecordFilter(RecordFilter recordFilter) {
-            this.recordFilter = recordFilter;
+        public Builder withEventFilter(EventFilter eventFilter) {
+            this.eventFilter = eventFilter;
             return this;
         }
 
         /**
-         * Applies a user-defined {@link ProgressReporter} to this instance.
+         * Applies a user-defined {@link interfaces.ProgressReporter} to this instance.
          *
          * @param progressReporter The <code>ProgressReporter</code> that will report
          *                         the state of the AWSCloudTrailProcessingLibrary processing process
@@ -278,7 +273,7 @@ public class AWSCloudTrailProcessingExecutor {
         }
 
         /**
-         * Applies a user-defined {@link ExceptionHandler} to this instance.
+         * Applies a user-defined {@link interfaces.ExceptionHandler} to this instance.
          *
          * @param exceptionHandler The <code>ExceptionHandler</code> that will handle exceptions for
          *                         this instance.
@@ -292,7 +287,9 @@ public class AWSCloudTrailProcessingExecutor {
         }
 
         /**
-         * Applies a user-defined {@link ExecutorService} thread pool to this instance.
+         * Applies a user-defined <a
+         * href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ExecutorService.html">ExecutorService</a>
+         * thread pool to this instance.
          *
          * @param mainThreadPool The <code>ExecutorService</code> thread pool that will be used to
          *                       process CloudTrailSource
@@ -305,7 +302,9 @@ public class AWSCloudTrailProcessingExecutor {
         }
 
         /**
-         * Applies a user-defined {@link AmazonS3Client} to this instance.
+         * Applies a user-defined <a
+         * href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonS3Client.html">AmazonS3Client</a>
+         * to this instance.
          *
          * @param s3Client the <code>AmazonS3Client</code> object used to download CloudTrail log files
          *
@@ -318,7 +317,9 @@ public class AWSCloudTrailProcessingExecutor {
         }
 
         /**
-         * Applies a user-defined {@link AmazonSQSClient} to this instance.
+         * Applies a user-defined <a
+         * href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQSClient.html">AmazonSQSClient</a>
+         * to this instance.
          *
          * @param sqsClient The <code>AmazonSQSClient</code> that will be used to poll messages from
          *                  the SQS queue.
@@ -332,8 +333,9 @@ public class AWSCloudTrailProcessingExecutor {
         }
 
         /**
-         * Build an {@link AWSCloudTrailProcessingExecutor} using the property file passed in the
-         * classpath properties.
+         * Build an {@link AWSCloudTrailProcessingExecutor} using the classpath property file.
+         *
+         * @return an AWSCloudTrailProcessingExecutor instance.
          */
         public AWSCloudTrailProcessingExecutor build() {
             // passed in configuration as property file
@@ -343,11 +345,11 @@ public class AWSCloudTrailProcessingExecutor {
 
             LibraryUtils.checkArgumentNotNull(this.config, ERROR_CONFIGURATION_NULL);
             LibraryUtils.checkArgumentNotNull(this.config.getAwsCredentialsProvider(),
-                    "AWSCloudTrailClientConfiguration miss AWSCredentialsProvider attribute");
+                    "ProcessingConfiguration missing AWSCredentialsProvider attribute");
 
-            LibraryUtils.checkArgumentNotNull(this.recordsProcessor, "recordsProcessor is null.");
+            LibraryUtils.checkArgumentNotNull(this.eventsProcessor, "eventsProcessor is null.");
             LibraryUtils.checkArgumentNotNull(this.sourceFilter, "sourceFilter is null.");
-            LibraryUtils.checkArgumentNotNull(this.recordFilter, "recordFilter is null.");
+            LibraryUtils.checkArgumentNotNull(this.eventFilter, "eventFilter is null.");
             LibraryUtils.checkArgumentNotNull(this.progressReporter, "progressReporter is null.");
             LibraryUtils.checkArgumentNotNull(this.exceptionHandler, "exceptionHandler is null.");
 
@@ -374,10 +376,10 @@ public class AWSCloudTrailProcessingExecutor {
             SqsManager sqsManager = new SqsManager(sqsClient, this.config, this.exceptionHandler, this.progressReporter);
             S3Manager s3Manager= new S3Manager(s3Client, this.config, this.exceptionHandler, this.progressReporter);
 
-            this.readerFactory = new RecordReaderFactory.Builder(this.config)
-                .withRecordsProcessor(this.recordsProcessor)
+            this.readerFactory = new EventReaderFactory.Builder(this.config)
+                .withEventsProcessor(this.eventsProcessor)
                 .withSourceFilter(this.sourceFilter)
-                .withRecordFilter(this.recordFilter)
+                .withEventFilter(this.eventFilter)
                 .withProgressReporter(this.progressReporter)
                 .withExceptionHandler(this.exceptionHandler)
                 .withS3Manager(s3Manager)
@@ -397,7 +399,6 @@ public class AWSCloudTrailProcessingExecutor {
 
             return new AWSCloudTrailProcessingExecutor(this);
         }
-
     }
 
     /**
@@ -407,9 +408,9 @@ public class AWSCloudTrailProcessingExecutor {
         LibraryUtils.checkArgumentNotNull(this.config, "Configuration is null.");
         this.config.validate();
 
-        LibraryUtils.checkArgumentNotNull(this.recordsProcessor, "RecordsProcessor is null.");
+        LibraryUtils.checkArgumentNotNull(this.eventsProcessor, "eventsProcessor is null.");
         LibraryUtils.checkArgumentNotNull(this.sourceFilter, "sourceFilter is null.");
-        LibraryUtils.checkArgumentNotNull(this.recordFilter, "recordFilter is null.");
+        LibraryUtils.checkArgumentNotNull(this.eventFilter, "eventFilter is null.");
         LibraryUtils.checkArgumentNotNull(this.progressReporter, "progressReporter is null.");
         LibraryUtils.checkArgumentNotNull(this.exceptionHandler, "exceptionHandler is null.");
 

@@ -14,6 +14,6 @@
  ******************************************************************************/
 
 /**
- * Package information go here...
+ * Call back interfaces, implemented by users.
  */
 package com.amazonaws.services.cloudtrail.processinglibrary.interfaces;

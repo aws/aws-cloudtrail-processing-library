@@ -18,74 +18,49 @@ package com.amazonaws.services.cloudtrail.processinglibrary.factory;
 import com.amazonaws.services.cloudtrail.processinglibrary.configuration.ProcessingConfiguration;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ExceptionHandler;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ProgressReporter;
-import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.RecordFilter;
-import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.RecordsProcessor;
+import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.EventFilter;
+import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.EventsProcessor;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.SourceFilter;
 import com.amazonaws.services.cloudtrail.processinglibrary.manager.S3Manager;
 import com.amazonaws.services.cloudtrail.processinglibrary.manager.SqsManager;
-import com.amazonaws.services.cloudtrail.processinglibrary.reader.RecordReader;
+import com.amazonaws.services.cloudtrail.processinglibrary.reader.EventReader;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
 
 
 /**
- * Internal use only.
+ * <i>Internal use only</i>.
  *
- * This class creates AWSCloudTrailRecordReader objects. It encapsulates maintains instance of the
- * objects that AWSCloudTrailRecordReader will use to limit the parameters that we needed to
- * create an instance.
+ * This class creates {@link com.amazonaws.services.cloudtrail.processinglibrary.reader.EventReader} objects. It
+ * encapsulates and maintains instances of the objects that <code>EventReader</code> will use to limit the parameters needed
+ * to create an instance.
  */
-public class RecordReaderFactory {
-    /**
-     * In instance of AWSCloudTrailClientConfiguration.
-     */
+public class EventReaderFactory {
+
     private ProcessingConfiguration config;
-
-    /**
-     * User's implementation of RecordsProcessor.
-     */
-    private RecordsProcessor recordsProcessor;
-
-    /**
-     * User's implementation of SourceFilter.
-     */
+    private EventsProcessor eventsProcessor;
     private SourceFilter sourceFilter;
-
-    /**
-     * User's implementation of RecordFilter.
-     */
-    private RecordFilter recordFilter;
-
-    /**
-     * User's implementation of ProgressReporter.
-     */
+    private EventFilter eventFilter;
     private ProgressReporter progressReporter;
-
-    /**
-     * User's implementation of ExceptionHandler.
-     */
     private ExceptionHandler exceptionHandler;
 
-    /**
-     * The class responsible for SQS related operation.
-     */
+    /* The class responsible for SQS-related operations. */
     private SqsManager sqsManager;
 
-    /**
-     * The class responsible for S3 related operation.
-     */
+    /* The class responsible for S3-related operations. */
     private S3Manager s3Manager;
 
     /**
-     * AWSCloudTrailRecordReaderFactory constructor, except AWSCloudTrailClientConfiguration
-     * other parameters can be null.
+     * EventReaderFactory constructor.
+     * <p>
+     * Except for ProcessingConfiguration, the other parameters can be <code>null</code>.
      *
-     * @param builder
+     * @param builder a {@link Builder} object to use to create the <code>EventReaderFactory</code>.
      */
-    private RecordReaderFactory(Builder builder) {
+    private EventReaderFactory(Builder builder) {
         this.config = builder.config;
-        this.recordsProcessor = builder.recordsProcessor;
+        this.eventsProcessor = builder.eventsProcessor;
         this.sourceFilter = builder.sourceFilter;
-        this.recordFilter = builder.recordFilter;
+        this.eventFilter = builder.eventFilter;
         this.progressReporter = builder.progressReporter;
         this.exceptionHandler = builder.exceptionHandler;
         this.sqsManager = builder.sqsManager;
@@ -96,9 +71,9 @@ public class RecordReaderFactory {
 
     public static class Builder {
         private final ProcessingConfiguration config;
-        private RecordsProcessor recordsProcessor;
+        private EventsProcessor eventsProcessor;
         private SourceFilter sourceFilter;
-        private RecordFilter recordFilter;
+        private EventFilter eventFilter;
         private ProgressReporter progressReporter;
         private ExceptionHandler exceptionHandler;
         private S3Manager s3Manager;
@@ -108,8 +83,8 @@ public class RecordReaderFactory {
             this.config = config;
         }
 
-        public Builder withRecordsProcessor(RecordsProcessor recordsProcessor) {
-            this.recordsProcessor = recordsProcessor;
+        public Builder withEventsProcessor(EventsProcessor eventsProcessor) {
+            this.eventsProcessor = eventsProcessor;
             return this;
         }
 
@@ -118,8 +93,8 @@ public class RecordReaderFactory {
             return this;
         }
 
-        public Builder withRecordFilter(RecordFilter recordFilter) {
-            this.recordFilter = recordFilter;
+        public Builder withEventFilter(EventFilter eventFilter) {
+            this.eventFilter = eventFilter;
             return this;
         }
 
@@ -143,31 +118,31 @@ public class RecordReaderFactory {
             return this;
         }
 
-        public RecordReaderFactory build() {
-            return new RecordReaderFactory(this);
+        public EventReaderFactory build() {
+            return new EventReaderFactory(this);
         }
     }
 
     /**
-     * Create an instance of AWSCloudTrailRecordReader object.
-     * @param metrics
-     * @return
+     * Create an instance of an {@link EventReader}.
+     *
+     * @return the event reader.
      */
-    public RecordReader createReader() {
-        RecordReader reader = new RecordReader(
-                this.recordsProcessor, this.sourceFilter, this.recordFilter, this.progressReporter, this.exceptionHandler,
+    public EventReader createReader() {
+        EventReader reader = new EventReader(
+                this.eventsProcessor, this.sourceFilter, this.eventFilter, this.progressReporter, this.exceptionHandler,
                 this.sqsManager, this.s3Manager, this.config);
         return reader;
     }
 
     /**
-     * Convenient function to validate input
+     * Validate input parameters.
      */
     private void validate() {
         LibraryUtils.checkArgumentNotNull(this.config, "configuration is null");
-        LibraryUtils.checkArgumentNotNull(this.recordsProcessor, "recordsProcessor is null");
+        LibraryUtils.checkArgumentNotNull(this.eventsProcessor, "eventsProcessor is null");
         LibraryUtils.checkArgumentNotNull(this.sourceFilter, "sourceFilter is null");
-        LibraryUtils.checkArgumentNotNull(this.recordFilter, "recordFilter is null");
+        LibraryUtils.checkArgumentNotNull(this.eventFilter, "eventFilter is null");
         LibraryUtils.checkArgumentNotNull(this.progressReporter, "progressReporter is null");
         LibraryUtils.checkArgumentNotNull(this.exceptionHandler, "exceptionHander is null");
         LibraryUtils.checkArgumentNotNull(this.s3Manager, "s3Manager is null");

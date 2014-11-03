@@ -18,19 +18,36 @@ package com.amazonaws.services.cloudtrail.processinglibrary.interfaces;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus;
 
 /**
- * ProgressReporter is a call back function that report execution progress.
- * The reportStart() and reportEnd() methods are invoked in at beginning and the end of:
+ * ProgressReporter is an interface that can be used to provide custom handling of AWS CloudTrail Processing Library
+ * progress.
+ *
+ * reportStart() and reportEnd() are invoked at the beginning and the end of the following actions:
  *
  * 1. Polling messages from SQS
  * 2. Parsing message from SQS
- * 3. Deleting messages from SQS
- * 4. Downloading CloudTrail log file
- * 5. Parsing CloudTrail log file
+ * 3. Processing an Amazon SQS source for CloudTrail logs
+ * 4. Deleting messages from SQS (filtered and unfiltered)
+ * 5. Downloading CloudTrail log file
+ * 6. Processing CloudTrail log file
  *
- * PorgressStatus provides different informations.
  * See {@link com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus} for more information.
  */
 public interface ProgressReporter {
+    /**
+     * A callback method that report starting status.
+     *
+     * @param status a {@link com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus} that
+     *     represents the status of the current action being performed.
+     * @return an Object that can be sent to <code>reportEnd()</code>.
+     */
     public Object reportStart(ProgressStatus status);
+
+    /**
+     * A callback method that report ending status.
+     *
+     * @param status a {@link com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus} that
+     *     represents the status of the current action being performed.
+     * @param object an object to send; usually the object returned by <code>reportStart()</code>.
+     */
     public void reportEnd(ProgressStatus status, Object object);
 }

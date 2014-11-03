@@ -21,17 +21,20 @@ import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSourc
 /**
  * SourceFilter is a call back function that hands a CloudTrailSource to user. User can
  * determinate whether want to process this source. The filter() method is invoked after
- * polled SQS message from SQS queue and before process records. For performance, CloudTrailSource
+ * polled SQS message from SQS queue and before process events. For performance, CloudTrailSource
  * is not cloned, caller should not change the content of source.
  */
 public interface SourceFilter{
 
     /**
-     * A method filter source.
+     * A callback method used to filter a {@link CloudTrailSource} prior to process.
+     * <p>
+     * For performance, the source object is not a copy; you should only filter
+     * the source here, not change its contents.
      *
-     * @param source
-     * @return true if the source should be processed by AWSCloudTrailClientLibrary.
-     * @throws CallbackException when error happened during process CloudTrailClientRecords. AWSCloudTrailClientLibrary
+     * @param source the {@link CloudTrailSource} to filter
+     * @return <code>true</code> if the source should be processed by the {@link SourceFilter}.
+     * @throws CallbackException when error happened during filter CloudTrailSource. AWS CloudTrail Processing Library
      *         will eventually hand this exception back to ExceptionHandler.
      */
     public boolean filterSource(final CloudTrailSource source) throws CallbackException;

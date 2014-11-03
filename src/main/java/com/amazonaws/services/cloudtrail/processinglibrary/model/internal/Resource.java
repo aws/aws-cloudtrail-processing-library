@@ -16,23 +16,30 @@
 package com.amazonaws.services.cloudtrail.processinglibrary.model.internal;
 
 /**
+ * <i>For internal use only.</i>
+ * <p>
  * AWS resources.
  */
 public class Resource extends CloudTrailDataStore {
     /**
-     * Get resource ARN
+     * <i>For internal use only.</i>
+     * <p>
+     * Get the Amazon Resource Name (ARN) for this resource.
      *
-     * @return
+     * @return the ARN associated with the resource.
      */
     public String getArn() {
-        return (String) get(CloudTrailRecordField.ARN.name());
+        return (String) get(CloudTrailEventField.ARN.name());
     }
 
     /**
-     * Get resource associated account ID
-     * @return
+     * <i>For internal use only.</i>
+     * <p>
+     * Get the account ID asociated with the resource.
+     *
+     * @return the account ID
      */
     public String getAccountId() {
-        return (String) get(CloudTrailRecordField.accountId.name());
+        return (String) get(CloudTrailEventField.accountId.name());
     }
 }

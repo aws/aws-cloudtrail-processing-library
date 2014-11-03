@@ -17,34 +17,35 @@ package com.amazonaws.services.cloudtrail.processinglibrary.serializer;
 
 import java.io.IOException;
 
-import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailClientRecord;
-import com.fasterxml.jackson.core.JsonParseException;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEvent;
 
 /**
  * AWSCloudTrailSerializer is an interface provides a set of methods to serialize AWS CloudTrail log files in a
  * streaming fashion.
  */
-public interface RecordSerializer extends AutoCloseable {
+public interface EventSerializer extends AutoCloseable {
     /**
-     * Whether there is more records in the current file.
-     * @return
-     * @throws IOException
+     * Indicates if there are more events in the current log to serialize.
+     *
+     * @return <code>true</code> if there are more events to serialize; <code>false</code> otherwise.
+     * @throws IOException if the log could not be read.
      */
-    public boolean hasNextRecord() throws IOException;
+    public boolean hasNextEvent() throws IOException;
 
 
     /**
-     * Get next records, this one should be call after verify there is more records through hasNextRecord.
-     * @return
-     * @throws MessageParsingException
-     * @throws IOException
-     * @throws JsonParseException
+     * Get the next event in the log, this one should be called after verifying that there are more events by using
+     * <code>hasNextEvent()</code>.
+     *
+     * @return the {@link com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEvent}.
+     * @throws IOException if the log could not be read.
      */
-    public CloudTrailClientRecord getNextRecord() throws IOException;
+    public CloudTrailEvent getNextEvent() throws IOException;
 
     /**
      * Close the underlying input stream
-     * @throws IOException
+     *
+     * @throws IOException if the input stream could not be accessed or closed.
      */
     public void close() throws IOException;
 }

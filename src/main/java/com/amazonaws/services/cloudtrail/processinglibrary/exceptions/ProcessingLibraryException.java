@@ -18,8 +18,9 @@ package com.amazonaws.services.cloudtrail.processinglibrary.exceptions;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus;
 
 /**
- * Exceptions of this type are handled by an implementation of the {@link
- * ExceptionHandler} interface.
+ * Exceptions of this type are handled by an implementation of the
+ * {@link com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ExceptionHandler}
+ * interface.
  *
  * The status of the operation that was in progress when the exception occured
  * can be retrieved by calling the <code>getStatus()</code> method.
@@ -60,10 +61,10 @@ public class ProcessingLibraryException extends Exception {
 
     /**
      * Get the status of the operation that was in progress when the exception
-     * occured.
+     * occurred.
      *
      * @return a {@link ProgressStatus} object that provides information about
-     *    when the exception occured.
+     *    when the exception occurred.
      */
     public ProgressStatus getStatus() {
         return status;

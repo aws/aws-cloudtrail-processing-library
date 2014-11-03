@@ -36,34 +36,26 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 
 /**
- * A convenient class to manage Amazon S3 Service related operations.
+ * Manages Amazon S3 service-related operations.
  */
 public class S3Manager {
     private static final Log logger = LogFactory.getLog(SqsManager.class);
 
-    /**
-     * An instance of AmazonS3Client.
-     */
     private AmazonS3Client s3Client;
-
-    /**
-     * An instance of AWSCloudTrailClientConfiguration
-     */
     private ProcessingConfiguration config;
-
-    /**
-     * User implementation of ExceptionHandler, used to handle error case.
-     */
     private ExceptionHandler exceptionHandler;
-
-    /**
-     * User implementation of ProgressReporter, used to report progress
-     */
     private ProgressReporter progressReporter;
 
     /**
      * S3Manager constructor
-     * @param configuration
+     *
+     * @param s3Client the S3 client to use.
+     * @param configuration a
+     *     {@link com.amazonaws.services.cloudtrail.processinglibrary.configuration.ProcessingConfiguration}.
+     * @param exceptionHandler an implementation of
+     *     {@link com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ExceptionHandler}, used to handle errors.
+     * @param progressReporter an implementation of
+     *     {@link com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ProgressReporter}, used to report progress.
      */
     public S3Manager(AmazonS3Client s3Client, ProcessingConfiguration configuration, ExceptionHandler exceptionHandler, ProgressReporter progressReporter) {
         this.config = configuration;
@@ -74,10 +66,12 @@ public class S3Manager {
     }
 
     /**
+     * Downloads an AWS CloudTrail log from the specified source.
      *
-     * @param ctLog
-     * @param source
-     * @return
+     * @param ctLog the {@link com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailLog} to download
+     * @param source the {@link com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource} to download
+     *     the log from.
+     * @return a byte array containing the log data.
      */
     public byte[] downloadLog(CloudTrailLog ctLog, CloudTrailSource source) {
         boolean success = false;
@@ -110,11 +104,12 @@ public class S3Manager {
     }
 
     /**
-     * API call to Amazon S3 service to download a S3 object
+     * Download an S3 object.
      *
-     * @param bucketName
-     * @param objectKey
-     * @return
+     * @param bucketName the S3 bucket name from which to download the object.
+     * @param objectKey the S3 key name of the object to download.
+     * @return the downloaded
+     *     <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/model/S3Object.html">S3Object</a>.
      */
     public S3Object getObject(String bucketName, String objectKey) {
         try {
@@ -126,7 +121,7 @@ public class S3Manager {
     }
 
     /**
-     * Convenient function to validate input
+     * Validates input parameters.
      */
     private void validate() {
         LibraryUtils.checkArgumentNotNull(this.config, "configuration is null");

@@ -36,7 +36,6 @@ public class SQSBasedSource implements CloudTrailSource{
      * attributes, i.e. SenderId, SentTimestamp, ApproximateReceiveCount, and/or
      * ApproximateFirstReceiveTimestamp, etc as well as attributes CloudTrail published.
      *
-     * @param accountId
      * @param sqsMessage
      * @param logs
      */

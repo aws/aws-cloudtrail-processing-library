@@ -20,28 +20,28 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.RecordsProcessor;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailClientRecord;
+import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.EventsProcessor;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEvent;
 
-public class SampleRecordsProcessor implements RecordsProcessor {
-    private static final Log logger = LogFactory.getLog(SampleRecordsProcessor.class);
+public class SampleEventsProcessor implements EventsProcessor {
+    private static final Log logger = LogFactory.getLog(SampleEventsProcessor.class);
 
-    public void process(List<CloudTrailClientRecord> records) {
+    public void process(List<CloudTrailEvent> events) {
         int i = 0;
-        for (CloudTrailClientRecord record : records) {
-            validateRecord(record);
-            logger.info(String.format("Process record %d : %s", i++, record.getRecord()));
+        for (CloudTrailEvent event : events) {
+            validateEvent(event);
+            logger.info(String.format("Process event %d : %s", i++, event.getEventData()));
         }
     }
 
     /**
      * Do simple validation before processing.
      *
-     * @param record to validate
+     * @param event to validate
      */
-    private void validateRecord(CloudTrailClientRecord record) {
-        if (record.getRecord().getAccountId() == null) {
-            logger.error(String.format("Record %s doesn't have account ID.", record.getRecord()));
+    private void validateEvent(CloudTrailEvent event) {
+        if (event.getEventData().getAccountId() == null) {
+            logger.error(String.format("Event %s doesn't have account ID.", event.getEventData()));
         }
 
         // more validation here...

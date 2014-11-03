@@ -21,35 +21,42 @@ import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
 /**
  * Defines a basic processing configuration for the AWS CloudTrail Processing Library.
  *
- * You can use instances of this class to configure an {@link AWSCloudTrailProcessingExecutor} as an alternative to using .
+ * You can use instances of this class to configure an
+ * {@link com.amazonaws.services.cloudtrail.processinglibrary.AWSCloudTrailProcessingExecutor}
+ * as an alternative to using a class path properties file.
  */
 public class ClientConfiguration implements ProcessingConfiguration{
 
     private static final String ERROR_CREDENTIALS_PROVIDER_NULL = "CredentialsProvider is null. Either put your " +
-            "access key and secret key in configuration file in your class path, or set it in the " +
-            "configuration object you passed in.";
+            "access key and secret key in the configuration file in your class path, or spcify it in the " +
+            "ProcessingConfiguration object.";
 
     /**
-     * The URL of the SQS Queue subscribed to CloudTrail to receive events.
-     */
-    public String sqsUrl = null;
-
-    /**
-     * The AWS credentials provider to use.
+     * The <a
+     * href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/AWSCredentialsProvider.html">AWS credentials provider</a>
+     * used to obtain credentials.
      */
     public AWSCredentialsProvider awsCredentialsProvider;
 
     /**
+     * The SQS Queue URL used to receive events.
+     * <p>
+     * The Queue must be subscribed to AWS CloudTrail.
+     */
+    public String sqsUrl = null;
+
+    /**
      * The SQS region to use.
      * <p>
-     * If not specified, the default SQS region ({@value
-     * ProcessingConfiguration#DEFAULT_SQS_REGION}) will be used.
+     * If not specified, the default SQS region
+     * ({@value com.amazonaws.services.cloudtrail.processinglibrary.configuration.ProcessingConfiguration#DEFAULT_SQS_REGION})
+     * will be used.
      */
     public String sqsRegion = DEFAULT_SQS_REGION;
 
     /**
-     * A period of time during which Amazon SQS prevents other consuming
-     * components from receiving and processing that message.
+     * A period of time, in seconds, during which Amazon SQS prevents other consuming components from receiving and
+     * processing messages that are currently being processed by the CloudTrail Processing Library on your behalf.
      */
     public int visibilityTimeout = DEFAULT_VISIBILITY_TIMEOUT;
 
@@ -61,33 +68,30 @@ public class ClientConfiguration implements ProcessingConfiguration{
     public String s3Region = DEFAULT_S3_REGION;
 
     /**
-     * The number of threads used to process log files in parallel.
+     * The number of threads used to download log files from S3 in parallel.
+     * <p>
+     * Callbacks can be invoked from any thread.
      */
     public int threadCount = DEFAULT_THREAD_COUNT;
 
     /**
-     * The duration in seconds to wait for thread pool termination before
-     * issuing shutDownNow.
+     * The time allowed, in seconds, for threads to shut down after AWSCloudTrailEventProcessingExecutor.stop() is
+     * called.
+     * <p>
+     * Any threads still running beyond this time will be forcibly terminated.
      */
     public int threadTerminationDelaySeconds = DEFAULT_THREAD_TERMINATION_DELAY_SECONDS;
 
     /**
-     * The maxiumum number of {@link AWSCloudTrailClientRecord} instances that
-     * are buffered before emitting.
+     * The maximum number of AWSCloudTrailClientEvents sent to a single invocation of processEvents().
      */
-    public int maxRecordsPerEmit = DEFAULT_MAX_RECORDS_PER_EMIT;
+    public int maxEventsPerEmit = DEFAULT_MAX_EVENTS_PER_EMIT;
 
     /**
-     * Whether to verify the CloudTrail log file's signature.
-     * <p>
-     * By default, cloud trail logs are verified.
+     * Whether to include raw event information in
+     * {@link com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata}.
      */
-    public boolean verifyCloudTrailLogFile = DEFAULT_VERIFY_CLOUD_TRAIL_LOG_FILE;
-
-    /**
-     * Whether to enable raw records in {@link CloudTrailDeliveryInfo}.
-     */
-    public boolean enableRawRecordInfo = DEFAULT_ENABLE_RAW_RECORD_INFO;
+    public boolean enableRawEventInfo = DEFAULT_ENABLE_RAW_EVENT_INFO;
 
     /**
      * Initializes a new <code>ClientConfiguration</code>.
@@ -104,6 +108,13 @@ public class ClientConfiguration implements ProcessingConfiguration{
     public ClientConfiguration(String sqsUrl, AWSCredentialsProvider awsCredentialsProvider) {
         this.sqsUrl = sqsUrl;
         this.awsCredentialsProvider = awsCredentialsProvider;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public AWSCredentialsProvider getAwsCredentialsProvider() {
+        return awsCredentialsProvider;
     }
 
     /**
@@ -151,23 +162,16 @@ public class ClientConfiguration implements ProcessingConfiguration{
     /**
      * {@inheritDoc}
      */
-    public int getMaxRecordsPerEmit() {
-        return maxRecordsPerEmit;
+    public int getMaxEventsPerEmit() {
+        return maxEventsPerEmit;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean isEnableRawRecordInfo() {
-        return enableRawRecordInfo;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public AWSCredentialsProvider getAwsCredentialsProvider() {
-        return awsCredentialsProvider;
+    public boolean isEnableRawEventInfo() {
+        return enableRawEventInfo;
     }
 
     /**
@@ -177,18 +181,32 @@ public class ClientConfiguration implements ProcessingConfiguration{
     public void validate() {
         LibraryUtils.checkArgumentNotNull(this.getAwsCredentialsProvider(), ERROR_CREDENTIALS_PROVIDER_NULL);
         LibraryUtils.checkArgumentNotNull(this.getSqsUrl(), "SQS URL is null.");
-        LibraryUtils.checkArgumentNotNull(this.getMaxRecordsPerEmit(),  "Credential is null.");
-        LibraryUtils.checkArgumentNotNull(this.getS3Region(),  "S3Region is null.");
-        LibraryUtils.checkArgumentNotNull(this.getSqsRegion(),  "sqsRegion is null.");
-        LibraryUtils.checkArgumentNotNull(this.getSqsUrl(),  "sqsUrl is null.");
-        LibraryUtils.checkArgumentNotNull(this.getThreadCount(),  "threadCount is null.");
-        LibraryUtils.checkArgumentNotNull(this.getThreadTerminationDelaySeconds(),  "threadTerminationDelaySeconds is null.");
-        LibraryUtils.checkArgumentNotNull(this.getVisibilityTimeout(),  "visibilityTimeout is null.");
+        LibraryUtils.checkArgumentNotNull(this.getSqsRegion(), "SQS Region is null.");
+        LibraryUtils.checkArgumentNotNull(this.getVisibilityTimeout(), "Visibility Timeout is null.");
+        LibraryUtils.checkArgumentNotNull(this.getS3Region(), "S3 Region is null.");
+        LibraryUtils.checkArgumentNotNull(this.getThreadCount(), "Thread Count is null.");
+        LibraryUtils.checkArgumentNotNull(this.getThreadTerminationDelaySeconds(), "Thread Termination Delay Seconds is null.");
+        LibraryUtils.checkArgumentNotNull(this.getMaxEventsPerEmit(), "Maximum Events Per Emit is null.");
+        LibraryUtils.checkArgumentNotNull(this.isEnableRawEventInfo(), "Is Enable Raw Event Information is null.");
+    }
+
+    /**
+     * Set the AWS Credentials Provider used to access AWS.
+     *
+     * @param awsCredentialsProvider the
+     *     <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/AWSCredentialsProvider.html">AWSCredentialsProvider</a>
+     *     to set.
+     */
+    public void setAwsCredentialsProvider(AWSCredentialsProvider awsCredentialsProvider) {
+        this.awsCredentialsProvider = awsCredentialsProvider;
     }
 
     /**
      * Sets the SQS Region to use to get CloudTrail logs.
-     * @param sqsRegion the sqsRegion to set
+     *
+     * @param sqsRegion the
+     *     <a href="http://docs.aws.amazon.com/general/latest/gr/rande.html#d0e387">AWS region</a>
+     *     to use.
      */
     public void setSqsRegion(String sqsRegion) {
         this.sqsRegion = sqsRegion;
@@ -196,14 +214,21 @@ public class ClientConfiguration implements ProcessingConfiguration{
 
     /**
      * Sets the SQS visibility timeout, during which SQS ignores other requests
-     * for the
-     * @param visibilityTimeout the visibilityTimeout to set
+     * for the message.
+     *
+     * @param visibilityTimeout the duration, in seconds, to ignore other
+     *     requests for SQS messages being processed by the AWS CloudTrail
+     *     Processing Library.
      */
     public void setVisibilityTimeout(int visibilityTimeout) {
         this.visibilityTimeout = visibilityTimeout;
     }
 
     /**
+     * The S3 endpoint specific to a region.
+     * <p>
+     * If not specified, the default S3 region will be used.
+     *
      * @param s3Region the s3Region to set
      */
     public void setS3Region(String s3Region) {
@@ -211,49 +236,46 @@ public class ClientConfiguration implements ProcessingConfiguration{
     }
 
     /**
-     * @param threadCount the threadCount to set
+     * The number of threads used to download log files from S3 in parallel.
+     * <p>
+     * Callbacks can be invoked from any thread.
+     *
+     * @param threadCount the number of threads to set.
      */
     public void setThreadCount(int threadCount) {
         this.threadCount = threadCount;
     }
 
     /**
-     * @param threadTerminationDelaySeconds the threadTerminationDelaySeconds to set
+     * Set the time allowed, in seconds, for threads to shut down after
+     * <code>AWSCloudTrailEventProcessingExecutor.stop()</code> is called.
+     * <p>
+     * Any threads still running beyond this time will be forcibly terminated.
+     *
+     * @param threadTerminationDelaySeconds the termination delay, in seconds, to set.
      */
     public void setThreadTerminationDelaySeconds(int threadTerminationDelaySeconds) {
         this.threadTerminationDelaySeconds = threadTerminationDelaySeconds;
     }
 
     /**
-     * @param maxRecordsPerEmit the maxRecordsPerEmit to set
-     */
-    public void setMaxRecordsPerEmit(int maxRecordsPerEmit) {
-        this.maxRecordsPerEmit = maxRecordsPerEmit;
-    }
-
-    /**
-     * @param verifyCloudTrailLogFile the verifyCloudTrailLogFile to set
-     */
-    public void setVerifyCloudTrailLogFile(boolean verifyCloudTrailLogFile) {
-        this.verifyCloudTrailLogFile = verifyCloudTrailLogFile;
-    }
-
-    /**
-     * Set whether or not raw record information should be returned in
+     * Set the maximum number of events that can be buffered per call to <code>processEvents()</code>.
+     * <p>
+     * Fewer events than this may be sent; this number represents only the <i>maximum</i>.
      *
-     * @param enableRawRecordInfo the enableRawRecordInfo to set
+     * @param maxEventsPerEmit the maximum number of events to buffer.
      */
-    public void setEnableRawRecordInfo(boolean enableRawRecordInfo) {
-        this.enableRawRecordInfo = enableRawRecordInfo;
+    public void setMaxEventsPerEmit(int maxEventsPerEmit) {
+        this.maxEventsPerEmit = maxEventsPerEmit;
     }
 
     /**
-     * Set the AWS Credentials Provider used to obtain credentials to verify CloudTrail logs.
+     * Set whether or not raw event information should be returned in
+     * {@link com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata}.
      *
-     * @param awsCredentialsProvider the awsCredentialsProvider to set
+     * @param enableRawEventInfo set to <code>true</code> to enable raw event information.
      */
-    public void setAwsCredentialsProvider(AWSCredentialsProvider awsCredentialsProvider) {
-        this.awsCredentialsProvider = awsCredentialsProvider;
+    public void setEnableRawEventInfo(boolean enableRawEventInfo) {
+        this.enableRawEventInfo = enableRawEventInfo;
     }
-
 }

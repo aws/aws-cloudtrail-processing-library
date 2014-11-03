@@ -29,12 +29,12 @@ import com.amazonaws.services.cloudtrail.processinglibrary.exceptions.CallbackEx
 import com.amazonaws.services.cloudtrail.processinglibrary.exceptions.ProcessingLibraryException;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ExceptionHandler;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ProgressReporter;
-import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.RecordFilter;
-import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.RecordsProcessor;
+import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.EventFilter;
+import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.EventsProcessor;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.SourceFilter;
 import com.amazonaws.services.cloudtrail.processinglibrary.manager.S3Manager;
 import com.amazonaws.services.cloudtrail.processinglibrary.manager.SqsManager;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailClientRecord;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEvent;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailLog;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.SQSBasedSource;
@@ -42,25 +42,25 @@ import com.amazonaws.services.cloudtrail.processinglibrary.progress.BasicProcess
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.BasicProcessSourceInfo;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressState;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus;
-import com.amazonaws.services.cloudtrail.processinglibrary.serializer.RecordSerializer;
-import com.amazonaws.services.cloudtrail.processinglibrary.serializer.DefaultRecordSerializer;
-import com.amazonaws.services.cloudtrail.processinglibrary.serializer.RawLogDeliveryRecordSerializer;
+import com.amazonaws.services.cloudtrail.processinglibrary.serializer.EventSerializer;
+import com.amazonaws.services.cloudtrail.processinglibrary.serializer.DefaultEventSerializer;
+import com.amazonaws.services.cloudtrail.processinglibrary.serializer.RawLogDeliveryEventSerializer;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
-import com.amazonaws.services.cloudtrail.processinglibrary.utils.RecordBuffer;
+import com.amazonaws.services.cloudtrail.processinglibrary.utils.EventBuffer;
 import com.amazonaws.services.sqs.model.Message;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * AWSCloudTrailRecordReader is responsible for processing a stream of records. It parses each record and hands
- * the records to RecordsProcessor to process.
+ * EventReader is responsible for processing a stream of events. It parses each event and hands
+ * the events to EventsProcessor to process.
  */
-public class RecordReader {
-    private static final Log logger = LogFactory.getLog(RecordReader.class);
+public class EventReader {
+    private static final Log logger = LogFactory.getLog(EventReader.class);
 
     private final SourceFilter sourceFilter;
-    private final RecordFilter recordFilter;
-    private final RecordsProcessor recordsProcessor;
+    private final EventFilter eventFilter;
+    private final EventsProcessor eventsProcessor;
     private final ProgressReporter progressReporter;
     private final ExceptionHandler exceptionHandler;
 
@@ -77,24 +77,24 @@ public class RecordReader {
     /**
      * Internal use only.
      *
-     * This constructor creates an instance of AWSCloudTrailRecordReader object.
+     * This constructor creates an instance of EventReader object.
      *
-     * @param recordsProcesor user's implementation of recordsProcesor
+     * @param eventsProcesor user's implementation of eventsProcesor
      * @param sourceFilter user's implementation of sourceFilter
-     * @param recordFilter user's implementation of recordFilter
+     * @param eventFilter user's implementation of eventFilter
      * @param progressReporter user's implementation of progressReporter
      * @param exceptionHandler user's implementation of exceptionHandler
      * @param sqsManager that poll message from SQS queue
      * @param s3Manager that download CloudTrail log files from S3
-     * @param configuration user provided AWSCloudTrailClientLibrary configuration
+     * @param configuration user provided ProcessingConfiguration
      */
-    public RecordReader(RecordsProcessor recordsProcesor, SourceFilter sourceFilter, RecordFilter recordFilter,
+    public EventReader(EventsProcessor eventsProcesor, SourceFilter sourceFilter, EventFilter eventFilter,
             ProgressReporter progressReporter, ExceptionHandler exceptionHandler, SqsManager sqsManager,
             S3Manager s3Manager, ProcessingConfiguration configuration) {
 
-        this.recordsProcessor = recordsProcesor;
+        this.eventsProcessor = eventsProcesor;
         this.sourceFilter = sourceFilter;
-        this.recordFilter = recordFilter;
+        this.eventFilter = eventFilter;
         this.progressReporter = progressReporter;
         this.exceptionHandler = exceptionHandler;
         this.config = configuration;
@@ -108,7 +108,7 @@ public class RecordReader {
     /**
      * Poll messages from SQS queue and convert messages to CloudTrailSource.
      *
-     * @return
+     * @return a list of {@link CloudTrailSource}
      */
     public List<CloudTrailSource> getSources() {
         List<Message> sqsMessages = this.sqsManager.pollQueue();
@@ -117,10 +117,10 @@ public class RecordReader {
     }
 
     /**
-     * Retrieve S3 object URL from source then downloads the object processes each record through
+     * Retrieve S3 object URL from source then downloads the object processes each event through
      * call back functions.
      *
-     * @param source CloudTrailSource to process
+     * @param source {@link CloudTrailSource} to process
      */
     public void processSource (CloudTrailSource source) {
         // Start to process the source
@@ -151,9 +151,9 @@ public class RecordReader {
                         }
 
                         try (GZIPInputStream gzippedInputStream = new GZIPInputStream(new ByteArrayInputStream(s3ObjectBytes));
-                            RecordSerializer serializer = this.getRecordSerializer(gzippedInputStream, ctLog);) {
+                            EventSerializer serializer = this.getEventSerializer(gzippedInputStream, ctLog);) {
 
-                            this.emitRecords(serializer);
+                            this.emitEvents(serializer);
 
                             //decrement this value upon successfully processed a log
                             nLogFilesToProcess --;
@@ -187,56 +187,57 @@ public class RecordReader {
     }
 
     /**
-     * Get the AWSCloudTrailRecordSerializer based on user's configuration.
+     * Get the EventSerializer based on user's configuration.
      *
      * @param inputStream the Gzipped content from CloudTrail log file
      * @param ctLog CloudTrail log file
      * @return parser that parses CloudTrail log file
      * @throws IOException
      */
-    private RecordSerializer getRecordSerializer(GZIPInputStream inputStream, CloudTrailLog ctLog) throws IOException {
-        RecordSerializer serializer;
+    private EventSerializer getEventSerializer(GZIPInputStream inputStream, CloudTrailLog ctLog) throws IOException {
+        EventSerializer serializer;
 
-        if (this.config.isEnableRawRecordInfo()) {
+        if (this.config.isEnableRawEventInfo()) {
             String logFileContent = new String(LibraryUtils.toByteArray(inputStream), StandardCharsets.UTF_8);
             JsonParser jsonParser = this.mapper.getFactory().createParser(logFileContent);
-            serializer = new RawLogDeliveryRecordSerializer(logFileContent, ctLog, jsonParser);
+            serializer = new RawLogDeliveryEventSerializer(logFileContent, ctLog, jsonParser);
         } else {
             JsonParser jsonParser = this.mapper.getFactory().createParser(inputStream);
-            serializer = new DefaultRecordSerializer(ctLog, jsonParser);
+            serializer = new DefaultEventSerializer(ctLog, jsonParser);
         }
         return serializer;
     }
 
     /**
-     * Filter, buffer, and emit ClientTrailClientRecods.
+     * Filter, buffer, and emit CloudTrailEvents.
      *
-     * @param serializer parser that parses CloudTrail log file
+     * @param serializer {@link EventSerializer} that parses CloudTrail log file
+     *
      * @throws IOException
      * @throws CallbackException
      */
-    private void emitRecords(RecordSerializer serializer) throws IOException, CallbackException {
-        RecordBuffer<CloudTrailClientRecord> recordBuffer = new RecordBuffer<>(this.config.getMaxRecordsPerEmit());
-        while (serializer.hasNextRecord()) {
+    private void emitEvents(EventSerializer serializer) throws IOException, CallbackException {
+        EventBuffer<CloudTrailEvent> eventBuffer = new EventBuffer<>(this.config.getMaxEventsPerEmit());
+        while (serializer.hasNextEvent()) {
 
-            CloudTrailClientRecord clientRecord = serializer.getNextRecord();
+            CloudTrailEvent event = serializer.getNextEvent();
 
-            if (this.recordFilter.filterRecord(clientRecord)) {
-                recordBuffer.addRecord(clientRecord);
+            if (this.eventFilter.filterEvent(event)) {
+                eventBuffer.addEvent(event);
 
-                if (recordBuffer.isBufferFull()) {
-                    this.recordsProcessor.process(recordBuffer.getRecords());
+                if (eventBuffer.isBufferFull()) {
+                    this.eventsProcessor.process(eventBuffer.getEvents());
                 }
 
             } else {
-                logger.debug("AWSCloudTrailClientRecord " + clientRecord + " has filtered.");
+                logger.debug("AWSCloudTrailEvent " + event + " has filtered.");
             }
         }
 
         //emit whatever in the buffer as last batch
-        List<CloudTrailClientRecord> records = recordBuffer.getRecords();
-        if (!records.isEmpty()) {
-            this.recordsProcessor.process(records);
+        List<CloudTrailEvent> events = eventBuffer.getEvents();
+        if (!events.isEmpty()) {
+            this.eventsProcessor.process(events);
         }
     }
 }

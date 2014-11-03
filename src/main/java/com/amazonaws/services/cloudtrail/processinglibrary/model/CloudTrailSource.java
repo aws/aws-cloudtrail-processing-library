@@ -18,12 +18,15 @@ package com.amazonaws.services.cloudtrail.processinglibrary.model;
 import java.util.Map;
 
 /**
- * A skeleton class used for source filter. When using it, users should cast it to a specific subclass.
+ * A skeleton class used for source filter.
+ * <p>
+ * When using it, users should cast it to a specific subclass.
  */
 public interface CloudTrailSource {
     /**
-     * Retrieve CloudTrailSource attributes
-     * @return
+     * Retrieve {@link CloudTrailSource} attributes.
+     *
+     * @return a Map containing key/value pairs representing the attributes of the CloudTrailSource.
      */
     public Map<String, String> getSourceAttributes();
 }

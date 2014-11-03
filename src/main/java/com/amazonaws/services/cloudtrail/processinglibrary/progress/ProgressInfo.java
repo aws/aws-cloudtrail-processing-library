@@ -21,5 +21,8 @@ package com.amazonaws.services.cloudtrail.processinglibrary.progress;
  * When report start progress, isSuccess will always be false.
  */
 public interface ProgressInfo {
+    /**
+     * @return true if execution is succeeded.
+     */
     public boolean isSuccess();
 }

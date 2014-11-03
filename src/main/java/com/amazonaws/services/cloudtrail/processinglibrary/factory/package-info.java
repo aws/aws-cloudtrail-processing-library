@@ -14,6 +14,6 @@
  ******************************************************************************/
 
 /**
- * Package information go here...
+ * Factories used to construct objects.
  */
 package com.amazonaws.services.cloudtrail.processinglibrary.factory;

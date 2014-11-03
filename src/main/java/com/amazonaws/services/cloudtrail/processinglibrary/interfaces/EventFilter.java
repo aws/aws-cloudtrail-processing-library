@@ -16,29 +16,30 @@
 package com.amazonaws.services.cloudtrail.processinglibrary.interfaces;
 
 import com.amazonaws.services.cloudtrail.processinglibrary.exceptions.CallbackException;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailClientRecord;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEvent;
 
 /**
- * Provides a callback method used by an {@link AWSCloudTrailProcessingExecutor}
+ * Provides a callback method used by an
+ * {@link com.amazonaws.services.cloudtrail.processinglibrary.AWSCloudTrailProcessingExecutor}
  * to determine whether or not to process a record.
  * <p>
- * If <code>filterRecord()</code> returns <code>false</code>, then the record is
- * not sent to the {@link RecordsProcessor} for further processing.
+ * If <code>filterEvent()</code> returns <code>false</code>, then the event is
+ * not sent to the {@link EventsProcessor} for further processing.
  */
-public interface RecordFilter{
+public interface EventFilter{
 
     /**
-     * A callback method used to filter a AWS CloudTrail record prior to
-     * processing.
+     * A callback method used to filter a {@link CloudTrailEvent} prior to
+     * process.
      * <p>
-     * For performance, the record object is not a copy; you should only filter
-     * the record here, not change its contents.
+     * For performance, the event object is not a copy; you should only filter
+     * the event here, not change its contents.
      *
-     * @param record the {@link CloudTrailClientRecord} to filter.
-     * @return <code>true</code> if the record should be processed by the {@link
-     *    RecordsProcessor}.
+     * @param event the {@link CloudTrailEvent} to filter.
+     * @return <code>true</code> if the event should be processed by the {@link
+     *    EventsProcessor}.
      * @throws CallbackException if an error occurs while filtering.
      */
-    public boolean filterRecord(CloudTrailClientRecord record) throws CallbackException;
+    public boolean filterEvent(CloudTrailEvent event) throws CallbackException;
 
 }

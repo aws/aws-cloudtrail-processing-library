@@ -27,10 +27,10 @@ import java.util.UUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailClientRecord;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailDeliveryInfo;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailRecord;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.CloudTrailRecordField;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEvent;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventData;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.CloudTrailEventField;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.Resource;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.SessionContext;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.SessionIssuer;
@@ -42,36 +42,44 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
 
-public abstract class AbstractRecordSerializer implements RecordSerializer{
-    private static final Log logger = LogFactory.getLog(AbstractRecordSerializer.class);
+public abstract class AbstractEventSerializer implements EventSerializer {
 
-    public abstract CloudTrailDeliveryInfo getDeliveryInfo(int charStart, int charEnd);
-
+    private static final Log logger = LogFactory.getLog(AbstractEventSerializer.class);
     private static final String RECORDS = "Records";
-
-    private static final double SUPPORTED_EVENT_VERSION = 1.02d;
+    private static final double SUPPORTED_EVENT_VERSION = 1.03d;
 
     /**
-     * Jackson JSON Parser
+     * A Jackson JSON Parser object.
      */
     private JsonParser jsonParser;
 
     /**
-     * Construct an instance of RecordSerializer object
+     * Construct an AbstractEventSerializer object
      *
-     * @param inputBytes
-     * @param s3ObjectKey
-     * @param s3BucketName
-     * @throws IOException
+     * @param jsonParser a Jackson
+     * <a href="http://jackson.codehaus.org/1.4.0/javadoc/org/codehaus/jackson/JsonParser.html">JsonParser</a> object to
+     *     use for interpreting JSON objects.
+     * @throws IOException under no conditions.
      */
-    public AbstractRecordSerializer (JsonParser jsonParser) throws IOException {
+    public AbstractEventSerializer (JsonParser jsonParser) throws IOException {
         this.jsonParser = jsonParser;
     }
 
     /**
-     * Read off header part of AWS CloudTrail log.
-     * @throws JsonParseException
-     * @throws IOException
+     * An abstract class that returns an
+     * {@link com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata} object.
+     *
+     * @param charStart the character count at which to begin reading event data.
+     * @param charEnd the character count at which to stop reading event data.
+     * @return the event metadata.
+     */
+    public abstract CloudTrailEventMetadata getMetadata(int charStart, int charEnd);
+
+    /**
+     * Read the header of an AWS CloudTrail log.
+     *
+     * @throws JsonParseException if the log could not be parsed.
+     * @throws IOException if the log could not be opened or accessed.
      */
     protected void readArrayHeader() throws JsonParseException, IOException {
         if (this.jsonParser.nextToken() != JsonToken.START_OBJECT) {
@@ -89,32 +97,40 @@ public abstract class AbstractRecordSerializer implements RecordSerializer{
     }
 
     /**
-     * In Fasterxml parser, hasNextRecord will consume next token. So do not call it multiple times.
+     * Indicates whether the CloudTrail log has more events to read.
+     *
+     * @return <code>true</code> if the log contains more events; <code>false</code> otherwise.
+     * @throws IOException if the log could not be opened or accessed.
      */
-    public boolean hasNextRecord() throws IOException {
+    public boolean hasNextEvent() throws IOException {
+        /* In Fasterxml parser, hasNextEvent will consume next token. So do not call it multiple times. */
         JsonToken nextToken = this.jsonParser.nextToken();
         return nextToken == JsonToken.START_OBJECT || nextToken == JsonToken.START_ARRAY;
     }
 
     /**
-     * Close underlying jsonReader object, call it upon processed a log file
+     * Close the JSON parser object used to read the CloudTrail log.
      *
-     * @throws IOException
+     * @throws IOException if the log could not be opened or accessed.
      */
     public void close() throws IOException {
         this.jsonParser.close();
     }
 
     /**
-     * Get next AWSCloudTrailClientRecord record from log file. When failed to parse a record,
-     * AWSCloudTrailClientParsingException will be thrown. In this case, the charEnd index
-     * the place we encountered parsing error.
-     * @throws IOException
-     * @throws JsonParseException
+     * Get the next event from the CloudTrail log and parse it.
+     *
+     * @return a {@link com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEvent} that represents the
+     *     parsed event.
+     * @throws IOException if the event could not be parsed.
      */
-    public CloudTrailClientRecord getNextRecord() throws IOException {
-        CloudTrailRecord record = new CloudTrailRecord();
+    public CloudTrailEvent getNextEvent() throws IOException {
+        CloudTrailEventData eventData = new CloudTrailEventData();
         String key = null;
+
+         /* Get next CloudTrailEvent event from log file. When failed to parse a event,
+         * IOException will be thrown. In this case, the charEnd index the place we
+         * encountered parsing error. */
 
         // return the starting location of the current token; that is, position of the first character
         // from input that starts the current token
@@ -127,73 +143,73 @@ public abstract class AbstractRecordSerializer implements RecordSerializer{
             case "eventVersion":
                 String eventVersion = this.jsonParser.nextTextValue();
                 if (Double.parseDouble(eventVersion) > SUPPORTED_EVENT_VERSION) {
-                    logger.warn(String.format("EventVersion %s is not supported by CloudTrail Java Client.", eventVersion));
+                    logger.warn(String.format("EventVersion %s is not supported by CloudTrail.", eventVersion));
                 }
-                record.add(key, eventVersion);
+                eventData.add(key, eventVersion);
                 break;
             case "userIdentity":
-                this.parseUserIdentity(record);
+                this.parseUserIdentity(eventData);
                 break;
             case "eventTime":
-                record.add(CloudTrailRecordField.eventTime.name(), this.convertToDate(this.jsonParser.nextTextValue()));
+                eventData.add(CloudTrailEventField.eventTime.name(), this.convertToDate(this.jsonParser.nextTextValue()));
                 break;
             case "eventID":
             case "requestID":
-                record.add(key, this.convertToUUID(this.jsonParser.nextTextValue()));
+                eventData.add(key, this.convertToUUID(this.jsonParser.nextTextValue()));
                 break;
             case "readOnly":
-                this.parseReadOnly(record);
+                this.parseReadOnly(eventData);
                 break;
             case "resources":
-                this.parseResources(record);
+                this.parseResources(eventData);
                 break;
             default:
-                record.add(key, this.parseDefaultValue(key));
+                eventData.add(key, this.parseDefaultValue(key));
                 break;
             }
         }
-        this.setAccountId(record);
+        this.setAccountId(eventData);
 
-        // record's last character position in the log file.
+        // event's last character position in the log file.
         int charEnd = (int) this.jsonParser.getTokenLocation().getCharOffset();
 
-        CloudTrailDeliveryInfo deliveryInfo = this.getDeliveryInfo(charStart, charEnd);
+        CloudTrailEventMetadata metaData = this.getMetadata(charStart, charEnd);
 
-        return new CloudTrailClientRecord(record, deliveryInfo);
+        return new CloudTrailEvent(eventData, metaData);
     }
 
     /**
-     * Set AccountId in AWSCloudTrailRecord top level from either UserIdentity top level or from
+     * Set AccountId in CloudTrailEventData top level from either UserIdentity top level or from
      * SessionIssuer. The AccountId in UserIdentity has higher precedence than AccountId in
      * SessionIssuer (if exists).
      *
-     * @param record
+     * @param eventData the event data to set.
      */
-    private void setAccountId(CloudTrailRecord record) {
-        if (record.getUserIdentity() == null) {
+    private void setAccountId(CloudTrailEventData eventData) {
+        if (eventData.getUserIdentity() == null) {
             return;
         }
 
-        if (record.getUserIdentity().getAccountId() != null) {
-            record.add("accountId", record.getUserIdentity().getAccountId());
+        if (eventData.getUserIdentity().getAccountId() != null) {
+            eventData.add("accountId", eventData.getUserIdentity().getAccountId());
         } else {
-            SessionContext sessionContext = record.getUserIdentity().getSessionContext();
+            SessionContext sessionContext = eventData.getUserIdentity().getSessionContext();
             if (sessionContext != null && sessionContext.getSessionIssuer() != null) {
-                record.add("accountId", sessionContext.getSessionIssuer().getAccountId());
+                eventData.add("accountId", sessionContext.getSessionIssuer().getAccountId());
             }
         }
     }
 
     /**
-     * Parse user identity in AWSCloudTrailRecord
+     * Parse user identity in CloudTrailEventData
      *
-     * @param record
+     * @param eventData
      * @throws IOException
      */
-    private void parseUserIdentity(CloudTrailRecord record) throws IOException {
+    private void parseUserIdentity(CloudTrailEventData eventData) throws IOException {
         JsonToken nextToken = this.jsonParser.nextToken();
         if (nextToken == JsonToken.VALUE_NULL) {
-            record.add(CloudTrailRecordField.userIdentity.name(), null);
+            eventData.add(CloudTrailEventField.userIdentity.name(), null);
             return;
         }
 
@@ -208,42 +224,43 @@ public abstract class AbstractRecordSerializer implements RecordSerializer{
 
             switch (key) {
             case "type":
-                userIdentity.add(CloudTrailRecordField.type.name(), this.jsonParser.nextTextValue());
+                userIdentity.add(CloudTrailEventField.type.name(), this.jsonParser.nextTextValue());
                 break;
             case "principalId":
-                userIdentity.add(CloudTrailRecordField.principalId.name(), this.jsonParser.nextTextValue());
+                userIdentity.add(CloudTrailEventField.principalId.name(), this.jsonParser.nextTextValue());
                 break;
             case "arn":
-                userIdentity.add(CloudTrailRecordField.arn.name(), this.jsonParser.nextTextValue());
+                userIdentity.add(CloudTrailEventField.arn.name(), this.jsonParser.nextTextValue());
                 break;
             case "accountId":
-                userIdentity.add(CloudTrailRecordField.accountId.name(), this.jsonParser.nextTextValue());
+                userIdentity.add(CloudTrailEventField.accountId.name(), this.jsonParser.nextTextValue());
                 break;
             case "accessKeyId":
-                userIdentity.add(CloudTrailRecordField.accessKeyId.name(), this.jsonParser.nextTextValue());
+                userIdentity.add(CloudTrailEventField.accessKeyId.name(), this.jsonParser.nextTextValue());
                 break;
             case "userName":
-                userIdentity.add(CloudTrailRecordField.userName.name(), this.jsonParser.nextTextValue());
+                userIdentity.add(CloudTrailEventField.userName.name(), this.jsonParser.nextTextValue());
                 break;
             case "sessionContext":
                 this.parseSessionContext(userIdentity);
                 break;
             case "invokedBy":
-                userIdentity.add(CloudTrailRecordField.invokedBy.name(), this.jsonParser.nextTextValue());
+                userIdentity.add(CloudTrailEventField.invokedBy.name(), this.jsonParser.nextTextValue());
                 break;
             default:
                 userIdentity.add(key, this.parseDefaultValue(key));
                 break;
             }
         }
-        record.add(CloudTrailRecordField.userIdentity.name(), userIdentity);
+        eventData.add(CloudTrailEventField.userIdentity.name(), userIdentity);
     }
 
     /**
      * Parse session context object
      *
-     * @return
+     * @param userIdentity the {@link com.amazonaws.services.cloudtrail.processinglibrary.model.internal.UserIdentity}
      * @throws IOException
+     * @throws JsonParseException
      */
     private void parseSessionContext(UserIdentity userIdentity) throws IOException {
         if (this.jsonParser.nextToken() != JsonToken.START_OBJECT) {
@@ -257,13 +274,13 @@ public abstract class AbstractRecordSerializer implements RecordSerializer{
 
             switch (key) {
             case "attributes":
-                sessionContext.add(CloudTrailRecordField.attributes.name(), this.parseAttributes());
+                sessionContext.add(CloudTrailEventField.attributes.name(), this.parseAttributes());
                 break;
             case "sessionIssuer":
-                sessionContext.add(CloudTrailRecordField.sessionIssuer.name(), this.parseSessionIssuer(sessionContext));
+                sessionContext.add(CloudTrailEventField.sessionIssuer.name(), this.parseSessionIssuer(sessionContext));
                 break;
             case "webIdFederationData":
-                sessionContext.add(CloudTrailRecordField.webIdFederationData.name(), this.parseWebIdentitySessionContext(sessionContext));
+                sessionContext.add(CloudTrailEventField.webIdFederationData.name(), this.parseWebIdentitySessionContext(sessionContext));
                 break;
             default:
                 sessionContext.add(key, this.parseDefaultValue(key));
@@ -271,14 +288,15 @@ public abstract class AbstractRecordSerializer implements RecordSerializer{
             }
         }
 
-        userIdentity.add(CloudTrailRecordField.sessionContext.name(), sessionContext);
+        userIdentity.add(CloudTrailEventField.sessionContext.name(), sessionContext);
 
     }
 
     /**
      * Parse web identify session object
      *
-     * @return
+     * @param sessionContext
+     * @return the web identity session context
      * @throws IOException
      */
     private WebIdentitySessionContext parseWebIdentitySessionContext(SessionContext sessionContext) throws IOException {
@@ -293,10 +311,10 @@ public abstract class AbstractRecordSerializer implements RecordSerializer{
 
             switch (key) {
             case "attributes":
-                webIdFederationData.add(CloudTrailRecordField.attributes.name(), this.parseAttributes());
+                webIdFederationData.add(CloudTrailEventField.attributes.name(), this.parseAttributes());
                 break;
             case "federatedProvider":
-                webIdFederationData.add(CloudTrailRecordField.federatedProvider.name(), this.jsonParser.nextTextValue());
+                webIdFederationData.add(CloudTrailEventField.federatedProvider.name(), this.jsonParser.nextTextValue());
                 break;
             default:
                 webIdFederationData.add(key, this.parseDefaultValue(key));
@@ -311,7 +329,8 @@ public abstract class AbstractRecordSerializer implements RecordSerializer{
     /**
      * Parse session issuer object. It only happened on role session and federated session.
      *
-     * @return
+     * @param sessionContext
+     * @return the session issuer object.
      * @throws IOException
      */
     private SessionIssuer parseSessionIssuer(SessionContext sessionContext) throws IOException {
@@ -326,19 +345,19 @@ public abstract class AbstractRecordSerializer implements RecordSerializer{
 
             switch (key) {
             case "type":
-                sessionIssuer.add(CloudTrailRecordField.type.name(), this.jsonParser.nextTextValue());
+                sessionIssuer.add(CloudTrailEventField.type.name(), this.jsonParser.nextTextValue());
                 break;
             case "principalId":
-                sessionIssuer.add(CloudTrailRecordField.principalId.name(), this.jsonParser.nextTextValue());
+                sessionIssuer.add(CloudTrailEventField.principalId.name(), this.jsonParser.nextTextValue());
                 break;
             case "arn":
-                sessionIssuer.add(CloudTrailRecordField.arn.name(), this.jsonParser.nextTextValue());
+                sessionIssuer.add(CloudTrailEventField.arn.name(), this.jsonParser.nextTextValue());
                 break;
             case "accountId":
-                sessionIssuer.add(CloudTrailRecordField.accountId.name(), this.jsonParser.nextTextValue());
+                sessionIssuer.add(CloudTrailEventField.accountId.name(), this.jsonParser.nextTextValue());
                 break;
             case "userName":
-                sessionIssuer.add(CloudTrailRecordField.userName.name(), this.jsonParser.nextTextValue());
+                sessionIssuer.add(CloudTrailEventField.userName.name(), this.jsonParser.nextTextValue());
                 break;
             default:
                 sessionIssuer.add(key, this.parseDefaultValue(key));
@@ -350,30 +369,32 @@ public abstract class AbstractRecordSerializer implements RecordSerializer{
     }
 
     /**
-     * Parse record read only attribute.
+     * Parse event read only attribute.
      *
-     * @param record
+     * @param eventData
+     *
      * @throws JsonParseException
      * @throws IOException
      */
-    private void parseReadOnly(CloudTrailRecord record) throws JsonParseException, IOException {
+    private void parseReadOnly(CloudTrailEventData eventData) throws JsonParseException, IOException {
         this.jsonParser.nextToken();
         Boolean readOnly = null;
         if (this.jsonParser.getCurrentToken() != JsonToken.VALUE_NULL) {
             readOnly = this.jsonParser.getBooleanValue();
         }
-        record.add(CloudTrailRecordField.readOnly.name(), readOnly);
+        eventData.add(CloudTrailEventField.readOnly.name(), readOnly);
     }
 
     /**
      * Parse a list of Resource
-     * @param record the resources belong to
+     *
+     * @param eventData the resources belong to
      * @throws IOException
      */
-    private void parseResources(CloudTrailRecord record) throws IOException {
+    private void parseResources(CloudTrailEventData eventData) throws IOException {
         JsonToken nextToken = this.jsonParser.nextToken();
         if (nextToken == JsonToken.VALUE_NULL) {
-            record.add(CloudTrailRecordField.resources.name(), null);
+            eventData.add(CloudTrailEventField.resources.name(), null);
             return;
         }
 
@@ -387,7 +408,7 @@ public abstract class AbstractRecordSerializer implements RecordSerializer{
             resources.add(this.parseResource());
         }
 
-        record.add(CloudTrailRecordField.resources.name(), resources);
+        eventData.add(CloudTrailEventField.resources.name(), resources);
     }
 
     /**
@@ -418,13 +439,12 @@ public abstract class AbstractRecordSerializer implements RecordSerializer{
     }
 
     /**
-     * Parse the record with key as default value.
+     * Parse the event with key as default value.
      *
      * If the value is JSON null, then we will return null.
      * If the value is JSON object (of starting with START_ARRAY or START_OBject) , then we will convert the object to String.
      * If the value is JSON scalar value (non-structured object), then we will return simply return it as String.
      *
-     * @param record
      * @param key
      * @throws IOException
      */
@@ -469,7 +489,7 @@ public abstract class AbstractRecordSerializer implements RecordSerializer{
      * This method convert a String to UUID type. Currently EventID is in UUID type.
      *
      * @param str that need to convert to UUID
-     * @return
+     * @return the UUID.
      */
     private UUID convertToUUID(String str) {
         return UUID.fromString(str);

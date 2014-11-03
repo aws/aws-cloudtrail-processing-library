@@ -14,6 +14,6 @@
  ******************************************************************************/
 
 /**
- * Package information go here...
+ * Utility classes.
  */
 package com.amazonaws.services.cloudtrail.processinglibrary.utils;

@@ -15,16 +15,24 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.impl;
 
-import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.RecordFilter;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailClientRecord;
+import java.util.List;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.EventsProcessor;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEvent;
 
 /**
- * Default implementation of RecordFilter that simply return True for any CloudTrailClientRecord
+ * Default implementation of EventsProcesssor that simply log each event.
  */
-public class DefaultRecordFilter implements RecordFilter {
+public class DefaultEventsProcessor implements EventsProcessor {
+    private static final Log logger = LogFactory.getLog(DefaultExceptionHandler.class);
 
     @Override
-    public boolean filterRecord(CloudTrailClientRecord record) {
-        return true;
+    public void process(List<CloudTrailEvent> events) {
+        for (CloudTrailEvent event : events) {
+            logger.info(event);
+        }
     }
 }

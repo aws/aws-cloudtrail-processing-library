@@ -27,7 +27,7 @@ public class WebIdentitySessionContext extends CloudTrailDataStore{
      * @return Who To grant temporary access to a non-AWS user
      */
     public String getFederatedProvider() {
-        return (String) this.get(CloudTrailRecordField.federatedProvider.name());
+        return (String) this.get(CloudTrailEventField.federatedProvider.name());
     }
 
     /**
@@ -37,6 +37,6 @@ public class WebIdentitySessionContext extends CloudTrailDataStore{
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public Map<String, String> getAttributes() {
-        return (Map) this.get(CloudTrailRecordField.attributes.name());
+        return (Map) this.get(CloudTrailEventField.attributes.name());
     }
 }

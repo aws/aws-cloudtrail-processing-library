@@ -63,7 +63,7 @@ public class SqsManager {
     private static final int DEFAULT_WAIT_TIME_SECONDS = 20;
 
     /**
-     * An instance of AWSCloudTrailClientConfiguration.
+     * An instance of ProcessingConfiguration.
      */
     private ProcessingConfiguration config;
 
@@ -87,10 +87,10 @@ public class SqsManager {
     private ProgressReporter progressReporter;
 
     /**
-     * AWSCloudTrailClientSqsManager constructor.
+     * SqsManager constructor.
      *
      * @param sqsClient used to poll message from SQS.
-     * @param config user provided AWSCloudTrailClientConfiguration.
+     * @param config user provided ProcessingConfiguration.
      * @param exceptionHandler user provided exceptionHandler.
      * @param progressReporter user provided progressReporter.
      */

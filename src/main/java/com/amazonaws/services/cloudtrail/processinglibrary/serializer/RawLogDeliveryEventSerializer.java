@@ -17,16 +17,16 @@ package com.amazonaws.services.cloudtrail.processinglibrary.serializer;
 
 import java.io.IOException;
 
-import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailDeliveryInfo;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailLog;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.LogDeliveryInfo;
 import com.fasterxml.jackson.core.JsonParser;
 
-public class RawLogDeliveryRecordSerializer extends AbstractRecordSerializer{
+public class RawLogDeliveryEventSerializer extends AbstractEventSerializer{
     private String logFile;
     private CloudTrailLog ctLog;
 
-    public RawLogDeliveryRecordSerializer(String logFile, CloudTrailLog ctLog, JsonParser jsonParser) throws IOException {
+    public RawLogDeliveryEventSerializer(String logFile, CloudTrailLog ctLog, JsonParser jsonParser) throws IOException {
         super(jsonParser);
         this.ctLog = ctLog;
         this.logFile = logFile;
@@ -34,15 +34,15 @@ public class RawLogDeliveryRecordSerializer extends AbstractRecordSerializer{
     }
 
     /**
-     * Find the raw record in string format from logFileContent based on character start index and end index
+     * Find the raw event in string format from logFileContent based on character start index and end index
      */
     @Override
-    public CloudTrailDeliveryInfo getDeliveryInfo(int charStart, int charEnd) {
+    public CloudTrailEventMetadata getMetadata(int charStart, int charEnd) {
         // Use Jackson getTokenLocation API only return the , (Comma) position, we need to advance to first open curly brace.
-        String rawRecord = logFile.substring(charStart, charEnd+1);
-        int offset = rawRecord.indexOf("{");
-        rawRecord = rawRecord.substring(offset);
-        CloudTrailDeliveryInfo deliveryInfo = new LogDeliveryInfo(ctLog, charStart + offset, charEnd, rawRecord);
-        return deliveryInfo;
+        String rawEvent = logFile.substring(charStart, charEnd+1);
+        int offset = rawEvent.indexOf("{");
+        rawEvent = rawEvent.substring(offset);
+        CloudTrailEventMetadata metadata = new LogDeliveryInfo(ctLog, charStart + offset, charEnd, rawEvent);
+        return metadata;
     }
 }

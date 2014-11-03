@@ -14,6 +14,7 @@
  ******************************************************************************/
 
 /**
- * Classes that are used to configure an {@AWSCloudTrailProcessingExecutor}.
+ * Classes that are used to configure an {@link
+ * com.amazonaws.services.cloudtrail.processinglibrary.AWSCloudTrailProcessingExecutor}.
  */
 package com.amazonaws.services.cloudtrail.processinglibrary.configuration;

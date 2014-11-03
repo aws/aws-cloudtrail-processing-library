@@ -14,6 +14,6 @@
  ******************************************************************************/
 
 /**
- * Package information go here...
+ * Managers for S3 and SQS related activities.
  */
 package com.amazonaws.services.cloudtrail.processinglibrary.manager;

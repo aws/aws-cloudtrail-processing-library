@@ -18,12 +18,10 @@ package com.amazonaws.services.cloudtrail.processinglibrary.configuration;
 import com.amazonaws.auth.AWSCredentialsProvider;
 
 /**
- * Data used to configure a {@link RecordReader}.
+ * Data used to configure a {@link com.amazonaws.services.cloudtrail.processinglibrary.reader.EventReader}.
  * <p>
- * The user either passes a system properties file to load the configuration or
- * creates a BasicProcessingConfiguration object then use setter to set
- * each attribute. If user does not provide an attribute, default value will be
- * provided.
+ * You can use a system properties file to load the configuration or create a {@link ClientConfiguration} object and set
+ * each attribute. If you do not provide a value for an attribute, a default value will be provided.
  */
 public interface ProcessingConfiguration {
     /* default configuration values */
@@ -32,34 +30,45 @@ public interface ProcessingConfiguration {
      * The default SQS region; {@value}.
      */
     public static final String DEFAULT_SQS_REGION = "us-east-1";
+
     /**
      * The default S3 region; {@value}.
      */
     public static final String DEFAULT_S3_REGION = "us-east-1";
+
     /**
      * The default SQS visibility timeout, in seconds; {@value}.
      */
     public static final int DEFAULT_VISIBILITY_TIMEOUT = 60;
+
     /**
      * The default S3 thread count; {@value}.
      */
     public static final int DEFAULT_THREAD_COUNT = 1;
+
     /**
      * The default thread termination delay, in seconds; {@value}.
      */
     public static final int DEFAULT_THREAD_TERMINATION_DELAY_SECONDS = 60;
+
     /**
-     * The default number of records accumulated before emitting; {@value}.
+     * The default number of events accumulated before emitting; {@value}.
      */
-    public static final int DEFAULT_MAX_RECORDS_PER_EMIT = 1;
+    public static final int DEFAULT_MAX_EVENTS_PER_EMIT = 1;
+
     /**
-     * Whether to verify cloud trail log files by default; {@value}.
+     * Whether to enable raw event information in event metadata; {@value}.
      */
-    public static final boolean DEFAULT_VERIFY_CLOUD_TRAIL_LOG_FILE = false;
+    public static final boolean DEFAULT_ENABLE_RAW_EVENT_INFO = false;
+
     /**
-     * Whether to enable raw record information in record data; {@value}.
+     * Get the AWS Credentials provider used to access AWS.
+     *
+     * @return an
+     *     <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/AWSCredentialsProvider.html">AWSCredentialsProvider</a>
+     *     object.
      */
-    public static final boolean DEFAULT_ENABLE_RAW_RECORD_INFO = false;
+    public AWSCredentialsProvider getAwsCredentialsProvider();
 
     /**
      * Gets the SQS URL used to obtain CloudTrail logs.
@@ -107,35 +116,26 @@ public interface ProcessingConfiguration {
     public int getThreadTerminationDelaySeconds();
 
     /**
-     * Get the number of records per emit.
+     * Get the maximum number of AWSCloudTrailClientEvents sent to a single invocation of processEvents().
      *
-     * @return the maxRecordsPerEmit
+     * @return the maximum number of events that will be buffered per call to processEvents.
      */
-    public int getMaxRecordsPerEmit();
+    public int getMaxEventsPerEmit();
 
     /**
-     * Indicates if raw record information is returned in {@CloudTrailDeliveryInfo}.
+     * Indicates if raw event information will be returned in
+     * {@link com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata}.
      *
-     * @return <code>true</code> if raw record information is enabled;
-     *   <code>false</code> otherwise.
+     * @return <code>true</code> if raw event information is enabled; <code>false</code> otherwise.
      */
-    public boolean isEnableRawRecordInfo();
+    public boolean isEnableRawEventInfo();
 
     /**
-     * Get the AWS Credentials provider used to verify logs.
-     *
-     * @return an {@AWSCredentialsProvider} object.
-     */
-    public AWSCredentialsProvider getAwsCredentialsProvider();
-
-    /**
-     * Validate that all necessary parameters are set in the provided
-     * configuration.
+     * Validate that all necessary parameters are set in the provided configuration.
      * <p>
-     * This method throws an exception if any required parameters are
-     * <code>null</code>.
+     * This method throws an exception if any of the required parameters are <code>null</code>.
      *
-     * @throws IllegalStateException
+     * @throws IllegalStateException if any parameters are <code>null</code>.
      */
     public void validate();
 }

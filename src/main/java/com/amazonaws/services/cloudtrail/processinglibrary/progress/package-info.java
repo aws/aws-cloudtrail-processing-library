@@ -14,6 +14,6 @@
  ******************************************************************************/
 
 /**
- * Package information go here...
+ * Classes to provide processing progress to users.
  */
 package com.amazonaws.services.cloudtrail.processinglibrary.progress;

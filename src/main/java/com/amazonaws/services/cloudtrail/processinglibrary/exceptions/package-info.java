@@ -14,6 +14,6 @@
  ******************************************************************************/
 
 /**
- * Package information go here...
+ * Exceptions that used in AWS CloudTrail Processing Library
  */
 package com.amazonaws.services.cloudtrail.processinglibrary.exceptions;

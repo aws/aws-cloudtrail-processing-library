@@ -19,16 +19,16 @@ import java.io.IOException;
 
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
 import com.amazonaws.services.sqs.model.Message;
-import com.fasterxml.jackson.core.JsonParseException;
 
+/**
+ * An interface for an AWS CloudTrail source serializer.
+ */
 public interface SourceSerializer {
     /**
      * Get CloudTrailSource from SQS message object.
      *
-     * @return
-     * @throws MessageParsingException
-     * @throws IOException
-     * @throws JsonParseException
+     * @return the {@link com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource}.
+     * @throws IOException if the source could not be accessed.
      */
     public CloudTrailSource getSource(Message sqsMessage) throws IOException;
 }

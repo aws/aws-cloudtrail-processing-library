@@ -47,7 +47,7 @@ To learn how to use the |library| to build a CloudTrail log processor in Java, r
 * `Using the CloudTrail Processing Library`__ in the *AWS CloudTrail User Guide*.
 * `AWS CloudTrail Processing Library Reference`__
 
-.. __: http://docs.aws.amazon.com/awscloudtrail/latest/userguide/using_processing_lib_top_level.html
+.. __: http://docs.aws.amazon.com/awscloudtrail/latest/userguide/using_processing_lib.html
 .. __: http://docs.aws.amazon.com/awscloudtrail/latest/processinglib
 
 

@@ -25,6 +25,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,8 +64,11 @@ public class DefaultSourceSerializer implements SourceSerializer {
         JsonNode records = messageNode.get("Records");
         if (records != null && records.isArray()) {
             for (JsonNode record : records) {
-                bucketName = JsonPath.read(record, "$.s3.bucket.name");
-                objectKeys.add(JsonPath.read(record, "$.s3.object.key").toString());
+                try {
+                    bucketName = JsonPath.read(record.toString(), "$.s3.bucket.name");
+                    objectKeys.add(JsonPath.read(record.toString(), "$.s3.object.key").toString());
+                } catch (PathNotFoundException ignored) {
+                }
             }
         } else {
             // parse message body

@@ -15,11 +15,6 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.serializer;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailLog;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.SQSBasedSource;
@@ -29,6 +24,12 @@ import com.amazonaws.services.sqs.model.Message;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class DefaultSourceSerializer implements SourceSerializer {
 
@@ -58,18 +59,29 @@ public class DefaultSourceSerializer implements SourceSerializer {
         String messageText = this.mapper.readTree(sqsMessage.getBody()).get(MESSAGE).textValue();
         JsonNode messageNode = this.mapper.readTree(messageText);
 
-        // parse message body
-        Iterator<String> it = messageNode.fieldNames();
-        while (it.hasNext()) {
-            String key = it.next();
-            String value = messageNode.path(key).textValue();
-            if (S3_BUCKET.equals(key)) {
-                bucketName = value;
-            } else if (S3_OBJECT_KEY.equals(key)) {
-                objectKeys = this.mapper.readValue(messageNode.get(S3_OBJECT_KEY).traverse(), new TypeReference<List<String>>() {});
-            } else {
-                // rest of attributes from message body will be added to SQS message's attributes.
-                sqsMessage.addAttributesEntry(key, value);
+        // Parse arbitrary S3 notifications (not only Cloudtrail-specific ones)
+        JsonNode records = messageNode.get("Records");
+        if (records != null && records.isArray()) {
+            for (JsonNode record : records) {
+                bucketName = JsonPath.read(record, "$.s3.bucket.name");
+                objectKeys.add(JsonPath.read(record, "$.s3.object.key").toString());
+            }
+        } else {
+            // parse message body
+            Iterator<String> it = messageNode.fieldNames();
+            while (it.hasNext()) {
+                String key = it.next();
+                String value = messageNode.path(key).textValue();
+                if (S3_BUCKET.equals(key)) {
+                    bucketName = value;
+                } else if (S3_OBJECT_KEY.equals(key)) {
+                    objectKeys = this.mapper.readValue(messageNode.get(S3_OBJECT_KEY).traverse(), new TypeReference<List<String>>() {
+
+                    });
+                } else {
+                    // rest of attributes from message body will be added to SQS message's attributes.
+                    sqsMessage.addAttributesEntry(key, value);
+                }
             }
         }
 

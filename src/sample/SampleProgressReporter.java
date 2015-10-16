@@ -20,7 +20,6 @@ import java.util.Date;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.amazonaws.services.cloudtrail.processinglibrary.impl.DefaultProgressReporter;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ProgressReporter;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus;
 
@@ -28,7 +27,7 @@ import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStat
  * Simply log the processing latency.
  */
 public class SampleProgressReporter implements ProgressReporter {
-    private static final Log logger = LogFactory.getLog(DefaultProgressReporter.class);
+    private static final Log logger = LogFactory.getLog(SampleProgressReporter.class);
 
     @Override
     public Object reportStart(ProgressStatus status) {

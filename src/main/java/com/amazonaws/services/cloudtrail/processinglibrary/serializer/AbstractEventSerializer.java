@@ -154,7 +154,6 @@ public abstract class AbstractEventSerializer implements EventSerializer {
                 eventData.add(CloudTrailEventField.eventTime.name(), this.convertToDate(this.jsonParser.nextTextValue()));
                 break;
             case "eventID":
-            case "requestID":
                 eventData.add(key, this.convertToUUID(this.jsonParser.nextTextValue()));
                 break;
             case "readOnly":

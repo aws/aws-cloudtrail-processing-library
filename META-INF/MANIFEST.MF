@@ -2,10 +2,10 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: AWS CloudTrail Processing Library for Java
 Bundle-SymbolicName: com.amazonaws.awscloudtrailprocessinglibrary;singleton:=true
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.1
 Bundle-Vendor: Amazon Technologies, Inc
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Require-Bundle: com.amazonaws.sdk;bundle-version="1.9.3"
+Require-Bundle: com.amazonaws.sdk;bundle-version="1.10.27"
 Export-Package: com.amazonaws.services.cloudtrail,
  com.amazonaws.services.cloudtrail.processinglibrary,
  com.amazonaws.services.cloudtrail.processinglibrary.configuration,

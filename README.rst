@@ -32,7 +32,7 @@ Getting Started
 Minimum Requirements
 ~~~~~~~~~~~~~~~~~~~~
 
-* **AWS Java SDK 1.9.3**: In order to use the |library|, you'll need the `AWS Java SDK`__.
+* **AWS Java SDK 1.10.27**: In order to use the |library|, you'll need the `AWS Java SDK`__.
 * **Java 1.7**: The |library| requires `Java 1.7 (Java SE 7)`__ or later.
 
 .. __: https://github.com/aws/aws-sdk-java
@@ -65,5 +65,5 @@ build, use this command::
 Release Notes
 -------------
 
-Library Release 1.0.0 (November 3, 2014)
+Library Release 1.0.1 (October 28, 2015)
 Initial release.

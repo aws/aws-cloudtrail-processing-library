@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.Date;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.amazonaws.services.cloudtrail.processinglibrary.impl.DefaultProgressReporter;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ProgressReporter;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus;
 
@@ -28,7 +27,7 @@ import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStat
  * Simply log the processing latency.
  */
 public class SampleProgressReporter implements ProgressReporter {
-    private static final Log logger = LogFactory.getLog(DefaultProgressReporter.class);
+    private static final Log logger = LogFactory.getLog(SampleProgressReporter.class);
 
     @Override
     public Object reportStart(ProgressStatus status) {

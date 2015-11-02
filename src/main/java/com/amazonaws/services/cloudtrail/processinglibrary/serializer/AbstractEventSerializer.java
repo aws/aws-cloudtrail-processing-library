@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -154,7 +154,6 @@ public abstract class AbstractEventSerializer implements EventSerializer {
                 eventData.add(CloudTrailEventField.eventTime.name(), this.convertToDate(this.jsonParser.nextTextValue()));
                 break;
             case "eventID":
-            case "requestID":
                 eventData.add(key, this.convertToUUID(this.jsonParser.nextTextValue()));
                 break;
             case "readOnly":

@@ -1,17 +1,31 @@
+/*******************************************************************************
+ * Copyright 2010-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ *  http://aws.amazon.com/apache2.0
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ ******************************************************************************/
+
 package sample;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.amazonaws.services.cloudtrail.processinglibrary.exceptions.ProcessingLibraryException;
-import com.amazonaws.services.cloudtrail.processinglibrary.impl.DefaultProgressReporter;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ExceptionHandler;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressInfo;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressState;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus;
 
 public class SampleExceptionHandler implements ExceptionHandler{
-    private static final Log logger = LogFactory.getLog(DefaultProgressReporter.class);
+    private static final Log logger = LogFactory.getLog(SampleExceptionHandler.class);
 
     /**
      * Exception handler that simply log progress state and progress information.

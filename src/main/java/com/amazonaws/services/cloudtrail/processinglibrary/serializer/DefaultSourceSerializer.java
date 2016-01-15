@@ -15,6 +15,11 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.serializer;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailLog;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.SQSBasedSource;
@@ -26,11 +31,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 public class DefaultSourceSerializer implements SourceSerializer {
 
@@ -65,8 +65,12 @@ public class DefaultSourceSerializer implements SourceSerializer {
         if (records != null && records.isArray()) {
             for (JsonNode record : records) {
                 try {
-                    bucketName = JsonPath.read(record.toString(), "$.s3.bucket.name");
-                    objectKeys.add(JsonPath.read(record.toString(), "$.s3.object.key").toString());
+                    final String s3ObjectKey = JsonPath.read(record.toString(), "$.s3.object.key").toString();
+                    // skip "directories"
+                    if (!s3ObjectKey.endsWith("/")) {
+                        bucketName = JsonPath.read(record.toString(), "$.s3.bucket.name");
+                        objectKeys.add(s3ObjectKey);
+                    }
                 } catch (PathNotFoundException ignored) {
                 }
             }

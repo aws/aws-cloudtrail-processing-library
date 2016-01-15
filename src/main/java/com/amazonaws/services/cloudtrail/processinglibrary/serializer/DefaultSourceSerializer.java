@@ -65,9 +65,9 @@ public class DefaultSourceSerializer implements SourceSerializer {
         if (records != null && records.isArray()) {
             for (JsonNode record : records) {
                 try {
-                    final String s3ObjectKey = JsonPath.read(record.toString(), "$.s3.object.key").toString();
+                    final String s3ObjectKey = JsonPath.read(record.toString(), "$.s3.object.key");
                     // skip "directories"
-                    if (!s3ObjectKey.endsWith("/")) {
+                    if (s3ObjectKey!= null && !s3ObjectKey.endsWith("/")) {
                         bucketName = JsonPath.read(record.toString(), "$.s3.bucket.name");
                         objectKeys.add(s3ObjectKey);
                     }

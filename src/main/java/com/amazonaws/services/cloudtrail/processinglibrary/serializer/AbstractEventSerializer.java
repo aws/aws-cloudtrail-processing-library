@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -178,24 +178,37 @@ public abstract class AbstractEventSerializer implements EventSerializer {
     }
 
     /**
-     * Set AccountId in CloudTrailEventData top level from either UserIdentity top level or from
-     * SessionIssuer. The AccountId in UserIdentity has higher precedence than AccountId in
-     * SessionIssuer (if exists).
+     * Set AccountId in CloudTrailEventData top level from either recipientAccountID or from UserIdentity.
+     * If recipientAccountID exists then recipientAccountID is set to accountID; otherwise, accountID is retrieved
+     * from UserIdentity.
+     *
+     * There are 2 places accountID would appear in UserIdentity: first is the UserIdentity top level filed
+     * and the second place is accountID inside SessionIssuer. If accountID exists in the top level field, then it is
+     * set to accountID; otherwise, accountID is retrieved from SessionIssuer.
+     *
+     * If all 3 places cannot find accountID, then accountID is not set.
      *
      * @param eventData the event data to set.
      */
     private void setAccountId(CloudTrailEventData eventData) {
-        if (eventData.getUserIdentity() == null) {
+        if (eventData.getRecipientAccountId() != null) {
+            eventData.add("accountId", eventData.getRecipientAccountId());
             return;
         }
 
-        if (eventData.getUserIdentity().getAccountId() != null) {
+        if (eventData.getUserIdentity() != null &&
+            eventData.getUserIdentity().getAccountId() != null) {
             eventData.add("accountId", eventData.getUserIdentity().getAccountId());
-        } else {
-            SessionContext sessionContext = eventData.getUserIdentity().getSessionContext();
-            if (sessionContext != null && sessionContext.getSessionIssuer() != null) {
-                eventData.add("accountId", sessionContext.getSessionIssuer().getAccountId());
-            }
+            return;
+        }
+
+        if (eventData.getUserIdentity() != null &&
+            eventData.getUserIdentity().getAccountId() == null &&
+            eventData.getUserIdentity().getSessionContext() != null &&
+            eventData.getUserIdentity().getSessionContext().getSessionIssuer() != null &&
+            eventData.getUserIdentity().getSessionContext().getSessionIssuer().getAccountId() != null) {
+            eventData.add("accountId", eventData.getUserIdentity().getSessionContext().getSessionIssuer().getAccountId());
+            return;
         }
     }
 

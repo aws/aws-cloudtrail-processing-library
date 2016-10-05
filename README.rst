@@ -65,5 +65,18 @@ build, use this command::
 Release Notes
 -------------
 
-Library Release 1.0.1 (October 28, 2015)
-Initial release.
+Release 1.0.2 (Oct 5, 2016)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Add support for service event, additional information is provided in the serviceEventDetails file.
+* Add support for Resource type to identify the resource's type in a given CloudTrail event.
+* Update AWS Java SDK to version 1.11.
+* Update the latest supported CloudTrail event version to 1.05.
+* Update event version is not supported by CloudTrail warning logging message to debug level.
+
+Release 1.0.1 (Oct 28, 2015)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Update AWS Java SDK to version 1.10.
+
+Release 1.0.0 (Nov 3, 2014)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Initial release.

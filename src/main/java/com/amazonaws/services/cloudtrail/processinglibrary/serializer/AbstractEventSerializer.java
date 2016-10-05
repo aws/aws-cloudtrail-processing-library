@@ -15,38 +15,27 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.serializer;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEvent;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventData;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.CloudTrailEventField;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.Resource;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.SessionContext;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.SessionIssuer;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.UserIdentity;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.WebIdentitySessionContext;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.*;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.*;
 
 public abstract class AbstractEventSerializer implements EventSerializer {
 
     private static final Log logger = LogFactory.getLog(AbstractEventSerializer.class);
     private static final String RECORDS = "Records";
-    private static final double SUPPORTED_EVENT_VERSION = 1.03d;
+    private static final double SUPPORTED_EVENT_VERSION = 1.05d;
 
     /**
      * A Jackson JSON Parser object.
@@ -143,7 +132,7 @@ public abstract class AbstractEventSerializer implements EventSerializer {
             case "eventVersion":
                 String eventVersion = this.jsonParser.nextTextValue();
                 if (Double.parseDouble(eventVersion) > SUPPORTED_EVENT_VERSION) {
-                    logger.warn(String.format("EventVersion %s is not supported by CloudTrail.", eventVersion));
+                    logger.debug(String.format("EventVersion %s is not supported by CloudTrail.", eventVersion));
                 }
                 eventData.add(key, eventVersion);
                 break;

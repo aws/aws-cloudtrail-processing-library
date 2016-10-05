@@ -15,14 +15,14 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.model;
 
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.CloudTrailDataStore;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.CloudTrailEventField;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.Resource;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.UserIdentity;
+
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 
 /**
@@ -169,6 +169,19 @@ public class CloudTrailEventData extends CloudTrailDataStore {
      */
     public String getResponseElements() {
         return (String) this.get(CloudTrailEventField.responseElements.name());
+    }
+
+
+    /**
+     * Get aws service event details
+     *
+     * This field will only be visible to awsServiceEvent type, it indicates what trigger the event and what the result
+     * of this event.
+     *
+     * @return The service event detail for an awsServiceEvent type event
+     */
+    public String getServiceEventDetails() {
+        return (String) this.get(CloudTrailEventField.serviceEventDetails.name());
     }
 
     /**

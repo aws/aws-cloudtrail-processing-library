@@ -45,6 +45,7 @@ public enum CloudTrailEventField {
     requestParameters,
     resources,
     responseElements,
+    serviceEventDetails,
     sessionContext,
     sessionIssuer,
     sourceIPAddress,

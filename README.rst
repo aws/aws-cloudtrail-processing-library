@@ -65,7 +65,7 @@ build, use this command::
 Release Notes
 -------------
 
-Release 1.0.2 (Oct 5, 2016)
+Release 1.0.3 (Oct 5, 2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Add support for service event, additional information is provided in the serviceEventDetails file.
 * Add support for Resource type to identify the resource's type in a given CloudTrail event.

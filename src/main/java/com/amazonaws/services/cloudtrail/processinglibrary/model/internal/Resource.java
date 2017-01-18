@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -22,12 +22,21 @@ public class Resource extends CloudTrailDataStore {
     /**
      * Get the Amazon Resource Name (ARN) for this resource.
      *
-     * use getValue() instead
-     *
      * @return the ARN associated with the resource.
      */
     public String getArn() {
         return (String) get(CloudTrailEventField.ARN.name());
+    }
+
+    /**
+     * Get the ARNPrefix of the resource.
+     *
+     * Resource must have either ARN or ARNPrefix, but not both.
+     *
+     * @return the ARNPrefix associated with the resource.
+     */
+    public String getArnPrefix() {
+        return (String) get(CloudTrailEventField.ARNPrefix.name());
     }
 
     /**

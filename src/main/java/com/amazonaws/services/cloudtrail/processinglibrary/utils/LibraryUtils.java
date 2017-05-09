@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 import java.util.TimeZone;
 
 /**
@@ -143,7 +144,7 @@ public class LibraryUtils {
     private static ThreadLocal<SimpleDateFormat> utcSdf = new ThreadLocal<SimpleDateFormat>() {
         @Override
         protected SimpleDateFormat initialValue() {
-            SimpleDateFormat sdf = new SimpleDateFormat(UTC_DATE_FORMAT);
+            SimpleDateFormat sdf = new SimpleDateFormat(UTC_DATE_FORMAT, Locale.US); // $NON_NLS_L$
             sdf.setTimeZone(TimeZone.getTimeZone(UTC_TIME_ZONE));
             return sdf;
         }

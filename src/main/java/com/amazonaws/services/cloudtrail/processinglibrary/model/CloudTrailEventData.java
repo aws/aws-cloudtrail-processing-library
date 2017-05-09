@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -15,14 +15,14 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.model;
 
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.CloudTrailDataStore;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.CloudTrailEventField;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.Resource;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.UserIdentity;
+
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 
 /**
@@ -171,6 +171,19 @@ public class CloudTrailEventData extends CloudTrailDataStore {
         return (String) this.get(CloudTrailEventField.responseElements.name());
     }
 
+
+    /**
+     * Get aws service event details
+     *
+     * This field will only be visible to awsServiceEvent type, it indicates what trigger the event and what the result
+     * of this event.
+     *
+     * @return The service event detail for an awsServiceEvent type event
+     */
+    public String getServiceEventDetails() {
+        return (String) this.get(CloudTrailEventField.serviceEventDetails.name());
+    }
+
     /**
      * Get additional API data.
      *
@@ -249,5 +262,33 @@ public class CloudTrailEventData extends CloudTrailDataStore {
      */
     public String getRecipientAccountId() {
         return (String) this.get(CloudTrailEventField.recipientAccountId.name());
+    }
+
+    /**
+     * Get the shared event ID
+     *
+     * @return When recipientAccountList has size greater than 1, then sharedEventID is generated
+     *      to indicate multiple CloudTrail events originate from a single service event.
+     */
+    public String getSharedEventId() {
+        return (String) this.get(CloudTrailEventField.sharedEventID.name());
+    }
+
+    /**
+     * Get the annotation
+     *
+     * @return User provided annotation tagging delivered by CloudTrail.
+     */
+    public String getAnnotation() {
+        return (String) this.get(CloudTrailEventField.annotation.name());
+    }
+
+    /**
+     * Get the vpc endpoint ID
+     *
+     * @return The VPC endpoint in which requests were made from a VPC to another AWS service, such as Amazon S3.
+     */
+    public String getVpcEndpointId() {
+        return (String) this.get(CloudTrailEventField.vpcEndpointId.name());
     }
 }

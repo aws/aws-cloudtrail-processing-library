@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -15,38 +15,27 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.serializer;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEvent;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventData;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.CloudTrailEventField;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.Resource;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.SessionContext;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.SessionIssuer;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.UserIdentity;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.WebIdentitySessionContext;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.*;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.*;
 
 public abstract class AbstractEventSerializer implements EventSerializer {
 
     private static final Log logger = LogFactory.getLog(AbstractEventSerializer.class);
     private static final String RECORDS = "Records";
-    private static final double SUPPORTED_EVENT_VERSION = 1.03d;
+    private static final double SUPPORTED_EVENT_VERSION = 1.05d;
 
     /**
      * A Jackson JSON Parser object.
@@ -143,7 +132,7 @@ public abstract class AbstractEventSerializer implements EventSerializer {
             case "eventVersion":
                 String eventVersion = this.jsonParser.nextTextValue();
                 if (Double.parseDouble(eventVersion) > SUPPORTED_EVENT_VERSION) {
-                    logger.warn(String.format("EventVersion %s is not supported by CloudTrail.", eventVersion));
+                    logger.debug(String.format("EventVersion %s is not supported by CloudTrail.", eventVersion));
                 }
                 eventData.add(key, eventVersion);
                 break;
@@ -178,24 +167,37 @@ public abstract class AbstractEventSerializer implements EventSerializer {
     }
 
     /**
-     * Set AccountId in CloudTrailEventData top level from either UserIdentity top level or from
-     * SessionIssuer. The AccountId in UserIdentity has higher precedence than AccountId in
-     * SessionIssuer (if exists).
+     * Set AccountId in CloudTrailEventData top level from either recipientAccountID or from UserIdentity.
+     * If recipientAccountID exists then recipientAccountID is set to accountID; otherwise, accountID is retrieved
+     * from UserIdentity.
+     *
+     * There are 2 places accountID would appear in UserIdentity: first is the UserIdentity top level filed
+     * and the second place is accountID inside SessionIssuer. If accountID exists in the top level field, then it is
+     * set to accountID; otherwise, accountID is retrieved from SessionIssuer.
+     *
+     * If all 3 places cannot find accountID, then accountID is not set.
      *
      * @param eventData the event data to set.
      */
     private void setAccountId(CloudTrailEventData eventData) {
-        if (eventData.getUserIdentity() == null) {
+        if (eventData.getRecipientAccountId() != null) {
+            eventData.add("accountId", eventData.getRecipientAccountId());
             return;
         }
 
-        if (eventData.getUserIdentity().getAccountId() != null) {
+        if (eventData.getUserIdentity() != null &&
+            eventData.getUserIdentity().getAccountId() != null) {
             eventData.add("accountId", eventData.getUserIdentity().getAccountId());
-        } else {
-            SessionContext sessionContext = eventData.getUserIdentity().getSessionContext();
-            if (sessionContext != null && sessionContext.getSessionIssuer() != null) {
-                eventData.add("accountId", sessionContext.getSessionIssuer().getAccountId());
-            }
+            return;
+        }
+
+        if (eventData.getUserIdentity() != null &&
+            eventData.getUserIdentity().getAccountId() == null &&
+            eventData.getUserIdentity().getSessionContext() != null &&
+            eventData.getUserIdentity().getSessionContext().getSessionIssuer() != null &&
+            eventData.getUserIdentity().getSessionContext().getSessionIssuer().getAccountId() != null) {
+            eventData.add("accountId", eventData.getUserIdentity().getSessionContext().getSessionIssuer().getAccountId());
+            return;
         }
     }
 
@@ -245,6 +247,9 @@ public abstract class AbstractEventSerializer implements EventSerializer {
                 break;
             case "invokedBy":
                 userIdentity.add(CloudTrailEventField.invokedBy.name(), this.jsonParser.nextTextValue());
+                break;
+            case "identityProvider":
+                userIdentity.add(CloudTrailEventField.identityProvider.name(), this.jsonParser.nextTextValue());
                 break;
             default:
                 userIdentity.add(key, this.parseDefaultValue(key));

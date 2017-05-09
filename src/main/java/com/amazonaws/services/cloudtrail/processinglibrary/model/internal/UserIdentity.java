@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -99,5 +99,15 @@ public class UserIdentity extends CloudTrailDataStore{
      */
     public SessionContext getSessionContext() {
         return (SessionContext) this.get(CloudTrailEventField.sessionContext.name());
+    }
+
+    /**
+     * Get identity provider
+     *
+     * @return The principal name of the external identity provider.
+     *      This field appears only for SAMLUser or WebIdentityUser types.
+     */
+    public String getIdentityProvider() {
+        return (String) this.get(CloudTrailEventField.identityProvider.name());
     }
 }

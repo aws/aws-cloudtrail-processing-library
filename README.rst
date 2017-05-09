@@ -65,5 +65,26 @@ build, use this command::
 Release Notes
 -------------
 
-Library Release 1.0.1 (October 28, 2015)
-Initial release.
+Release 1.0.4 (Jan 17, 2017)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Add support for ARN prefix to identify the ARNPrefix associated with the resource. Resource must have either ARN or ARNPrefix, but not both.
+* Add support for shared event ID to identify CloudTrail events from the same AWS action that is sent to different AWS accounts.
+* Add support for VPC endpoint ID to identify the VPC endpoint in which requests were made from a VPC to another AWS service, such as Amazon S3.
+* Add support for annotation to identify user provided annotation tagging delivered by CloudTrail.
+* Add support for identity provider to identify the principal name of the external identity provider.
+
+Release 1.0.3 (Oct 5, 2016)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Add support for service event, additional information is provided in the serviceEventDetails file.
+* Add support for Resource type to identify the resource's type in a given CloudTrail event.
+* Update AWS Java SDK to version 1.11.
+* Update the latest supported CloudTrail event version to 1.05.
+* Update event version is not supported by CloudTrail warning logging message to debug level.
+
+Release 1.0.1 (Oct 28, 2015)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Update AWS Java SDK to version 1.10.
+
+Release 1.0.0 (Nov 3, 2014)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Initial release.

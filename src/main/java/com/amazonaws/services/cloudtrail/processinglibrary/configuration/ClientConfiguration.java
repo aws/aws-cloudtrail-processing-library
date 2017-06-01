@@ -16,19 +16,25 @@
 package com.amazonaws.services.cloudtrail.processinglibrary.configuration;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.services.cloudtrail.processinglibrary.AWSCloudTrailProcessingExecutor;
+import com.amazonaws.services.cloudtrail.processinglibrary.manager.SqsManager;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
+import com.amazonaws.services.cloudtrail.processinglibrary.reader.EventReader;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
+
+import java.util.List;
 
 /**
  * Defines a basic processing configuration for the AWS CloudTrail Processing Library.
  *
- * You can use instances of this class to configure an
- * {@link com.amazonaws.services.cloudtrail.processinglibrary.AWSCloudTrailProcessingExecutor}
+ * You can use instances of this class to configure an {@link AWSCloudTrailProcessingExecutor}
  * as an alternative to using a class path properties file.
  */
 public class ClientConfiguration implements ProcessingConfiguration{
 
     private static final String ERROR_CREDENTIALS_PROVIDER_NULL = "CredentialsProvider is null. Either put your " +
-            "access key and secret key in the configuration file in your class path, or spcify it in the " +
+            "access key and secret key in the configuration file in your class path, or specify it in the " +
             "ProcessingConfiguration object.";
 
     /**
@@ -48,9 +54,8 @@ public class ClientConfiguration implements ProcessingConfiguration{
     /**
      * The SQS region to use.
      * <p>
-     * If not specified, the default SQS region
-     * ({@value com.amazonaws.services.cloudtrail.processinglibrary.configuration.ProcessingConfiguration#DEFAULT_SQS_REGION})
-     * will be used.
+     * If not specified, the {@value ProcessingConfiguration#DEFAULT_SQS_REGION} will be used.
+     * </p>
      */
     public String sqsRegion = DEFAULT_SQS_REGION;
 
@@ -63,7 +68,8 @@ public class ClientConfiguration implements ProcessingConfiguration{
     /**
      * The S3 endpoint specific to a region.
      * <p>
-     * If not specified, the default S3 region will be used.
+     * If not specified, the {@value ProcessingConfiguration#DEFAULT_S3_REGION } will be used.
+     * </p>
      */
     public String s3Region = DEFAULT_S3_REGION;
 
@@ -71,14 +77,16 @@ public class ClientConfiguration implements ProcessingConfiguration{
      * The number of threads used to download log files from S3 in parallel.
      * <p>
      * Callbacks can be invoked from any thread.
+     * </p>
      */
     public int threadCount = DEFAULT_THREAD_COUNT;
 
     /**
-     * The time allowed, in seconds, for threads to shut down after AWSCloudTrailEventProcessingExecutor.stop() is
+     * The time allowed, in seconds, for threads to shut down after {@link AWSCloudTrailProcessingExecutor#stop()} is
      * called.
      * <p>
      * Any threads still running beyond this time will be forcibly terminated.
+     * </p>
      */
     public int threadTerminationDelaySeconds = DEFAULT_THREAD_TERMINATION_DELAY_SECONDS;
 
@@ -88,16 +96,21 @@ public class ClientConfiguration implements ProcessingConfiguration{
     public int maxEventsPerEmit = DEFAULT_MAX_EVENTS_PER_EMIT;
 
     /**
-     * Whether to include raw event information in
-     * {@link com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata}.
+     * Whether to include raw event information in {@link CloudTrailEventMetadata}.
      */
     public boolean enableRawEventInfo = DEFAULT_ENABLE_RAW_EVENT_INFO;
+
+    /**
+     * whether or not to delete SQS messages when there is any failure during {@link SqsManager#parseMessage(List)} and
+     * {@link EventReader#processSource(CloudTrailSource)}.
+     */
+    public boolean deleteMessageUponFailure = DEFAULT_DELETE_MESSAGE_UPON_FAILURE;
 
     /**
      * Initializes a new <code>ClientConfiguration</code>.
      * <p>
      * Both parameters are required.
-     *
+     * </p>
      * @see <a href="http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/ImportantIdentifiers.html">Queue and Message Identifiers</a>
      * @see <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/AWSCredentialsProvider.html">AWSCredentialsProvider</a>
      *
@@ -113,6 +126,7 @@ public class ClientConfiguration implements ProcessingConfiguration{
     /**
      * {@inheritDoc}
      */
+    @Override
     public AWSCredentialsProvider getAwsCredentialsProvider() {
         return awsCredentialsProvider;
     }
@@ -120,6 +134,7 @@ public class ClientConfiguration implements ProcessingConfiguration{
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getSqsUrl() {
         return sqsUrl;
     }
@@ -127,6 +142,7 @@ public class ClientConfiguration implements ProcessingConfiguration{
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getSqsRegion() {
         return sqsRegion;
     }
@@ -134,6 +150,7 @@ public class ClientConfiguration implements ProcessingConfiguration{
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getVisibilityTimeout() {
         return visibilityTimeout;
     }
@@ -141,6 +158,7 @@ public class ClientConfiguration implements ProcessingConfiguration{
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getS3Region() {
         return s3Region;
     }
@@ -148,6 +166,7 @@ public class ClientConfiguration implements ProcessingConfiguration{
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getThreadCount() {
         return threadCount;
     }
@@ -155,6 +174,7 @@ public class ClientConfiguration implements ProcessingConfiguration{
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getThreadTerminationDelaySeconds() {
         return threadTerminationDelaySeconds;
     }
@@ -162,6 +182,7 @@ public class ClientConfiguration implements ProcessingConfiguration{
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getMaxEventsPerEmit() {
         return maxEventsPerEmit;
     }
@@ -175,19 +196,29 @@ public class ClientConfiguration implements ProcessingConfiguration{
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isDeleteMessageUponFailure() {
+        return deleteMessageUponFailure;
+    }
+
+    /**
     * {@inheritDoc}
     */
     @Override
     public void validate() {
-        LibraryUtils.checkArgumentNotNull(this.getAwsCredentialsProvider(), ERROR_CREDENTIALS_PROVIDER_NULL);
-        LibraryUtils.checkArgumentNotNull(this.getSqsUrl(), "SQS URL is null.");
-        LibraryUtils.checkArgumentNotNull(this.getSqsRegion(), "SQS Region is null.");
-        LibraryUtils.checkArgumentNotNull(this.getVisibilityTimeout(), "Visibility Timeout is null.");
-        LibraryUtils.checkArgumentNotNull(this.getS3Region(), "S3 Region is null.");
-        LibraryUtils.checkArgumentNotNull(this.getThreadCount(), "Thread Count is null.");
-        LibraryUtils.checkArgumentNotNull(this.getThreadTerminationDelaySeconds(), "Thread Termination Delay Seconds is null.");
-        LibraryUtils.checkArgumentNotNull(this.getMaxEventsPerEmit(), "Maximum Events Per Emit is null.");
-        LibraryUtils.checkArgumentNotNull(this.isEnableRawEventInfo(), "Is Enable Raw Event Information is null.");
+        LibraryUtils.checkArgumentNotNull(getAwsCredentialsProvider(), ERROR_CREDENTIALS_PROVIDER_NULL);
+        LibraryUtils.checkArgumentNotNull(getSqsUrl(), "SQS URL is null.");
+        LibraryUtils.checkArgumentNotNull(getSqsRegion(), "SQS Region is null.");
+        LibraryUtils.checkArgumentNotNull(getS3Region(), "S3 Region is null.");
+
+        LibraryUtils.checkCondition(getMaxEventsPerEmit() <= 0, "Maximum Events Per Emit is a non-positive integer.");
+        LibraryUtils.checkCondition(getThreadCount() <= 0, "Thread Count is a non-positive integer.");
+        LibraryUtils.checkCondition(getThreadTerminationDelaySeconds() <= 0, "Thread Termination Delay Seconds is a non-positive integer.");
+        LibraryUtils.checkCondition(getVisibilityTimeout() <= 0, "Visibility Timeout is a non-positive integer.");
+
+
     }
 
     /**
@@ -228,7 +259,7 @@ public class ClientConfiguration implements ProcessingConfiguration{
      * The S3 endpoint specific to a region.
      * <p>
      * If not specified, the default S3 region will be used.
-     *
+     * </p>
      * @param s3Region the s3Region to set
      */
     public void setS3Region(String s3Region) {
@@ -239,7 +270,7 @@ public class ClientConfiguration implements ProcessingConfiguration{
      * The number of threads used to download log files from S3 in parallel.
      * <p>
      * Callbacks can be invoked from any thread.
-     *
+     * </p>
      * @param threadCount the number of threads to set.
      */
     public void setThreadCount(int threadCount) {
@@ -248,10 +279,10 @@ public class ClientConfiguration implements ProcessingConfiguration{
 
     /**
      * Set the time allowed, in seconds, for threads to shut down after
-     * <code>AWSCloudTrailEventProcessingExecutor.stop()</code> is called.
+     * {@link AWSCloudTrailProcessingExecutor#stop()} is called.
      * <p>
      * Any threads still running beyond this time will be forcibly terminated.
-     *
+     * </p>
      * @param threadTerminationDelaySeconds the termination delay, in seconds, to set.
      */
     public void setThreadTerminationDelaySeconds(int threadTerminationDelaySeconds) {
@@ -262,7 +293,7 @@ public class ClientConfiguration implements ProcessingConfiguration{
      * Set the maximum number of events that can be buffered per call to <code>processEvents()</code>.
      * <p>
      * Fewer events than this may be sent; this number represents only the <i>maximum</i>.
-     *
+     * </p>
      * @param maxEventsPerEmit the maximum number of events to buffer.
      */
     public void setMaxEventsPerEmit(int maxEventsPerEmit) {
@@ -270,12 +301,22 @@ public class ClientConfiguration implements ProcessingConfiguration{
     }
 
     /**
-     * Set whether or not raw event information should be returned in
-     * {@link com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata}.
+     * Set whether or not raw event information should be returned in {@link CloudTrailEventMetadata}.
      *
      * @param enableRawEventInfo set to <code>true</code> to enable raw event information.
      */
     public void setEnableRawEventInfo(boolean enableRawEventInfo) {
         this.enableRawEventInfo = enableRawEventInfo;
+    }
+
+    /**
+     * Set whether or not to delete SQS messages when there is any failure during {@link SqsManager#parseMessage(List)}
+     * and {@link EventReader#processSource(CloudTrailSource)}.
+     * The SQS message will be deleted upon success regardless the setting of <code>deleteMessageUponFailure</code>.
+     *
+     * @param deleteMessageUponFailure set to <code>true</code> to delete messages upon failure.
+     */
+    public void setDeleteMessageUponFailure(boolean deleteMessageUponFailure) {
+        this.deleteMessageUponFailure = deleteMessageUponFailure;
     }
 }

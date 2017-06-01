@@ -15,13 +15,16 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.serializer;
 
-import java.io.IOException;
-
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailLog;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.LogDeliveryInfo;
 import com.fasterxml.jackson.core.JsonParser;
 
+import java.io.IOException;
+
+/**
+ * The implementation of raw CloudTrail log's event serializer.
+ */
 public class RawLogDeliveryEventSerializer extends AbstractEventSerializer{
     private String logFile;
     private CloudTrailLog ctLog;
@@ -30,11 +33,11 @@ public class RawLogDeliveryEventSerializer extends AbstractEventSerializer{
         super(jsonParser);
         this.ctLog = ctLog;
         this.logFile = logFile;
-        this.readArrayHeader();
+        readArrayHeader();
     }
 
     /**
-     * Find the raw event in string format from logFileContent based on character start index and end index
+     * Find the raw event in string format from logFileContent based on character start index and end index.
      */
     @Override
     public CloudTrailEventMetadata getMetadata(int charStart, int charEnd) {

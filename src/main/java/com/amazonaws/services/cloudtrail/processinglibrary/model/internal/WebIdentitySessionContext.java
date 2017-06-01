@@ -19,21 +19,21 @@ import java.util.Map;
 
 /**
  * If the request was made with temporary security credentials obtained using web
- * identity federation, an element that lists information about the identity provider
+ * identity federation, an element that lists information about the identity provider.
  */
 public class WebIdentitySessionContext extends CloudTrailDataStore{
     /**
-     * Get federated provider
-     * @return Who To grant temporary access to a non-AWS user
+     * Get federated provider.
+     * @return Who To grant temporary access to a non-AWS user.
      */
     public String getFederatedProvider() {
         return (String) this.get(CloudTrailEventField.federatedProvider.name());
     }
 
     /**
-     * Get attributes
+     * Get attributes.
      *
-     * @return additional web identity session contest attributes
+     * @return additional web identity session contest attributes.
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public Map<String, String> getAttributes() {

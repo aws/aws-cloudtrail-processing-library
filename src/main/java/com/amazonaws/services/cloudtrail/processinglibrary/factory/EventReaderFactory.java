@@ -30,9 +30,8 @@ import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
 /**
  * <i>Internal use only</i>.
  *
- * This class creates {@link com.amazonaws.services.cloudtrail.processinglibrary.reader.EventReader} objects. It
- * encapsulates and maintains instances of the objects that <code>EventReader</code> will use to limit the parameters needed
- * to create an instance.
+ * This class creates {@link EventReader} objects. It encapsulates and maintains instances of the objects that
+ * <code>EventReader</code> will use to limit the parameters needed to create an instance.
  */
 public class EventReaderFactory {
 
@@ -53,20 +52,20 @@ public class EventReaderFactory {
      * EventReaderFactory constructor.
      * <p>
      * Except for ProcessingConfiguration, the other parameters can be <code>null</code>.
-     *
+     * </p>
      * @param builder a {@link Builder} object to use to create the <code>EventReaderFactory</code>.
      */
     private EventReaderFactory(Builder builder) {
-        this.config = builder.config;
-        this.eventsProcessor = builder.eventsProcessor;
-        this.sourceFilter = builder.sourceFilter;
-        this.eventFilter = builder.eventFilter;
-        this.progressReporter = builder.progressReporter;
-        this.exceptionHandler = builder.exceptionHandler;
-        this.sqsManager = builder.sqsManager;
-        this.s3Manager = builder.s3Manager;
+        config = builder.config;
+        eventsProcessor = builder.eventsProcessor;
+        sourceFilter = builder.sourceFilter;
+        eventFilter = builder.eventFilter;
+        progressReporter = builder.progressReporter;
+        exceptionHandler = builder.exceptionHandler;
+        sqsManager = builder.sqsManager;
+        s3Manager = builder.s3Manager;
 
-        this.validate();
+        validate();
     }
 
     public static class Builder {
@@ -126,26 +125,23 @@ public class EventReaderFactory {
     /**
      * Create an instance of an {@link EventReader}.
      *
-     * @return the event reader.
+     * @return the {@link EventReader}.
      */
     public EventReader createReader() {
-        EventReader reader = new EventReader(
-                this.eventsProcessor, this.sourceFilter, this.eventFilter, this.progressReporter, this.exceptionHandler,
-                this.sqsManager, this.s3Manager, this.config);
-        return reader;
+        return new EventReader(eventsProcessor, sourceFilter, eventFilter, progressReporter, exceptionHandler, sqsManager, s3Manager, config);
     }
 
     /**
      * Validate input parameters.
      */
     private void validate() {
-        LibraryUtils.checkArgumentNotNull(this.config, "configuration is null");
-        LibraryUtils.checkArgumentNotNull(this.eventsProcessor, "eventsProcessor is null");
-        LibraryUtils.checkArgumentNotNull(this.sourceFilter, "sourceFilter is null");
-        LibraryUtils.checkArgumentNotNull(this.eventFilter, "eventFilter is null");
-        LibraryUtils.checkArgumentNotNull(this.progressReporter, "progressReporter is null");
-        LibraryUtils.checkArgumentNotNull(this.exceptionHandler, "exceptionHander is null");
-        LibraryUtils.checkArgumentNotNull(this.s3Manager, "s3Manager is null");
-        LibraryUtils.checkArgumentNotNull(this.sqsManager, "sqsManager is null");
+        LibraryUtils.checkArgumentNotNull(config, "Configuration is null.");
+        LibraryUtils.checkArgumentNotNull(eventsProcessor, "Events Processor is null.");
+        LibraryUtils.checkArgumentNotNull(sourceFilter, "Source Filter is null.");
+        LibraryUtils.checkArgumentNotNull(eventFilter, "Event Filter is null.");
+        LibraryUtils.checkArgumentNotNull(progressReporter, "Progress Reporter is null.");
+        LibraryUtils.checkArgumentNotNull(exceptionHandler, "Exception Handler is null.");
+        LibraryUtils.checkArgumentNotNull(s3Manager, "S3 Manager is null.");
+        LibraryUtils.checkArgumentNotNull(sqsManager, "SQS Manager is null.");
     }
 }

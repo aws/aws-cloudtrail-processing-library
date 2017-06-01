@@ -64,9 +64,31 @@ build, use this command::
 
 Release Notes
 -------------
+Release 1.1.0 (Jun 1, 2017)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Add support for different formats for SQS messages from the same SQS queue to identify CloudTrail log files. This includes the following:
+
+  * Notifications that CloudTrail sends to an SNS topic
+  * Notifications that Amazon S3 sends to an SNS topic
+  * Notifications that Amazon S3 sends directly to the SQS queue
+
+* Add support for the new deleteMessageUponFailure property. Use this property to delete messages that the CloudTrail Processing Library can't process, such as the following:
+
+  * Parsing message failure:
+
+    * File is not JSON
+    * Notification is not an `s3:ObjectCreated:Put event`__.
+    * CloudTrail digest files, and other formats such as .jpeg or txt are unsupported
+
+  * Consuming log failure, such as processing events in a log file.
+
+**Note**: If deleteMessageUponFailure is true, the CloudTrail Processing Library may delete messages that it can’t process. The default value is false. `Learn more`__.
+
+.. __: http://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html#notification-how-to-event-types-and-destinations
+.. __: http://docs.aws.amazon.com/awscloudtrail/latest/userguide/use-the-cloudtrail-processing-library.html
 
 Release 1.0.4 (Jan 17, 2017)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Add support for ARN prefix to identify the ARNPrefix associated with the resource. Resource must have either ARN or ARNPrefix, but not both.
 * Add support for shared event ID to identify CloudTrail events from the same AWS action that is sent to different AWS accounts.
 * Add support for VPC endpoint ID to identify the VPC endpoint in which requests were made from a VPC to another AWS service, such as Amazon S3.

@@ -16,33 +16,40 @@
 package com.amazonaws.services.cloudtrail.processinglibrary.interfaces;
 
 import com.amazonaws.services.cloudtrail.processinglibrary.exceptions.ProcessingLibraryException;
+import com.amazonaws.services.cloudtrail.processinglibrary.manager.S3Manager;
+import com.amazonaws.services.cloudtrail.processinglibrary.manager.SqsManager;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailLog;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
+import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus;
+import com.amazonaws.services.cloudtrail.processinglibrary.reader.EventReader;
+import com.amazonaws.services.sqs.model.Message;
+
+import java.util.List;
 
 /**
- * Provides a callback function that handles exceptions that occurred while
- * processing AWS CloudTrail log files.
+ * Provides a callback function that handles exceptions that occurred while processing AWS CloudTrail log files.
  * <p>
- * The <code>handleException()</code> method is invoked when exceptions are
- * raised in these cases:
- * <p>
+ * The {@link #handleException(ProcessingLibraryException)} method is invoked when exceptions are raised in the following scenarios when:
+ * </p>
  * <ol>
- *   <li>while polling messages from SQS</li>
- *   <li>while parsing message from SQS</li>
- *   <li>while deleting messages from SQS</li>
- *   <li>while downloading an AWS CloudTrail log file</li>
- *   <li>while processing the AWS CloudTrail log file</li>
- *   <li>any uncaught exception</li>
+ *   <li>Polling messages from SQS - {@link SqsManager#pollQueue()}.</li>
+ *   <li>Parsing message from SQS - {@link SqsManager#parseMessage(List)}</li>
+ *   <li>Deleting messages from SQS - {@link SqsManager#deleteMessageFromQueue(Message, ProgressStatus)}.</li>
+ *   <li>Downloading an AWS CloudTrail log file - {@link S3Manager#downloadLog(CloudTrailLog, CloudTrailSource)}.</li>
+ *   <li>Processing the AWS CloudTrail log file - {@link EventReader#processSource(CloudTrailSource)}.</li>
+ *   <li>Any uncaught exceptions.</li>
  * </ol>
  * <p>
- * A {@link com.amazonaws.services.cloudtrail.processinglibrary.exceptions.ProcessingLibraryException} contains
- * execution context in the held {@link com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus}
- * object, which can be obtained by calling the exception's <code>getStatus()</code> method.
+ * A {@link ProcessingLibraryException} contains execution context in the held {@link ProgressStatus} object,
+ * which can be obtained by calling {@link ProcessingLibraryException#getStatus()}.
+ * </p>
  */
 public interface ExceptionHandler {
 
     /**
      * A callback method that handles exceptions that occurred while processing AWS CloudTrail log files.
      *
-     * @param exception a {@link com.amazonaws.services.cloudtrail.processinglibrary.exceptions.ProcessingLibraryException}
+     * @param exception A {@link ProcessingLibraryException}.
      */
-    public void handleException(ProcessingLibraryException exception) ;
+    public void handleException(ProcessingLibraryException exception);
 }

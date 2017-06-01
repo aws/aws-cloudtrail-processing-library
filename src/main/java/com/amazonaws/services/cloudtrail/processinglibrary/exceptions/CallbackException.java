@@ -25,12 +25,10 @@ public class CallbackException extends ProcessingLibraryException{
     private static final long serialVersionUID = -2425808722370565843L;
 
     /**
-     * Initializes a new <code>CallbackException</code> with a message
-     * and status.
+     * Initializes a new <code>CallbackException</code> with a message and status.
      *
-     * @param message a string that provides information about the exception.
-     * @param status the {@link ProgressStatus} of the operation that was in
-     *    progress when the exception occurred.
+     * @param message A string that provides information about the exception.
+     * @param status The {@link ProgressStatus} of the operation that was in progress when the exception occurred.
      */
     public CallbackException(String message, ProgressStatus status) {
         super(message, status);
@@ -38,13 +36,11 @@ public class CallbackException extends ProcessingLibraryException{
 
 
     /**
-     * Initializes a new <code>CallbackException</code> with a message,
-     * inner exception, and status.
+     * Initializes a new <code>CallbackException</code> with a message, inner exception, and status.
      *
-     * @param message a string that provides information about the exception.
+     * @param message A string that provides information about the exception.
      * @param e An inner exception that is carried along with this exception.
-     * @param status the {@link ProgressStatus} of the operation that was in
-     *    progress when the exception occurred.
+     * @param status The {@link ProgressStatus} of the operation that was in progress when the exception occurred.
      */
     public CallbackException(String message, Exception e, ProgressStatus status) {
         super(message, e, status);

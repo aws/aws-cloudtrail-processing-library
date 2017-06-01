@@ -17,16 +17,14 @@ package com.amazonaws.services.cloudtrail.processinglibrary.progress;
 
 import com.amazonaws.services.sqs.model.Message;
 
+/**
+ * Provide basic message parsing information.
+ */
 public class BasicParseMessageInfo implements ProgressMessageInfo {
     private boolean isSuccess;
     private Message message;
 
-    /**
-     * Provide basic message parsing information
-     *
-     * @param message the SQS message
-     * @param isSuccess whether successfully parsed SQS message
-     */
+
     public BasicParseMessageInfo(Message message, boolean isSuccess) {
         super();
         this.isSuccess = isSuccess;
@@ -35,11 +33,28 @@ public class BasicParseMessageInfo implements ProgressMessageInfo {
 
     @Override
     public Message getMessage() {
-        return this.message;
+        return message;
     }
 
     @Override
     public boolean isSuccess() {
-        return this.isSuccess;
+        return isSuccess;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("{isSuccess: ");
+        builder.append(isSuccess);
+        builder.append(", MessageToParse: ");
+        builder.append(message.toString());
+        builder.append("}");
+
+        return builder.toString();
+    }
+
+    @Override
+    public void setIsSuccess(boolean isSuccess) {
+        this.isSuccess = isSuccess;
     }
 }

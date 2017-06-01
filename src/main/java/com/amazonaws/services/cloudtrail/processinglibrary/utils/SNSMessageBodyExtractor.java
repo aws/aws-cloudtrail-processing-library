@@ -12,17 +12,28 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  ******************************************************************************/
-
-package com.amazonaws.services.cloudtrail.processinglibrary.progress;
+package com.amazonaws.services.cloudtrail.processinglibrary.utils;
 
 import com.amazonaws.services.sqs.model.Message;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
 
 /**
- * In addition to {@link ProgressInfo}, provides SQS {@link Message} information.
+ * Extract message body from the SNS notification, specifically, the value of the 'Message' attribute.
+
  */
-public interface ProgressMessageInfo extends ProgressInfo{
-    /**
-     * @return SQS message.
-     */
-    public Message getMessage();
+public class SNSMessageBodyExtractor {
+    private static final String MESSAGE = "Message";
+    private final ObjectMapper mapper;
+
+    public SNSMessageBodyExtractor(ObjectMapper mapper) {
+        this.mapper = mapper;
+    }
+
+    public JsonNode getMessageBody(Message sqsMessage) throws IOException, NullPointerException {
+        String messageText = mapper.readTree(sqsMessage.getBody()).get(MESSAGE).textValue();
+        return mapper.readTree(messageText);
+    }
 }

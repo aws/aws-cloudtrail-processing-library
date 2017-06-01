@@ -15,7 +15,9 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.progress;
 
-
+/**
+ * Provides basic Amazon SQS queue polling messages information.
+ */
 public class BasicPollQueueInfo implements ProgressInfo{
     private boolean isSuccess;
     private int polledMessageCount;
@@ -28,25 +30,24 @@ public class BasicPollQueueInfo implements ProgressInfo{
 
     @Override
     public boolean isSuccess() {
-        return this.isSuccess;
+        return isSuccess;
+    }
+
+    @Override
+    public void setIsSuccess(boolean isSuccess) {
+        this.isSuccess = isSuccess;
     }
 
     /**
-     * @return the successPolledMessageCount
+     * @return The number of messages that are polled successfully.
      */
     public int getSuccessPolledMessageCount() {
-        return this.polledMessageCount;
+        return polledMessageCount;
     }
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("{isSuccess: ");
-        builder.append(isSuccess);
-        builder.append(", polledMessageCount: ");
-        builder.append(polledMessageCount);
-        builder.append("}");
-        return builder.toString();
+        return String.format("{isSuccess: %s, polledMessageCount: %s}", isSuccess, polledMessageCount);
     }
 
 }

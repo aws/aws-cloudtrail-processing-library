@@ -19,7 +19,7 @@ import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.EventFilte
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEvent;
 
 /**
- * Default implementation of EventFilter that simply return True for any CloudTrailEvent
+ * Default implementation of {@link EventFilter} that simply returns <code>true</code> for any {@link CloudTrailEvent}.
  */
 public class DefaultEventFilter implements EventFilter {
 

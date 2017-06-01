@@ -15,6 +15,14 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.utils;
 
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.cloudtrail.processinglibrary.exceptions.ProcessingLibraryException;
+import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ExceptionHandler;
+import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ProgressReporter;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.SourceAttributeKeys;
+import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus;
+import com.amazonaws.services.sqs.model.Message;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,7 +79,7 @@ public class LibraryUtils {
      */
     public static byte[] toByteArray(InputStream inputStream) throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        int nRead = 0;
+        int nRead;
         byte[] bytes = new byte[1024];
         while ((nRead = inputStream.read(bytes, 0, 1024)) != -1) {
             buffer.write(bytes, 0, nRead);
@@ -135,6 +143,55 @@ public class LibraryUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * Add the account ID attribute to the <code>sqsMessage</code> if it does not exist.
+     * @param sqsMessage The SQS message.
+     * @param s3ObjectKey The S3 object key.
+     */
+    public static void setMessageAccountId(Message sqsMessage, String s3ObjectKey) {
+        if (!sqsMessage.getAttributes().containsKey(SourceAttributeKeys.ACCOUNT_ID.getAttributeKey())) {
+            String accountId = extractAccountIdFromObjectKey(s3ObjectKey);
+            if (accountId != null) {
+                sqsMessage.addAttributesEntry(SourceAttributeKeys.ACCOUNT_ID.getAttributeKey(), accountId);
+            }
+        }
+    }
+
+    /**
+     * A wrapper function of handling exceptions that have a known root cause, such as {@link AmazonServiceException}.
+     * @param exceptionHandler the {@link ExceptionHandler} to handle exceptions.
+     * @param progressStatus the current progress status {@link ProgressStatus}.
+     * @param e the exception needs to be handled.
+     * @param message the exception message.
+     */
+    public static void handleException(ExceptionHandler exceptionHandler, ProgressStatus progressStatus, Exception e, String message) {
+        ProcessingLibraryException exception = new ProcessingLibraryException(message, e, progressStatus);
+        exceptionHandler.handleException(exception);
+    }
+
+    /**
+     * A wrapper function of handling uncaught exceptions.
+     * @param exceptionHandler the {@link ExceptionHandler} to handle exceptions.
+     * @param progressStatus the current progress status {@link ProgressStatus}.
+     * @param message the exception message.
+     */
+    public static void handleException(ExceptionHandler exceptionHandler, ProgressStatus progressStatus, String message) {
+        ProcessingLibraryException exception = new ProcessingLibraryException(message, progressStatus);
+        exceptionHandler.handleException(exception);
+    }
+
+    /**
+     * A wrapper function of reporting the result of the processing.
+     * @param progressReporter the {@link ProgressReporter} to report the end of process.
+     * @param processSuccess the result of process.
+     * @param progressStatus the current progress status {@link ProgressStatus}.
+     * @param reportObject the object to send, usually the object returned by {@link ProgressReporter#reportStart(ProgressStatus)}.
+     */
+    public static void endToProcess(ProgressReporter progressReporter, boolean processSuccess, ProgressStatus progressStatus, Object reportObject) {
+        progressStatus.getProgressInfo().setIsSuccess(processSuccess);
+        progressReporter.reportEnd(progressStatus, reportObject);
     }
 
     /**

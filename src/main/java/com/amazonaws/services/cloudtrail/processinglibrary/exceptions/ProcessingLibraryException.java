@@ -15,32 +15,29 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.exceptions;
 
+import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ExceptionHandler;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus;
 
 /**
- * Exceptions of this type are handled by an implementation of the
- * {@link com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ExceptionHandler}
- * interface.
- *
- * The status of the operation that was in progress when the exception occured
- * can be retrieved by calling the <code>getStatus()</code> method.
+ * Exceptions of this type are handled by an implementation of the {@link ExceptionHandler} interface.
+ * <p>
+ * The status of the operation that was in progress when the exception occurred can be retrieved by calling
+ * the {@link #getStatus()}.
+ * </p>
  */
 public class ProcessingLibraryException extends Exception {
     private static final long serialVersionUID = 8757412348402829171L;
 
     /**
-     * The {@link ProgressStatus} of the operation that was in progress when the
-     * exception occured.
+     * The {@link ProgressStatus} of the operation that was in progress when the exception occurred.
      */
     private ProgressStatus status;
 
     /**
-     * Initializes a new <code>ProcessingLibraryException</code> with a message
-     * and status.
+     * Initializes a new <code>ProcessingLibraryException</code> with a message and status.
      *
-     * @param message a string that provides information about the exception.
-     * @param status the {@link ProgressStatus} of the operation that was in
-     *    progress when the exception occured.
+     * @param message A string that provides information about the exception.
+     * @param status The {@link ProgressStatus} of the operation that was in progress when the exception occurred.
      */
     public ProcessingLibraryException(String message, ProgressStatus status) {
         super(message);
@@ -48,13 +45,11 @@ public class ProcessingLibraryException extends Exception {
     }
 
     /**
-     * Initializes a new <code>ProcessingLibraryException</code> with a message,
-     * inner exception, and status.
+     * Initializes a new <code>ProcessingLibraryException</code> with a message, inner exception, and status.
      *
-     * @param message a string that provides information about the exception.
+     * @param message A string that provides information about the exception.
      * @param e An inner exception that is carried along with this exception.
-     * @param status the {@link ProgressStatus} of the operation that was in
-     *    progress when the exception occured.
+     * @param status The {@link ProgressStatus} of the operation that was in progress when the exception occurred.
      */
     public ProcessingLibraryException(String message, Exception e, ProgressStatus status) {
         super(message, e);
@@ -62,11 +57,9 @@ public class ProcessingLibraryException extends Exception {
     }
 
     /**
-     * Get the status of the operation that was in progress when the exception
-     * occurred.
+     * Get the status of the operation that was in progress when the exception occurred.
      *
-     * @return a {@link ProgressStatus} object that provides information about
-     *    when the exception occurred.
+     * @return A {@link ProgressStatus} object that provides information about when the exception occurred.
      */
     public ProgressStatus getStatus() {
         return status;

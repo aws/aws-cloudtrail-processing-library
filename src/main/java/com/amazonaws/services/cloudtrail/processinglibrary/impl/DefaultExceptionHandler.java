@@ -22,7 +22,7 @@ import com.amazonaws.services.cloudtrail.processinglibrary.exceptions.Processing
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ExceptionHandler;
 
 /**
- * Default implementation of ExceptionHandler that simply log exception.
+ * Default implementation of {@link ExceptionHandler} that simply logs exceptions.
  */
 public class DefaultExceptionHandler implements ExceptionHandler {
     private static final Log logger = LogFactory.getLog(DefaultExceptionHandler.class);

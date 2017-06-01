@@ -19,6 +19,7 @@ package com.amazonaws.services.cloudtrail.processinglibrary.model;
  * A skeleton class used for providing CloudTrail delivery information.
  * <p>
  * CloudTrailEventMetadata information is provided when raw event information is enabled in the configuration parameters.
+ * </p>
  */
 public interface CloudTrailEventMetadata {
 

@@ -16,12 +16,19 @@
 package com.amazonaws.services.cloudtrail.processinglibrary.configuration;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.services.cloudtrail.processinglibrary.manager.SqsManager;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
+import com.amazonaws.services.cloudtrail.processinglibrary.reader.EventReader;
+
+import java.util.List;
 
 /**
- * Data used to configure a {@link com.amazonaws.services.cloudtrail.processinglibrary.reader.EventReader}.
+ * Data used to configure a {@link EventReader}.
  * <p>
  * You can use a system properties file to load the configuration or create a {@link ClientConfiguration} object and set
  * each attribute. If you do not provide a value for an attribute, a default value will be provided.
+ * </p>
  */
 public interface ProcessingConfiguration {
     /* default configuration values */
@@ -60,6 +67,12 @@ public interface ProcessingConfiguration {
      * Whether to enable raw event information in event metadata; {@value}.
      */
     public static final boolean DEFAULT_ENABLE_RAW_EVENT_INFO = false;
+
+    /**
+     * Whether to delete SQS messages if there is failure
+     * during {@link SqsManager#parseMessage(List)} and {@link EventReader#processSource(CloudTrailSource)}; {@value}.
+     */
+    public static final boolean DEFAULT_DELETE_MESSAGE_UPON_FAILURE = false;
 
     /**
      * Get the AWS Credentials provider used to access AWS.
@@ -123,18 +136,27 @@ public interface ProcessingConfiguration {
     public int getMaxEventsPerEmit();
 
     /**
-     * Indicates if raw event information will be returned in
-     * {@link com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata}.
+     * Indicates whether raw event information is returned in
+     * {@link CloudTrailEventMetadata}.
      *
      * @return <code>true</code> if raw event information is enabled; <code>false</code> otherwise.
      */
     public boolean isEnableRawEventInfo();
 
     /**
+     * Indicates whether to delete SQS messages when there is a failure during {@link SqsManager#parseMessage(List)}
+     * and {@link EventReader#processSource(CloudTrailSource)}.
+     * The SQS message will be deleted upon success regardless of the setting for deleteMessageUponFailure.
+     *
+     * @return <code>true</code> if delete SQS message upon failure is enabled. Otherwise, <code>false</code>.
+     */
+    public boolean isDeleteMessageUponFailure();
+
+    /**
      * Validate that all necessary parameters are set in the provided configuration.
      * <p>
      * This method throws an exception if any of the required parameters are <code>null</code>.
-     *
+     * </p>
      * @throws IllegalStateException if any parameters are <code>null</code>.
      */
     public void validate();

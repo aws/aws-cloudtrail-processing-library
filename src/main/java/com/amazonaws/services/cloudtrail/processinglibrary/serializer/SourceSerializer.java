@@ -15,20 +15,26 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.serializer;
 
-import java.io.IOException;
-
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
 import com.amazonaws.services.sqs.model.Message;
 
+import java.io.IOException;
+
 /**
- * An interface for an AWS CloudTrail source serializer.
+ * Interface for getting CloudTrail log file information from {@link CloudTrailSource}. Implementations can parse
+ * messages polled from SQS queue for extracting CloudTrail log file information. The following are provided implementations:
+ * <p>
+ *     {@link CloudTrailSourceSerializer}, {@link S3SourceSerializer}, {@link S3SNSSourceSerializer}, {@link SourceSerializerChain}.
+ * </p>
  */
 public interface SourceSerializer {
+
     /**
-     * Get CloudTrailSource from SQS message object.
+     * Get CloudTrail log file information by parsing single SQS message.
      *
-     * @return the {@link com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource}.
-     * @throws IOException if the source could not be accessed.
+     * @param  sqsMessage The message polled from SQS queue.
+     * @return {@link CloudTrailSource} that contains log file information.
+     * @throws IOException If <code>sqsMessage</code> is unrecognized.
      */
     public CloudTrailSource getSource(Message sqsMessage) throws IOException;
 }

@@ -15,32 +15,32 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.serializer;
 
-import java.io.IOException;
-
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailLog;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.LogDeliveryInfo;
 import com.fasterxml.jackson.core.JsonParser;
 
+import java.io.IOException;
+
+/**
+ * Default implementation of event serializer.
+ */
 public class DefaultEventSerializer extends AbstractEventSerializer{
     private CloudTrailLog ctLog;
 
-    /**
-     * Default implementation of {@link EventSerializer}
-     *
-     * @param ctLog
-     * @param jsonParser
+    /***
+     * @param ctLog The CloudTrail Log needs to be read.
+     * @param jsonParser The JSON parser to serialize events.
      * @throws IOException
      */
     public DefaultEventSerializer(CloudTrailLog ctLog, JsonParser jsonParser) throws IOException {
         super(jsonParser);
         this.ctLog = ctLog;
-        this.readArrayHeader();
+        readArrayHeader();
     }
 
     @Override
     public CloudTrailEventMetadata getMetadata(int charStart, int charEnd) {
-        CloudTrailEventMetadata deliveryInfo = new LogDeliveryInfo(ctLog, -1, -1, null);
-        return deliveryInfo;
+        return new LogDeliveryInfo(ctLog, -1, -1, null);
     }
 }

@@ -17,6 +17,9 @@ package com.amazonaws.services.cloudtrail.processinglibrary.progress;
 
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
 
+/**
+ * Provides basic source processing information.
+ */
 public class BasicProcessSourceInfo implements ProgressSourceInfo{
     private boolean isSuccess;
     private CloudTrailSource source;
@@ -29,12 +32,16 @@ public class BasicProcessSourceInfo implements ProgressSourceInfo{
 
     @Override
     public boolean isSuccess() {
-        return this.isSuccess;
+        return isSuccess;
     }
 
     @Override
+    public void setIsSuccess(boolean isSuccess) {
+        this.isSuccess = isSuccess;
+    }
+    @Override
     public CloudTrailSource getSource() {
-        return this.source;
+        return source;
     }
 
     @Override

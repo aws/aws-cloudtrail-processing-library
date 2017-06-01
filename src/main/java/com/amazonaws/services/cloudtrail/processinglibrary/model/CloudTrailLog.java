@@ -20,25 +20,25 @@ package com.amazonaws.services.cloudtrail.processinglibrary.model;
  */
 public class CloudTrailLog {
     /**
-     * The S3 bucket where log files are stored
+     * The S3 bucket where log files are stored.
      */
     private final String s3Bucket;
 
     /**
-     * S3 object keys
+     * S3 object key.
      */
     private String s3ObjectKey;
 
     /**
-     * The CloudTrail log file size
+     * The CloudTrail log file size in bytes.
      */
     private long logFileSize;
 
     /**
      * Constructs a new CloudTrailLog object.
      *
-     * @param s3Bucket The S3 bucket where log files are stored
-     * @param s3ObjectKey The S3 object key
+     * @param s3Bucket The S3 bucket where log files are stored.
+     * @param s3ObjectKey The S3 object key.
      */
     public CloudTrailLog(String s3Bucket, String s3ObjectKey) {
         this.s3Bucket = s3Bucket;
@@ -46,15 +46,15 @@ public class CloudTrailLog {
     }
 
     /**
-     * AWS S3 bucket name
-     * @return AWS S3 bucket name
+     * Get AWS S3 bucket name.
+     * @return AWS S3 bucket name.
      */
     public String getS3Bucket() {
         return s3Bucket;
     }
 
     /**
-     * S3 object key in a single SQS message.
+     * Get AWS S3 object key in a single SQS message.
      * @return S3 object keys in a single SQS message.
      */
     public String getS3ObjectKey() {
@@ -62,16 +62,16 @@ public class CloudTrailLog {
     }
 
     /**
-     * CloudTrail log File size in bytes
-     * @return CloudTrail log file size
+     * CloudTrail log File size in bytes.
+     * @return CloudTrail log file size in bytes.
      */
     public long getLogFileSize() {
         return logFileSize;
     }
 
     /**
-     * Set Log file size when retrieve this information from S3 metadata
-     * @param logFileSize
+     * Set log file size when retrieve this information from S3 metadata.
+     * @param logFileSize The CloudTrail log file size.
      */
     public void setLogFileSize(long logFileSize) {
         this.logFileSize = logFileSize;

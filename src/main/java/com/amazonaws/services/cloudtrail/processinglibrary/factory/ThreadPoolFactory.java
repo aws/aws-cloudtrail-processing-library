@@ -15,6 +15,14 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.factory;
 
+import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ExceptionHandler;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
+import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressState;
+import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus;
+import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -23,15 +31,6 @@ import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.amazonaws.services.cloudtrail.processinglibrary.exceptions.ProcessingLibraryException;
-import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ExceptionHandler;
-import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressState;
-import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus;
-import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
 
 /**
  * This class creates thread pool for ThreadPoolFactory.
@@ -53,7 +52,7 @@ public class ThreadPoolFactory {
      * A factory to create an instance of ExecutorService based on configuration
      *
      * @param threadCount number of threads
-     * @param exceptionHandler
+     * @param exceptionHandler instance of {@link ExceptionHandler}
      */
     public ThreadPoolFactory(int threadCount, ExceptionHandler exceptionHandler) {
         this.threadCount = threadCount;
@@ -61,8 +60,7 @@ public class ThreadPoolFactory {
     }
 
     /**
-     * Create an instance of ScheduledExecutorService. We only need single thread to poll messages
-     * from the SQS queue.
+     * Create an instance of ScheduledExecutorService. We only need single thread to poll messages from the SQS queue.
      *
      * @return ScheduledExecutorService continuous poll messages from SQS queue.
      */
@@ -75,31 +73,30 @@ public class ThreadPoolFactory {
      * used to process each CloudTrailSource. The thread pool queue, size are configurable through
      * ProcessingConfiguration.
      *
-     * @return ExecutorService that processes CloudTrailSource
+     * @return {@link ExecutorService} that processes {@link CloudTrailSource}.
      */
     public ExecutorService createMainThreadPool() {
-        LibraryUtils.checkCondition(this.threadCount < 1, "Thread Count cannot be less than 1.");
-        return this.createThreadPoolWithBoundedQueue(this.threadCount);
+        LibraryUtils.checkCondition(threadCount < 1, "Thread Count cannot be less than 1.");
+        return this.createThreadPoolWithBoundedQueue(threadCount);
 
     }
 
     /**
      * Helper function to create an instance of ExecutorService with bounded queue size.
-     *
-     * When no more threads or queue slots are available because their bounds would be exceeded, the scheduled thread
-     * pool will run the rejected task directly. Unless the executor has been shut down, in which case the task is
-     * discarded. Note while scheduled thread poll is running rejected task, scheduled thread pool will not poll
-     * more messages to process.
-     *
-     * @param threadCount number of threads
-     * @return an instance of ExecutorService
+     * <p>
+     *     When no more threads or queue slots are available because their bounds would be exceeded, the scheduled
+     *     thread pool will run the rejected task directly. Unless the executor has been shut down, in which case the
+     *     task is discarded. Note while scheduled thread poll is running rejected task, scheduled thread pool will not
+     *     poll more messages to process.
+     * </p>
+     * @param threadCount the number of threads.
+     * @return {@link ExecutorService} that processes {@link CloudTrailSource}.
      */
     private ExecutorService createThreadPoolWithBoundedQueue(int threadCount) {
         BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<Runnable>(threadCount);
         RejectedExecutionHandler rejectedExecutionHandler = new ThreadPoolExecutor.CallerRunsPolicy();
-        ExecutorService executorService = new ProcessingLibraryThreadPoolExecutor(threadCount, threadCount, 0, TimeUnit.MILLISECONDS,
-                blockingQueue, rejectedExecutionHandler, this.exceptionHandler);
-        return executorService;
+        return new ProcessingLibraryThreadPoolExecutor(threadCount, threadCount, 0, TimeUnit.MILLISECONDS,
+                blockingQueue, rejectedExecutionHandler, exceptionHandler);
     }
 
     /**
@@ -108,6 +105,7 @@ public class ThreadPoolFactory {
      */
     public class ProcessingLibraryThreadPoolExecutor extends ThreadPoolExecutor {
         private ExceptionHandler exceptionHandler;
+
         public ProcessingLibraryThreadPoolExecutor(int corePoolSize,
                 int maximumPoolSize, long keepAliveTime, TimeUnit unit,
                 BlockingQueue<Runnable> workQueue,
@@ -126,15 +124,13 @@ public class ThreadPoolFactory {
         public void afterExecute(Runnable r, Throwable t) {
             try {
                 if (t != null) {
-                    logger.error("AWS CloudTrail Processing Library encounted an uncaught exception. " + t.getMessage(), t);
-                    ProgressStatus status = new ProgressStatus(ProgressState.uncaughtException, null);
-                    this.exceptionHandler.handleException(new ProcessingLibraryException(t.getMessage(), status));
+                    logger.error("AWS CloudTrail Processing Library encounters an uncaught exception. " + t.getMessage(), t);
+                    LibraryUtils.handleException(exceptionHandler, new ProgressStatus(ProgressState.uncaughtException, null), t.getMessage());
                 }
             } finally {
                 super.afterExecute(r, t);
                 logger.debug("AWS CloudTrail Processing Library completed execution of a runnable.");
             }
         }
-
     }
 }

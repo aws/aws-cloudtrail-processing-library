@@ -85,14 +85,13 @@ public class CloudTrailEvent {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result
-                + ((eventMetadata == null) ? 0 : eventMetadata.hashCode());
+        result = prime * result + ((eventMetadata == null) ? 0 : eventMetadata.hashCode());
         result = prime * result + ((eventData == null) ? 0 : eventData.hashCode());
         return result;
     }
 
     /**
-     * Complares this <code>CloudTrailEvent</code> object with another.
+     * Compares this <code>CloudTrailEvent</code> object with another.
      *
      * @return <code>true</code> if they represent the same event;
      *   <code>false</code> * otherwise.

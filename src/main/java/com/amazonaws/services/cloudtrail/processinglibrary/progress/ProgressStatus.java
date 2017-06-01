@@ -27,8 +27,8 @@ public class ProgressStatus {
     /**
      * Initializes a new <code>ProgressStatus</code> object.
      *
-     * @param progressState progress state
-     * @param progressInfo progress information
+     * @param progressState The {@link ProgressState}.
+     * @param progressInfo The {@link ProgressInfo}.
      */
     public ProgressStatus(ProgressState progressState, ProgressInfo progressInfo) {
         this.progressState = progressState;
@@ -36,9 +36,7 @@ public class ProgressStatus {
     }
 
     /**
-     * Gets the <code>ProgressState</code> of this object.
-     *
-     * @return the progressState
+     * @return The state of the progress.
      */
     public ProgressState getProgressState() {
         return progressState;
@@ -46,17 +44,13 @@ public class ProgressStatus {
 
     /**
      * Sets the <code>ProgressState</code> of this object.
-     *
-     * @param progressState the progressState to set
      */
     public void setProgressState(ProgressState progressState) {
         this.progressState = progressState;
     }
 
     /**
-     * Gets the <code>ProgressInfo</code> for this object.
-     *
-     * @return the progressInfo
+     * @return The basic progress information.
      */
     public ProgressInfo getProgressInfo() {
         return progressInfo;
@@ -65,7 +59,7 @@ public class ProgressStatus {
     /**
      * Sets the <code>ProgressInfo</code> for this object.
      *
-     * @param progressInfo the progressInfo to set
+     * @param progressInfo The progressInfo to set.
      */
     public void setProgressInfo(ProgressInfo progressInfo) {
         this.progressInfo = progressInfo;
@@ -74,8 +68,7 @@ public class ProgressStatus {
     /**
      * Creates a string representation of this object.
      *
-     * @return a string containing the values of <code>progressState</code> and
-     * <code>progressInfo</code>.
+     * @return A string containing the values of {@link ProgressState} and {@link ProgressInfo}.
      */
     @Override
     public String toString() {
@@ -91,29 +84,25 @@ public class ProgressStatus {
 
 
     /**
-     * Calculates a hash code for the current state of this
-     * <code>ProgressStatus</code> object.
+     * Calculates a hash code for the current state of this {@link ProgressStatus}.
      * <p>
-     * The hash code will change if the values of <code>progressState</code> and
-     * <code>progressInfo</code> change.
+     * The hash code will change if the values of {@link ProgressState} and {@link ProgressInfo} change.
      *
-     * @return the hash code value.
+     * @return The hash code value.
      */
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((progressState == null) ? 0 : progressState.hashCode());
-        result = prime * result
-                + ((progressInfo == null) ? 0 : progressInfo.hashCode());
+        result = prime * result + ((progressInfo == null) ? 0 : progressInfo.hashCode());
         return result;
     }
 
     /**
-     * Compares this object with another <code>ProgressStatus</code> object.
+     * Compares this object with another {@link ProgressStatus} object.
      *
-     * @return <code>true</code> if the objects are equal; <code>false</code>
-     * otherwise.
+     * @return <code>true</code> if the objects are equal. Otherwise, <code>false</code>.
      */
     @Override
     public boolean equals(Object obj) {

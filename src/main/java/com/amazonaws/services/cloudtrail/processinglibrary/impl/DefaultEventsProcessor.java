@@ -15,16 +15,15 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.impl;
 
-import java.util.List;
-
+import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.EventsProcessor;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.EventsProcessor;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEvent;
+import java.util.List;
 
 /**
- * Default implementation of EventsProcesssor that simply log each event.
+ * Default implementation of {@link EventsProcessor} that simply logs each event.
  */
 public class DefaultEventsProcessor implements EventsProcessor {
     private static final Log logger = LogFactory.getLog(DefaultExceptionHandler.class);

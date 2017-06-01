@@ -34,7 +34,7 @@ public class EventBuffer<T> {
     public EventBuffer(final int bufferSize) {
         LibraryUtils.checkCondition(bufferSize < 1, "Event Buffer size cannot be " + bufferSize + ", must be at lease 1.");
 
-        this.bufferedEvents = new LinkedList<T>();
+        bufferedEvents = new LinkedList<>();
         this.bufferSize = bufferSize;
     }
 
@@ -44,7 +44,7 @@ public class EventBuffer<T> {
      * @return <code>true</code> if the current buffer is full; <code>false</code> otherwise.
      */
     public boolean isBufferFull() {
-        return bufferedEvents.size() >= this.bufferSize;
+        return bufferedEvents.size() >= bufferSize;
     }
 
     /**
@@ -53,7 +53,7 @@ public class EventBuffer<T> {
      * @param event An object of the type configured for this buffer.
      */
     public void addEvent(T event) {
-        this.bufferedEvents.add(event);
+        bufferedEvents.add(event);
     }
 
     /**
@@ -67,11 +67,11 @@ public class EventBuffer<T> {
     public List<T> getEvents() {
         List<T> returnEvents = new ArrayList<T>();
 
-        if (this.bufferedEvents.isEmpty()) {
+        if (bufferedEvents.isEmpty()) {
             return returnEvents;
         }
 
-        int returnSize = this.isBufferFull() ? this.bufferSize : this.bufferedEvents.size();
+        int returnSize = isBufferFull() ? bufferSize : bufferedEvents.size();
 
         for (int i = 0 ; i < returnSize ; i++) {
             returnEvents.add(bufferedEvents.remove(0));

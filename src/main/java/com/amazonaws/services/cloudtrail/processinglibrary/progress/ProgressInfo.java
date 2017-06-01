@@ -18,11 +18,17 @@ package com.amazonaws.services.cloudtrail.processinglibrary.progress;
 /**
  * The interface that provides the current processing progress information.
  *
- * When report start progress, isSuccess will always be false.
+ * When report start progress, {@link #isSuccess()} will always be false.
  */
 public interface ProgressInfo {
     /**
-     * @return true if execution is succeeded.
+     * @return <code>true</code> if execution is successful.
      */
-    public boolean isSuccess();
+    boolean isSuccess();
+
+    /**
+     * @param isSuccess Set <code>true</code> if execution is successful. Otherwise, <code>false</code>.
+     */
+    void setIsSuccess(boolean isSuccess);
+
 }

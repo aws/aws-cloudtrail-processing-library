@@ -20,7 +20,7 @@ package com.amazonaws.services.cloudtrail.processinglibrary.progress;
  */
 public enum ProgressState {
     /**
-     * Report progress when polling messages from SQS queue
+     * Report progress when polling messages from SQS queue.
      */
     pollQueue,
 
@@ -40,22 +40,22 @@ public enum ProgressState {
     deleteFilteredMessage,
 
     /**
-     * Report progress when processing source
+     * Report progress when processing source.
      */
     processSource,
 
     /**
-     * Report progress when downloading log file
+     * Report progress when downloading log file.
      */
     downloadLog,
 
     /**
-     * Report progress when processing log file
+     * Report progress when processing log file.
      */
     processLog,
 
     /**
-     * Report progress when uncaught exception happened
+     * Report progress when uncaught exception happened.
      */
     uncaughtException
 }

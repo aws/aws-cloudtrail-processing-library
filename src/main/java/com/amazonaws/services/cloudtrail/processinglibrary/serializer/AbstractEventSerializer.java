@@ -31,6 +31,9 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
 
+/**
+ * Abstract base class for Event Serializer implementations.
+ */
 public abstract class AbstractEventSerializer implements EventSerializer {
 
     private static final Log logger = LogFactory.getLog(AbstractEventSerializer.class);
@@ -70,18 +73,18 @@ public abstract class AbstractEventSerializer implements EventSerializer {
      * @throws JsonParseException if the log could not be parsed.
      * @throws IOException if the log could not be opened or accessed.
      */
-    protected void readArrayHeader() throws JsonParseException, IOException {
-        if (this.jsonParser.nextToken() != JsonToken.START_OBJECT) {
-            throw new JsonParseException("Not a Json object", this.jsonParser.getCurrentLocation());
+    protected void readArrayHeader() throws IOException {
+        if (jsonParser.nextToken() != JsonToken.START_OBJECT) {
+            throw new JsonParseException("Not a Json object", jsonParser.getCurrentLocation());
         }
 
-        this.jsonParser.nextToken();
+        jsonParser.nextToken();
         if (!jsonParser.getText().equals(RECORDS)) {
-            throw new JsonParseException("Not a CloudTrail log", this.jsonParser.getCurrentLocation());
+            throw new JsonParseException("Not a CloudTrail log", jsonParser.getCurrentLocation());
         }
 
-        if (this.jsonParser.nextToken() != JsonToken.START_ARRAY) {
-            throw new JsonParseException("Not a CloudTrail log", this.jsonParser.getCurrentLocation());
+        if (jsonParser.nextToken() != JsonToken.START_ARRAY) {
+            throw new JsonParseException("Not a CloudTrail log", jsonParser.getCurrentLocation());
         }
     }
 
@@ -93,7 +96,7 @@ public abstract class AbstractEventSerializer implements EventSerializer {
      */
     public boolean hasNextEvent() throws IOException {
         /* In Fasterxml parser, hasNextEvent will consume next token. So do not call it multiple times. */
-        JsonToken nextToken = this.jsonParser.nextToken();
+        JsonToken nextToken = jsonParser.nextToken();
         return nextToken == JsonToken.START_OBJECT || nextToken == JsonToken.START_ARRAY;
     }
 
@@ -103,19 +106,19 @@ public abstract class AbstractEventSerializer implements EventSerializer {
      * @throws IOException if the log could not be opened or accessed.
      */
     public void close() throws IOException {
-        this.jsonParser.close();
+        jsonParser.close();
     }
 
     /**
      * Get the next event from the CloudTrail log and parse it.
      *
-     * @return a {@link com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEvent} that represents the
+     * @return a {@link CloudTrailEvent} that represents the
      *     parsed event.
      * @throws IOException if the event could not be parsed.
      */
     public CloudTrailEvent getNextEvent() throws IOException {
         CloudTrailEventData eventData = new CloudTrailEventData();
-        String key = null;
+        String key;
 
          /* Get next CloudTrailEvent event from log file. When failed to parse a event,
          * IOException will be thrown. In this case, the charEnd index the place we
@@ -123,14 +126,14 @@ public abstract class AbstractEventSerializer implements EventSerializer {
 
         // return the starting location of the current token; that is, position of the first character
         // from input that starts the current token
-        int charStart = (int) this.jsonParser.getTokenLocation().getCharOffset();
+        int charStart = (int) jsonParser.getTokenLocation().getCharOffset();
 
-        while(this.jsonParser.nextToken() != JsonToken.END_OBJECT) {
+        while(jsonParser.nextToken() != JsonToken.END_OBJECT) {
             key = jsonParser.getCurrentName();
 
             switch (key) {
             case "eventVersion":
-                String eventVersion = this.jsonParser.nextTextValue();
+                String eventVersion = jsonParser.nextTextValue();
                 if (Double.parseDouble(eventVersion) > SUPPORTED_EVENT_VERSION) {
                     logger.debug(String.format("EventVersion %s is not supported by CloudTrail.", eventVersion));
                 }
@@ -140,10 +143,10 @@ public abstract class AbstractEventSerializer implements EventSerializer {
                 this.parseUserIdentity(eventData);
                 break;
             case "eventTime":
-                eventData.add(CloudTrailEventField.eventTime.name(), this.convertToDate(this.jsonParser.nextTextValue()));
+                eventData.add(CloudTrailEventField.eventTime.name(), convertToDate(jsonParser.nextTextValue()));
                 break;
             case "eventID":
-                eventData.add(key, this.convertToUUID(this.jsonParser.nextTextValue()));
+                eventData.add(key, convertToUUID(jsonParser.nextTextValue()));
                 break;
             case "readOnly":
                 this.parseReadOnly(eventData);
@@ -152,16 +155,16 @@ public abstract class AbstractEventSerializer implements EventSerializer {
                 this.parseResources(eventData);
                 break;
             default:
-                eventData.add(key, this.parseDefaultValue(key));
+                eventData.add(key, parseDefaultValue(key));
                 break;
             }
         }
         this.setAccountId(eventData);
 
         // event's last character position in the log file.
-        int charEnd = (int) this.jsonParser.getTokenLocation().getCharOffset();
+        int charEnd = (int) jsonParser.getTokenLocation().getCharOffset();
 
-        CloudTrailEventMetadata metaData = this.getMetadata(charStart, charEnd);
+        CloudTrailEventMetadata metaData = getMetadata(charStart, charEnd);
 
         return new CloudTrailEvent(eventData, metaData);
     }
@@ -197,62 +200,61 @@ public abstract class AbstractEventSerializer implements EventSerializer {
             eventData.getUserIdentity().getSessionContext().getSessionIssuer() != null &&
             eventData.getUserIdentity().getSessionContext().getSessionIssuer().getAccountId() != null) {
             eventData.add("accountId", eventData.getUserIdentity().getSessionContext().getSessionIssuer().getAccountId());
-            return;
         }
     }
 
     /**
      * Parse user identity in CloudTrailEventData
      *
-     * @param eventData
+     * @param eventData {@link CloudTrailEventData} needs to parse.
      * @throws IOException
      */
     private void parseUserIdentity(CloudTrailEventData eventData) throws IOException {
-        JsonToken nextToken = this.jsonParser.nextToken();
+        JsonToken nextToken = jsonParser.nextToken();
         if (nextToken == JsonToken.VALUE_NULL) {
             eventData.add(CloudTrailEventField.userIdentity.name(), null);
             return;
         }
 
         if (nextToken != JsonToken.START_OBJECT) {
-            throw new JsonParseException("Not a UserIdentity object", this.jsonParser.getCurrentLocation());
+            throw new JsonParseException("Not a UserIdentity object", jsonParser.getCurrentLocation());
         }
 
         UserIdentity userIdentity = new UserIdentity();
 
-        while (this.jsonParser.nextToken() != JsonToken.END_OBJECT) {
-            String key = this.jsonParser.getCurrentName();
+        while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+            String key = jsonParser.getCurrentName();
 
             switch (key) {
             case "type":
-                userIdentity.add(CloudTrailEventField.type.name(), this.jsonParser.nextTextValue());
+                userIdentity.add(CloudTrailEventField.type.name(), jsonParser.nextTextValue());
                 break;
             case "principalId":
-                userIdentity.add(CloudTrailEventField.principalId.name(), this.jsonParser.nextTextValue());
+                userIdentity.add(CloudTrailEventField.principalId.name(), jsonParser.nextTextValue());
                 break;
             case "arn":
-                userIdentity.add(CloudTrailEventField.arn.name(), this.jsonParser.nextTextValue());
+                userIdentity.add(CloudTrailEventField.arn.name(), jsonParser.nextTextValue());
                 break;
             case "accountId":
-                userIdentity.add(CloudTrailEventField.accountId.name(), this.jsonParser.nextTextValue());
+                userIdentity.add(CloudTrailEventField.accountId.name(), jsonParser.nextTextValue());
                 break;
             case "accessKeyId":
-                userIdentity.add(CloudTrailEventField.accessKeyId.name(), this.jsonParser.nextTextValue());
+                userIdentity.add(CloudTrailEventField.accessKeyId.name(), jsonParser.nextTextValue());
                 break;
             case "userName":
-                userIdentity.add(CloudTrailEventField.userName.name(), this.jsonParser.nextTextValue());
+                userIdentity.add(CloudTrailEventField.userName.name(), jsonParser.nextTextValue());
                 break;
             case "sessionContext":
                 this.parseSessionContext(userIdentity);
                 break;
             case "invokedBy":
-                userIdentity.add(CloudTrailEventField.invokedBy.name(), this.jsonParser.nextTextValue());
+                userIdentity.add(CloudTrailEventField.invokedBy.name(), jsonParser.nextTextValue());
                 break;
             case "identityProvider":
-                userIdentity.add(CloudTrailEventField.identityProvider.name(), this.jsonParser.nextTextValue());
+                userIdentity.add(CloudTrailEventField.identityProvider.name(), jsonParser.nextTextValue());
                 break;
             default:
-                userIdentity.add(key, this.parseDefaultValue(key));
+                userIdentity.add(key, parseDefaultValue(key));
                 break;
             }
         }
@@ -267,27 +269,27 @@ public abstract class AbstractEventSerializer implements EventSerializer {
      * @throws JsonParseException
      */
     private void parseSessionContext(UserIdentity userIdentity) throws IOException {
-        if (this.jsonParser.nextToken() != JsonToken.START_OBJECT) {
-            throw new JsonParseException("Not a SessionContext object", this.jsonParser.getCurrentLocation());
+        if (jsonParser.nextToken() != JsonToken.START_OBJECT) {
+            throw new JsonParseException("Not a SessionContext object", jsonParser.getCurrentLocation());
         }
 
         SessionContext sessionContext = new SessionContext();
 
-        while (this.jsonParser.nextToken() != JsonToken.END_OBJECT) {
-            String key = this.jsonParser.getCurrentName();
+        while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+            String key = jsonParser.getCurrentName();
 
             switch (key) {
             case "attributes":
-                sessionContext.add(CloudTrailEventField.attributes.name(), this.parseAttributes());
+                sessionContext.add(CloudTrailEventField.attributes.name(), parseAttributes());
                 break;
             case "sessionIssuer":
-                sessionContext.add(CloudTrailEventField.sessionIssuer.name(), this.parseSessionIssuer(sessionContext));
+                sessionContext.add(CloudTrailEventField.sessionIssuer.name(), parseSessionIssuer(sessionContext));
                 break;
             case "webIdFederationData":
-                sessionContext.add(CloudTrailEventField.webIdFederationData.name(), this.parseWebIdentitySessionContext(sessionContext));
+                sessionContext.add(CloudTrailEventField.webIdFederationData.name(), parseWebIdentitySessionContext(sessionContext));
                 break;
             default:
-                sessionContext.add(key, this.parseDefaultValue(key));
+                sessionContext.add(key, parseDefaultValue(key));
                 break;
             }
         }
@@ -299,29 +301,29 @@ public abstract class AbstractEventSerializer implements EventSerializer {
     /**
      * Parse web identify session object
      *
-     * @param sessionContext
+     * @param sessionContext {@link SessionContext}
      * @return the web identity session context
      * @throws IOException
      */
     private WebIdentitySessionContext parseWebIdentitySessionContext(SessionContext sessionContext) throws IOException {
-        if (this.jsonParser.nextToken() != JsonToken.START_OBJECT) {
-            throw new JsonParseException("Not a WebIdentitySessionContext object", this.jsonParser.getCurrentLocation());
+        if (jsonParser.nextToken() != JsonToken.START_OBJECT) {
+            throw new JsonParseException("Not a WebIdentitySessionContext object", jsonParser.getCurrentLocation());
         }
 
         WebIdentitySessionContext webIdFederationData = new WebIdentitySessionContext();
 
-        while (this.jsonParser.nextToken() != JsonToken.END_OBJECT) {
-            String key = this.jsonParser.getCurrentName();
+        while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+            String key = jsonParser.getCurrentName();
 
             switch (key) {
             case "attributes":
-                webIdFederationData.add(CloudTrailEventField.attributes.name(), this.parseAttributes());
+                webIdFederationData.add(CloudTrailEventField.attributes.name(), parseAttributes());
                 break;
             case "federatedProvider":
-                webIdFederationData.add(CloudTrailEventField.federatedProvider.name(), this.jsonParser.nextTextValue());
+                webIdFederationData.add(CloudTrailEventField.federatedProvider.name(), jsonParser.nextTextValue());
                 break;
             default:
-                webIdFederationData.add(key, this.parseDefaultValue(key));
+                webIdFederationData.add(key, parseDefaultValue(key));
                 break;
             }
         }
@@ -338,14 +340,14 @@ public abstract class AbstractEventSerializer implements EventSerializer {
      * @throws IOException
      */
     private SessionIssuer parseSessionIssuer(SessionContext sessionContext) throws IOException {
-        if (this.jsonParser.nextToken() != JsonToken.START_OBJECT) {
-            throw new JsonParseException("Not a SessionIssuer object", this.jsonParser.getCurrentLocation());
+        if (jsonParser.nextToken() != JsonToken.START_OBJECT) {
+            throw new JsonParseException("Not a SessionIssuer object", jsonParser.getCurrentLocation());
         }
 
         SessionIssuer sessionIssuer = new SessionIssuer();
 
-        while (this.jsonParser.nextToken() != JsonToken.END_OBJECT) {
-            String key = this.jsonParser.getCurrentName();
+        while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+            String key = jsonParser.getCurrentName();
 
             switch (key) {
             case "type":
@@ -380,11 +382,11 @@ public abstract class AbstractEventSerializer implements EventSerializer {
      * @throws JsonParseException
      * @throws IOException
      */
-    private void parseReadOnly(CloudTrailEventData eventData) throws JsonParseException, IOException {
-        this.jsonParser.nextToken();
+    private void parseReadOnly(CloudTrailEventData eventData) throws IOException {
+        jsonParser.nextToken();
         Boolean readOnly = null;
-        if (this.jsonParser.getCurrentToken() != JsonToken.VALUE_NULL) {
-            readOnly = this.jsonParser.getBooleanValue();
+        if (jsonParser.getCurrentToken() != JsonToken.VALUE_NULL) {
+            readOnly = jsonParser.getBooleanValue();
         }
         eventData.add(CloudTrailEventField.readOnly.name(), readOnly);
     }
@@ -396,20 +398,20 @@ public abstract class AbstractEventSerializer implements EventSerializer {
      * @throws IOException
      */
     private void parseResources(CloudTrailEventData eventData) throws IOException {
-        JsonToken nextToken = this.jsonParser.nextToken();
+        JsonToken nextToken = jsonParser.nextToken();
         if (nextToken == JsonToken.VALUE_NULL) {
             eventData.add(CloudTrailEventField.resources.name(), null);
             return;
         }
 
         if (nextToken != JsonToken.START_ARRAY) {
-            throw new JsonParseException("Not a list of resources object", this.jsonParser.getCurrentLocation());
+            throw new JsonParseException("Not a list of resources object", jsonParser.getCurrentLocation());
         }
 
         List<Resource> resources = new ArrayList<Resource>();
 
-        while (this.jsonParser.nextToken() != JsonToken.END_ARRAY) {
-            resources.add(this.parseResource());
+        while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+            resources.add(parseResource());
         }
 
         eventData.add(CloudTrailEventField.resources.name(), resources);
@@ -423,18 +425,18 @@ public abstract class AbstractEventSerializer implements EventSerializer {
      */
     private Resource parseResource() throws IOException {
         //current token is ready consumed by parseResources
-        if (this.jsonParser.getCurrentToken() != JsonToken.START_OBJECT) {
-            throw new JsonParseException("Not a Resource object", this.jsonParser.getCurrentLocation());
+        if (jsonParser.getCurrentToken() != JsonToken.START_OBJECT) {
+            throw new JsonParseException("Not a Resource object", jsonParser.getCurrentLocation());
         }
 
         Resource resource = new Resource();
 
-        while (this.jsonParser.nextToken() != JsonToken.END_OBJECT) {
-            String key = this.jsonParser.getCurrentName();
+        while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+            String key = jsonParser.getCurrentName();
 
             switch (key) {
             default:
-                resource.add(key, this.parseDefaultValue(key));
+                resource.add(key, parseDefaultValue(key));
                 break;
             }
         }
@@ -453,15 +455,15 @@ public abstract class AbstractEventSerializer implements EventSerializer {
      * @throws IOException
      */
     private String parseDefaultValue(String key) throws IOException {
-        this.jsonParser.nextToken();
+        jsonParser.nextToken();
         String value = null;
-        JsonToken currentToken = this.jsonParser.getCurrentToken();
+        JsonToken currentToken = jsonParser.getCurrentToken();
         if (currentToken != JsonToken.VALUE_NULL) {
             if (currentToken == JsonToken.START_ARRAY || currentToken == JsonToken.START_OBJECT) {
-                JsonNode node = this.jsonParser.readValueAsTree();
+                JsonNode node = jsonParser.readValueAsTree();
                 value = node.toString();
             } else {
-                value = this.jsonParser.getValueAsString();
+                value = jsonParser.getValueAsString();
             }
         }
         return value;
@@ -474,15 +476,15 @@ public abstract class AbstractEventSerializer implements EventSerializer {
      * @throws IOException
      */
     private Map<String, String> parseAttributes() throws IOException {
-        if (this.jsonParser.nextToken() != JsonToken.START_OBJECT) {
-            throw new JsonParseException("Not a Attributes object", this.jsonParser.getCurrentLocation());
+        if (jsonParser.nextToken() != JsonToken.START_OBJECT) {
+            throw new JsonParseException("Not a Attributes object", jsonParser.getCurrentLocation());
         }
 
         Map<String, String> attributes = new HashMap<>();
 
-        while (this.jsonParser.nextToken() != JsonToken.END_OBJECT) {
-            String key = this.jsonParser.getCurrentName();
-            String value = this.jsonParser.nextTextValue();
+        while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+            String key = jsonParser.getCurrentName();
+            String value = jsonParser.nextTextValue();
             attributes.put(key, value);
         }
 

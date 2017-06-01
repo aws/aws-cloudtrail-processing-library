@@ -22,16 +22,16 @@ package com.amazonaws.services.cloudtrail.processinglibrary.model.internal;
  */
 public class UserIdentity extends CloudTrailDataStore{
     /**
-     * Get identity type
+     * Get identity type.
      *
-     * @return The type of the principal that made the call
+     * @return The type of the principal that made the call.
      */
     public String getIdentityType() {
         return (String) this.get(CloudTrailEventField.type.name());
     }
 
     /**
-     * Get principal ID
+     * Get principal ID.
      *
      * @return A unique identifier for the principal. For requests made with temporary
      * security credentials, this value includes the session name that is passed to
@@ -42,7 +42,7 @@ public class UserIdentity extends CloudTrailDataStore{
     }
 
     /**
-     * Get principal ARN
+     * Get principal ARN.
      *
      * @return The Amazon Resource Name (ARN) of the principal that made the call.
      */
@@ -51,7 +51,7 @@ public class UserIdentity extends CloudTrailDataStore{
     }
 
     /**
-     * Get account ID
+     * Get account ID.
      *
      * @return The account that owns the entity that granted permissions for the
      * request. If the request was made using temporary security credentials, this
@@ -62,7 +62,7 @@ public class UserIdentity extends CloudTrailDataStore{
     }
 
     /**
-     * Get access key ID
+     * Get access key ID.
      *
      * @return The access key ID that was used to sign the request. If the request
      * was made using temporary security credentials, this is the access key ID of
@@ -73,7 +73,7 @@ public class UserIdentity extends CloudTrailDataStore{
     }
 
     /**
-     * Get user name
+     * Get user name.
      *
      * @return Friendly name of the principal that made the call.
      */
@@ -82,27 +82,27 @@ public class UserIdentity extends CloudTrailDataStore{
     }
 
     /**
-     * Get invoked by
+     * Get invoked by.
      *
      * @return If the request was made by another AWS service, such as Auto
-     * Scaling or AWS Elastic Beanstalk, the name of the service
+     * Scaling or AWS Elastic Beanstalk, the name of the service.
      */
     public String getInvokedBy() {
         return (String) this.get(CloudTrailEventField.invokedBy.name());
     }
 
     /**
-     * Get session context
+     * Get session context.
      *
      * @return {@link SessionContext} If the request was made with temporary security credentials, an element
-     * that provides information about the session that was created for those credentials
+     * that provides information about the session that was created for those credentials.
      */
     public SessionContext getSessionContext() {
         return (SessionContext) this.get(CloudTrailEventField.sessionContext.name());
     }
 
     /**
-     * Get identity provider
+     * Get identity provider.
      *
      * @return The principal name of the external identity provider.
      *      This field appears only for SAMLUser or WebIdentityUser types.

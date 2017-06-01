@@ -19,7 +19,7 @@ import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.SourceFilt
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
 
 /**
- * Default implementation of SourceFilter that simply return True for any CloudTrailSource
+ * Default implementation of {@link SourceFilter} that simply returns <code>true</code> for any {@link CloudTrailSource}.
  */
 public class DefaultSourceFilter implements SourceFilter {
 

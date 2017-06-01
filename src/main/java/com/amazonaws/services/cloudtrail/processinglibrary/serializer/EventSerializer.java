@@ -15,9 +15,9 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.serializer;
 
-import java.io.IOException;
-
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEvent;
+
+import java.io.IOException;
 
 /**
  * AWSCloudTrailSerializer is an interface provides a set of methods to serialize AWS CloudTrail log files in a
@@ -37,7 +37,7 @@ public interface EventSerializer extends AutoCloseable {
      * Get the next event in the log, this one should be called after verifying that there are more events by using
      * <code>hasNextEvent()</code>.
      *
-     * @return the {@link com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEvent}.
+     * @return the {@link CloudTrailEvent}.
      * @throws IOException if the log could not be read.
      */
     public CloudTrailEvent getNextEvent() throws IOException;

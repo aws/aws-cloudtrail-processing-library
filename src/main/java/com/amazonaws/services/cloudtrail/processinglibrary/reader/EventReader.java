@@ -15,22 +15,12 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.reader;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.zip.GZIPInputStream;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.amazonaws.services.cloudtrail.processinglibrary.configuration.ProcessingConfiguration;
 import com.amazonaws.services.cloudtrail.processinglibrary.exceptions.CallbackException;
-import com.amazonaws.services.cloudtrail.processinglibrary.exceptions.ProcessingLibraryException;
-import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ExceptionHandler;
-import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ProgressReporter;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.EventFilter;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.EventsProcessor;
+import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ExceptionHandler;
+import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ProgressReporter;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.SourceFilter;
 import com.amazonaws.services.cloudtrail.processinglibrary.manager.S3Manager;
 import com.amazonaws.services.cloudtrail.processinglibrary.manager.SqsManager;
@@ -42,14 +32,22 @@ import com.amazonaws.services.cloudtrail.processinglibrary.progress.BasicProcess
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.BasicProcessSourceInfo;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressState;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus;
-import com.amazonaws.services.cloudtrail.processinglibrary.serializer.EventSerializer;
 import com.amazonaws.services.cloudtrail.processinglibrary.serializer.DefaultEventSerializer;
+import com.amazonaws.services.cloudtrail.processinglibrary.serializer.EventSerializer;
 import com.amazonaws.services.cloudtrail.processinglibrary.serializer.RawLogDeliveryEventSerializer;
-import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.EventBuffer;
+import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
 import com.amazonaws.services.sqs.model.Message;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.zip.GZIPInputStream;
 
 /**
  * EventReader is responsible for processing a stream of events. It parses each event and hands
@@ -79,20 +77,20 @@ public class EventReader {
      *
      * This constructor creates an instance of EventReader object.
      *
-     * @param eventsProcesor user's implementation of eventsProcesor
-     * @param sourceFilter user's implementation of sourceFilter
-     * @param eventFilter user's implementation of eventFilter
-     * @param progressReporter user's implementation of progressReporter
-     * @param exceptionHandler user's implementation of exceptionHandler
-     * @param sqsManager that poll message from SQS queue
-     * @param s3Manager that download CloudTrail log files from S3
-     * @param configuration user provided ProcessingConfiguration
+     * @param eventsProcessor user's implementation of eventsProcessor.
+     * @param sourceFilter user's implementation of sourceFilter.
+     * @param eventFilter user's implementation of eventFilter.
+     * @param progressReporter user's implementation of progressReporter.
+     * @param exceptionHandler user's implementation of exceptionHandler.
+     * @param sqsManager that poll message from SQS queue.
+     * @param s3Manager that download CloudTrail log files from S3.
+     * @param configuration user provided ProcessingConfiguration.
      */
-    public EventReader(EventsProcessor eventsProcesor, SourceFilter sourceFilter, EventFilter eventFilter,
+    public EventReader(EventsProcessor eventsProcessor, SourceFilter sourceFilter, EventFilter eventFilter,
             ProgressReporter progressReporter, ExceptionHandler exceptionHandler, SqsManager sqsManager,
             S3Manager s3Manager, ProcessingConfiguration configuration) {
 
-        this.eventsProcessor = eventsProcesor;
+        this.eventsProcessor = eventsProcessor;
         this.sourceFilter = sourceFilter;
         this.eventFilter = eventFilter;
         this.progressReporter = progressReporter;
@@ -108,32 +106,34 @@ public class EventReader {
     /**
      * Poll messages from SQS queue and convert messages to CloudTrailSource.
      *
-     * @return a list of {@link CloudTrailSource}
+     * @return a list of {@link CloudTrailSource}.
      */
     public List<CloudTrailSource> getSources() {
-        List<Message> sqsMessages = this.sqsManager.pollQueue();
-        List<CloudTrailSource> sources = this.sqsManager.parseMessage(sqsMessages);
-        return sources;
+        List<Message> sqsMessages = sqsManager.pollQueue();
+        return sqsManager.parseMessage(sqsMessages);
     }
 
     /**
      * Retrieve S3 object URL from source then downloads the object processes each event through
      * call back functions.
      *
-     * @param source {@link CloudTrailSource} to process
+     * @param source {@link CloudTrailSource} to process.
      */
     public void processSource (CloudTrailSource source) {
-        // Start to process the source
+        boolean filterSourceOut = false;
+        boolean downloadLogSuccess = true;
         boolean processSourceSuccess = false;
-        ProgressStatus startProcessSource = new ProgressStatus(ProgressState.processSource, new BasicProcessSourceInfo(source, processSourceSuccess));
-        final Object processSourceReportObject = this.progressReporter.reportStart(startProcessSource);
 
+        ProgressStatus processSourceStatus = new ProgressStatus(ProgressState.processSource, new BasicProcessSourceInfo(source, processSourceSuccess));
+        final Object processSourceReportObject = progressReporter.reportStart(processSourceStatus);
+
+        // Start to process the source
         try {
             // Apply source filter first. If source filtered out then delete source immediately and return.
             if (!sourceFilter.filterSource(source)) {
-                this.sqsManager.deleteMessageFromQueue(source, ProgressState.deleteFilteredMessage);
-                logger.debug("AWSCloudTrailSource " + source + " has filtered.");
+                logger.debug("AWSCloudTrailSource " + source + " has been filtered out.");
                 processSourceSuccess = true;
+                filterSourceOut = true;
 
             } else {
                 int nLogFilesToProcess = ((SQSBasedSource)source).getLogs().size();
@@ -141,68 +141,95 @@ public class EventReader {
                 for (CloudTrailLog ctLog : ((SQSBasedSource)source).getLogs()) {
                     //start to process the log
                     boolean processLogSuccess = false;
-                    ProgressStatus startProcessLog = new ProgressStatus(ProgressState.processLog, new BasicProcessLogInfo(source, ctLog, processLogSuccess));
-                    final Object processLogReportObject = this.progressReporter.reportStart(startProcessLog);
+                    ProgressStatus processLogStatus = new ProgressStatus(ProgressState.processLog, new BasicProcessLogInfo(source, ctLog, processLogSuccess));
+                    final Object processLogReportObject = progressReporter.reportStart(processLogStatus);
 
                     try {
-                        byte[] s3ObjectBytes = this.s3Manager.downloadLog(ctLog, source);
+                        byte[] s3ObjectBytes = s3Manager.downloadLog(ctLog, source);
                         if (s3ObjectBytes == null) {
+                            downloadLogSuccess = false;
                             continue; //Failure downloading log file. Skip it.
                         }
 
                         try (GZIPInputStream gzippedInputStream = new GZIPInputStream(new ByteArrayInputStream(s3ObjectBytes));
-                            EventSerializer serializer = this.getEventSerializer(gzippedInputStream, ctLog);) {
+                            EventSerializer serializer = getEventSerializer(gzippedInputStream, ctLog)) {
 
-                            this.emitEvents(serializer);
+                            emitEvents(serializer);
 
                             //decrement this value upon successfully processed a log
                             nLogFilesToProcess --;
                             processLogSuccess = true;
 
                         } catch (IllegalArgumentException | IOException e) {
-                            ProcessingLibraryException exception = new ProcessingLibraryException("Fail to parse log file.", e, startProcessLog);
-                            this.exceptionHandler.handleException(exception);
+                            LibraryUtils.handleException(exceptionHandler, processLogStatus, e, "Failed to parse log file.");
                         }
+
                     } finally {
                         //end to process the log
-                        ProgressStatus endProcessLog = new ProgressStatus(ProgressState.processLog, new BasicProcessLogInfo(source, ctLog, processLogSuccess));
-                        this.progressReporter.reportEnd(endProcessLog, processLogReportObject);
+                        LibraryUtils.endToProcess(progressReporter, processLogSuccess, processLogStatus, processLogReportObject);
                     }
                 }
 
-                // Delete source after all log files processed successfully
                 if (nLogFilesToProcess == 0) {
-                    this.sqsManager.deleteMessageFromQueue(source, ProgressState.deleteMessage);
                     processSourceSuccess = true;
                 }
             }
 
         } catch (CallbackException ex) {
-            this.exceptionHandler.handleException(ex);
+            exceptionHandler.handleException(ex);
+
         } finally {
+            cleanupMessage(filterSourceOut, downloadLogSuccess, processSourceSuccess, source);
             // end to process the source
-            ProgressStatus endProcessSource = new ProgressStatus(ProgressState.processSource, new BasicProcessSourceInfo(source, processSourceSuccess));
-            this.progressReporter.reportEnd(endProcessSource, processSourceReportObject);
+            LibraryUtils.endToProcess(progressReporter, processSourceSuccess, processSourceStatus, processSourceReportObject);
         }
     }
 
     /**
-     * Get the EventSerializer based on user's configuration.
+     * Delete SQS message after processing source.
      *
-     * @param inputStream the Gzipped content from CloudTrail log file
-     * @param ctLog CloudTrail log file
-     * @return parser that parses CloudTrail log file
-     * @throws IOException
+     * @param progressState {@link ProgressState} either {@link ProgressState#deleteMessage}, or {@link ProgressState#deleteFilteredMessage}
+     * @param source {@link CloudTrailSource} that contains the SQS message that will be deleted.
+     */
+    private void deleteMessageAfterProcessSource(ProgressState progressState, CloudTrailSource source) {
+        ProgressStatus deleteMessageStatus = new ProgressStatus(progressState, new BasicProcessSourceInfo(source, false));
+        sqsManager.deleteMessageFromQueue(((SQSBasedSource)source).getSqsMessage(), deleteMessageStatus);
+    }
+
+    /**
+     * Clean up the message after CPL finishes the processing.
+     * <p>
+     *     <li>If the source is filtered out, the message will be deleted with {@link ProgressState#deleteFilteredMessage}.</li>
+     *     <li>If the processing is successful, the message with be deleted with {@link ProgressState#deleteMessage}.</li>
+     *     <li>If the processing failed due to downloading logs, the message will not be deleted regardless of
+     *     {@link ProcessingConfiguration#isDeleteMessageUponFailure()} value. Otherwise, this property controls the
+     *     deletion decision.</li>
+     * </p>
+     */
+    private void cleanupMessage(boolean filterSourceOut, boolean downloadLogsSuccess, boolean processSourceSuccess, CloudTrailSource source) {
+        if (filterSourceOut) {
+            deleteMessageAfterProcessSource(ProgressState.deleteFilteredMessage, source);
+        } else if (processSourceSuccess || sqsManager.shouldDeleteMessageUponFailure(!downloadLogsSuccess)) {
+            deleteMessageAfterProcessSource(ProgressState.deleteMessage, source);
+        }
+    }
+
+    /**
+     * Gets the EventSerializer based on user's configuration.
+     *
+     * @param inputStream the Gzipped content from CloudTrail log file.
+     * @param ctLog CloudTrail log file.
+     * @return parser that parses CloudTrail log file.
      */
     private EventSerializer getEventSerializer(GZIPInputStream inputStream, CloudTrailLog ctLog) throws IOException {
         EventSerializer serializer;
 
-        if (this.config.isEnableRawEventInfo()) {
+        if (config.isEnableRawEventInfo()) {
             String logFileContent = new String(LibraryUtils.toByteArray(inputStream), StandardCharsets.UTF_8);
-            JsonParser jsonParser = this.mapper.getFactory().createParser(logFileContent);
+            JsonParser jsonParser = mapper.getFactory().createParser(logFileContent);
             serializer = new RawLogDeliveryEventSerializer(logFileContent, ctLog, jsonParser);
         } else {
-            JsonParser jsonParser = this.mapper.getFactory().createParser(inputStream);
+            JsonParser jsonParser = mapper.getFactory().createParser(inputStream);
             serializer = new DefaultEventSerializer(ctLog, jsonParser);
         }
         return serializer;
@@ -211,33 +238,33 @@ public class EventReader {
     /**
      * Filter, buffer, and emit CloudTrailEvents.
      *
-     * @param serializer {@link EventSerializer} that parses CloudTrail log file
+     * @param serializer {@link EventSerializer} that parses CloudTrail log file.
      *
-     * @throws IOException
-     * @throws CallbackException
+     * @throws IOException If the log cannot be read.
+     * @throws CallbackException If an error occurs when filtering or processing events.
      */
     private void emitEvents(EventSerializer serializer) throws IOException, CallbackException {
-        EventBuffer<CloudTrailEvent> eventBuffer = new EventBuffer<>(this.config.getMaxEventsPerEmit());
+        EventBuffer<CloudTrailEvent> eventBuffer = new EventBuffer<>(config.getMaxEventsPerEmit());
         while (serializer.hasNextEvent()) {
 
             CloudTrailEvent event = serializer.getNextEvent();
 
-            if (this.eventFilter.filterEvent(event)) {
+            if (eventFilter.filterEvent(event)) {
                 eventBuffer.addEvent(event);
 
                 if (eventBuffer.isBufferFull()) {
-                    this.eventsProcessor.process(eventBuffer.getEvents());
+                    eventsProcessor.process(eventBuffer.getEvents());
                 }
 
             } else {
-                logger.debug("AWSCloudTrailEvent " + event + " has filtered.");
+                logger.debug("AWSCloudTrailEvent " + event + " has been filtered out.");
             }
         }
 
         //emit whatever in the buffer as last batch
         List<CloudTrailEvent> events = eventBuffer.getEvents();
         if (!events.isEmpty()) {
-            this.eventsProcessor.process(events);
+            eventsProcessor.process(events);
         }
     }
 }

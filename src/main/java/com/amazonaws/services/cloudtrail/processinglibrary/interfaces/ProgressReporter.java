@@ -15,39 +15,47 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.interfaces;
 
+import com.amazonaws.services.cloudtrail.processinglibrary.manager.S3Manager;
+import com.amazonaws.services.cloudtrail.processinglibrary.manager.SqsManager;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailLog;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus;
+import com.amazonaws.services.cloudtrail.processinglibrary.reader.EventReader;
+import com.amazonaws.services.sqs.model.Message;
+
+import java.util.List;
 
 /**
- * ProgressReporter is an interface that can be used to provide custom handling of AWS CloudTrail Processing Library
+ * <code>ProgressReporter</code> is an interface for providing custom handlers of AWS CloudTrail Processing Library
  * progress.
+ *<p>
+ * {@link #reportStart(ProgressStatus)} and {@link #reportEnd(ProgressStatus, Object)} are invoked at the beginning and
+ * the end of the following actions:
+ * </p>
+ * <ol>
+ *   <li>Polling messages from SQS - {@link SqsManager#pollQueue()}.</li>
+ *   <li>Parsing message from SQS - {@link SqsManager#parseMessage(List)}.</li>
+ *   <li>Deleting messages from SQS - {@link SqsManager#deleteMessageFromQueue(Message, ProgressStatus)}.</li>
+ *   <li>Downloading an AWS CloudTrail log file - {@link S3Manager#downloadLog(CloudTrailLog, CloudTrailSource)}.</li>
+ *   <li>Processing the AWS CloudTrail log file - {@link EventReader#processSource(CloudTrailSource)}.</li>
+ * </ol>
  *
- * reportStart() and reportEnd() are invoked at the beginning and the end of the following actions:
- *
- * 1. Polling messages from SQS
- * 2. Parsing message from SQS
- * 3. Processing an Amazon SQS source for CloudTrail logs
- * 4. Deleting messages from SQS (filtered and unfiltered)
- * 5. Downloading CloudTrail log file
- * 6. Processing CloudTrail log file
- *
- * See {@link com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus} for more information.
+ * @see ProgressStatus for more information.
  */
 public interface ProgressReporter {
     /**
      * A callback method that report starting status.
      *
-     * @param status a {@link com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus} that
-     *     represents the status of the current action being performed.
-     * @return an Object that can be sent to <code>reportEnd()</code>.
+     * @param status A {@link ProgressStatus} that represents the status of the current action being performed.
+     * @return An {@link Object} that can be sent to {@link #reportEnd(ProgressStatus, Object)}.
      */
     public Object reportStart(ProgressStatus status);
 
     /**
      * A callback method that report ending status.
      *
-     * @param status a {@link com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus} that
-     *     represents the status of the current action being performed.
-     * @param object an object to send; usually the object returned by <code>reportStart()</code>.
+     * @param status A {@link ProgressStatus} that represents the status of the current action being performed.
+     * @param object An {@link Object} to send; usually the object returned by {{@link #reportStart(ProgressStatus)}}.
      */
     public void reportEnd(ProgressStatus status, Object object);
 }

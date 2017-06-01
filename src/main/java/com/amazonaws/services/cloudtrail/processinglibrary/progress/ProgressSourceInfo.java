@@ -18,11 +18,11 @@ package com.amazonaws.services.cloudtrail.processinglibrary.progress;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
 
 /**
- * In addition to ProgressInfo, ProgressSourceInfo provides CloudTrailSource information.
+ * In addition to ProgressInfo, ProgressSourceInfo provides {@link CloudTrailSource} information.
  */
 public interface ProgressSourceInfo extends ProgressInfo{
     /**
-     * @return the source
+     * @return CloudTrail source.
      */
     public CloudTrailSource getSource();
 }

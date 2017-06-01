@@ -15,34 +15,30 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.manager;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.cloudtrail.processinglibrary.configuration.ProcessingConfiguration;
-import com.amazonaws.services.cloudtrail.processinglibrary.exceptions.ProcessingLibraryException;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ExceptionHandler;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ProgressReporter;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
-import com.amazonaws.services.cloudtrail.processinglibrary.model.SQSBasedSource;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.SourceAttributeKeys;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.SourceType;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.BasicParseMessageInfo;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.BasicPollQueueInfo;
-import com.amazonaws.services.cloudtrail.processinglibrary.progress.BasicProcessSourceInfo;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressState;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus;
 import com.amazonaws.services.cloudtrail.processinglibrary.serializer.SourceSerializer;
-import com.amazonaws.services.cloudtrail.processinglibrary.serializer.DefaultSourceSerializer;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
-import com.amazonaws.services.sqs.AmazonSQSClient;
+import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.DeleteMessageRequest;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * A convenient class to manage Amazon SQS Service related operations.
@@ -70,12 +66,12 @@ public class SqsManager {
     /**
      * An instance of AmazonSQSClient.
      */
-    private AmazonSQSClient sqsClient;
+    private AmazonSQS sqsClient;
 
     /**
-     * An instance of AWSCloudTrailSourceSeriazlier.
+     * An instance of SourceSerializer.
      */
-    private SourceSerializer serializer;
+    private SourceSerializer sourceSerializer;
     /**
      * User implementation of ExceptionHandler, used to handle error case.
      */
@@ -93,15 +89,20 @@ public class SqsManager {
      * @param config user provided ProcessingConfiguration.
      * @param exceptionHandler user provided exceptionHandler.
      * @param progressReporter user provided progressReporter.
+     * @param sourceSerializer user provided SourceSerializer.
      */
-    public SqsManager(AmazonSQSClient sqsClient, ProcessingConfiguration config, ExceptionHandler exceptionHandler, ProgressReporter progressReporter) {
+    public SqsManager(AmazonSQS sqsClient,
+                      ProcessingConfiguration config,
+                      ExceptionHandler exceptionHandler,
+                      ProgressReporter progressReporter,
+                      SourceSerializer sourceSerializer) {
         this.config = config;
         this.exceptionHandler = exceptionHandler;
         this.progressReporter = progressReporter;
         this.sqsClient = sqsClient;
-        this.serializer = new DefaultSourceSerializer(new ObjectMapper());
+        this.sourceSerializer = sourceSerializer;
 
-        this.validate();
+        validate();
     }
 
     /**
@@ -111,12 +112,12 @@ public class SqsManager {
      */
     public List<Message> pollQueue() {
         boolean success = false;
-        ProgressStatus startStatus = new ProgressStatus(ProgressState.pollQueue, new BasicPollQueueInfo(0, success));
-        final Object reportObject = this.progressReporter.reportStart(startStatus);
+        ProgressStatus pollQueueStatus = new ProgressStatus(ProgressState.pollQueue, new BasicPollQueueInfo(0, success));
+        final Object reportObject = progressReporter.reportStart(pollQueueStatus);
 
         ReceiveMessageRequest request = new ReceiveMessageRequest().withAttributeNames(ALL_ATTRIBUTES);
-        request.setQueueUrl(this.config.getSqsUrl());
-        request.setVisibilityTimeout(this.config.getVisibilityTimeout());
+        request.setQueueUrl(config.getSqsUrl());
+        request.setVisibilityTimeout(config.getVisibilityTimeout());
         request.setMaxNumberOfMessages(DEFAULT_SQS_MESSAGE_SIZE_LIMIT);
         request.setWaitTimeSeconds(DEFAULT_WAIT_TIME_SECONDS);
 
@@ -125,17 +126,14 @@ public class SqsManager {
 
             ReceiveMessageResult result = sqsClient.receiveMessage(request);
             sqsMessages = result.getMessages();
-            logger.info("Polled " + sqsMessages.size() + " sqs messages from " + this.config.getSqsUrl());
+            logger.info("Polled " + sqsMessages.size() + " sqs messages from " + config.getSqsUrl());
 
             success = true;
         } catch (AmazonServiceException e) {
-            // delegate exception to ExceptionHandler
-            ProcessingLibraryException exception = new ProcessingLibraryException("Failed to poll sqs message.", e, startStatus);
-            this.exceptionHandler.handleException(exception);
+            LibraryUtils.handleException(exceptionHandler, pollQueueStatus, e, "Failed to poll sqs message.");
 
         } finally {
-            ProgressStatus endStatus = new ProgressStatus(ProgressState.pollQueue, new BasicPollQueueInfo(sqsMessages.size(), success));
-            this.progressReporter.reportEnd(endStatus, reportObject);
+            LibraryUtils.endToProcess(progressReporter, success, pollQueueStatus, reportObject);
         }
         return sqsMessages;
 
@@ -152,64 +150,86 @@ public class SqsManager {
         List<CloudTrailSource> sources = new ArrayList<>();
 
         for (Message sqsMessage : sqsMessages) {
-            boolean success = false;
-            ProgressStatus startStatus = new ProgressStatus(ProgressState.parseMessage, new BasicParseMessageInfo(sqsMessage, success));
-            final Object reportObject = this.progressReporter.reportStart(startStatus);
+            boolean parseMessageSuccess = false;
+            ProgressStatus parseMessageStatus = new ProgressStatus(ProgressState.parseMessage, new BasicParseMessageInfo(sqsMessage, parseMessageSuccess));
+            final Object reportObject = progressReporter.reportStart(parseMessageStatus);
 
             try {
-                CloudTrailSource source = this.serializer.getSource(sqsMessage);
-                sources.add(source);
+                CloudTrailSource ctSource = sourceSerializer.getSource(sqsMessage);
+                if (containsCloudTrailLogs(ctSource)) {
+                    sources.add(ctSource);
+                    parseMessageSuccess = true;
+                }
 
-                success = true;
-            } catch (IOException e) {
-
-                // delegate exception to ExceptionHandler
-                ProcessingLibraryException exception = new ProcessingLibraryException("Failed to parse sqs message", e, startStatus);
-                this.exceptionHandler.handleException(exception);
+            } catch (Exception e) {
+                LibraryUtils.handleException(exceptionHandler, parseMessageStatus, e, "Failed to parse sqs message.");
 
             } finally {
-                ProgressStatus endStatus = new ProgressStatus(ProgressState.parseMessage, new BasicParseMessageInfo(sqsMessage, success));
-                this.progressReporter.reportEnd(endStatus, reportObject);
+                if (shouldDeleteMessageUponFailure(parseMessageSuccess)) {
+                    deleteMessageFromQueue(sqsMessage, new ProgressStatus(ProgressState.deleteMessage, new BasicParseMessageInfo(sqsMessage, false)));
+                }
+                LibraryUtils.endToProcess(progressReporter, parseMessageSuccess, parseMessageStatus, reportObject);
             }
         }
         return sources;
     }
 
     /**
-     * Delete a message from SQS queue, assume the message is coming from the queueName setup in configuration.
+     * Delete a message from the SQS queue that you specified in the configuration file.
      *
-     * @param source CloudTrailSource (SQSBasedSource) contains SQS message that need to be deleted.
-     * @param state current running state.
+     * @param sqsMessage the {@link Message} that you want to delete.
+     * @param progressStatus {@link ProgressStatus} tracks the start and end status.
+     *
      */
-    public void deleteMessageFromQueue(CloudTrailSource source, ProgressState state) {
-        boolean success = false;
-        ProgressStatus startStatus = new ProgressStatus(state, new BasicProcessSourceInfo(source, success));
-        final Object reportObject = this.progressReporter.reportStart(startStatus);
+    public void deleteMessageFromQueue(Message sqsMessage, ProgressStatus progressStatus) {
+        final Object reportObject = progressReporter.reportStart(progressStatus);
+        boolean deleteMessageSuccess = false;
+        try {
+            sqsClient.deleteMessage(new DeleteMessageRequest(config.getSqsUrl(), sqsMessage.getReceiptHandle()));
+            deleteMessageSuccess = true;
+        } catch (AmazonServiceException e) {
+            LibraryUtils.handleException(exceptionHandler, progressStatus, e, "Failed to delete sqs message.");
+        }
+        LibraryUtils.endToProcess(progressReporter, deleteMessageSuccess, progressStatus, reportObject);
+    }
 
-        try{
-            this.sqsClient.deleteMessage(new DeleteMessageRequest(config.getSqsUrl(), ((SQSBasedSource)source).getSqsMessage().getReceiptHandle()));
-
-            success = true;
-        } catch (AmazonServiceException e){
-
-            // delegate exception to ExceptionHandler
-            ProcessingLibraryException exception = new ProcessingLibraryException("Failed to delete sqs message", e, startStatus);
-            this.exceptionHandler.handleException(exception);
-
-        } finally {
-            ProgressStatus endStatus = new ProgressStatus(state, new BasicProcessSourceInfo(source, success));
-            this.progressReporter.reportEnd(endStatus, reportObject);
+    /**
+     * Check whether <code>ctSource</code> contains CloudTrail log files.
+     * @param ctSource a {@link CloudTrailSource}.
+     * @return <code>true</code> if contains CloudTrail log files, <code>false</code> otherwise.
+     *
+     */
+    private boolean containsCloudTrailLogs(CloudTrailSource ctSource) {
+        SourceType sourceType = SourceType.valueOf(ctSource.getSourceAttributes().get(SourceAttributeKeys.SOURCE_TYPE.getAttributeKey()));
+        switch(sourceType) {
+            case CloudTrailLog:
+                return true;
+            case Other:
+            default:
+                logger.info(String.format("Skip Non CloudTrail Log File: %s.", ctSource.toString()));
+                return false;
         }
     }
 
     /**
-     * Convenient function to validate input
+     * Delete the message if the CPL failed to process the message and {@link ProcessingConfiguration#isDeleteMessageUponFailure()}
+     * is enabled.
+     * @param processSuccess Indicates whether the CPL processing is successful, such as parsing message, or
+     *                       consuming the events in the CloudTrail log file.
+     * @return <code>true</code> if the message is removable. Otherwise, <code>false</code>.
+     */
+    public boolean shouldDeleteMessageUponFailure(boolean processSuccess) {
+        return !processSuccess && config.isDeleteMessageUponFailure();
+    }
+
+    /**
+     * Convenient function to validate input.
      */
     private void validate() {
-        LibraryUtils.checkArgumentNotNull(this.config, "configuration is null");
-        LibraryUtils.checkArgumentNotNull(this.exceptionHandler, "exception handler is null");
-        LibraryUtils.checkArgumentNotNull(this.progressReporter, "progress reporter is null");
-        LibraryUtils.checkArgumentNotNull(this.sqsClient, "sqs client is null");
-        LibraryUtils.checkArgumentNotNull(this.serializer, "source serializer is null");
+        LibraryUtils.checkArgumentNotNull(config, "configuration is null");
+        LibraryUtils.checkArgumentNotNull(exceptionHandler, "exceptionHandler is null");
+        LibraryUtils.checkArgumentNotNull(progressReporter, "progressReporter is null");
+        LibraryUtils.checkArgumentNotNull(sqsClient, "sqsClient is null");
+        LibraryUtils.checkArgumentNotNull(sourceSerializer, "sourceSerializer is null");
     }
 }

@@ -15,14 +15,14 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.model;
 
+import com.amazonaws.services.sqs.model.Message;
+
 import java.util.List;
 import java.util.Map;
 
-import com.amazonaws.services.sqs.model.Message;
-
 public class SQSBasedSource implements CloudTrailSource{
     /**
-     * List of CloudTrailLogs inside this source
+     * List of CloudTrailLogs inside this source.
      */
     private final List<CloudTrailLog> logs;
 
@@ -36,8 +36,8 @@ public class SQSBasedSource implements CloudTrailSource{
      * attributes, i.e. SenderId, SentTimestamp, ApproximateReceiveCount, and/or
      * ApproximateFirstReceiveTimestamp, etc as well as attributes CloudTrail published.
      *
-     * @param sqsMessage
-     * @param logs
+     * @param sqsMessage {@link Message} SQS message.
+     * @param logs A list of {@link CloudTrailLog}.
      */
     public SQSBasedSource(Message sqsMessage, List<CloudTrailLog> logs) {
         this.sqsMessage = sqsMessage;
@@ -45,22 +45,22 @@ public class SQSBasedSource implements CloudTrailSource{
     }
 
     /**
-     * Retrieve the CloudTrailSource attributes
+     * Retrieve the CloudTrailSource attributes.
      */
     @Override
     public Map<String, String> getSourceAttributes() {
-        return this.sqsMessage.getAttributes();
+        return sqsMessage.getAttributes();
     }
 
     /**
-     * @return the SQS message
+     * @return the SQS message.
      */
     public Message getSqsMessage() {
         return sqsMessage;
     }
 
     /**
-     * @return the list of CloudTrailLog retrieved from the source
+     * @return the list of CloudTrailLog retrieved from the source.
      */
     public List<CloudTrailLog> getLogs() {
         return logs;

@@ -15,34 +15,32 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.interfaces;
 
-import java.util.List;
-
+import com.amazonaws.services.cloudtrail.processinglibrary.AWSCloudTrailProcessingExecutor;
+import com.amazonaws.services.cloudtrail.processinglibrary.configuration.ProcessingConfiguration;
 import com.amazonaws.services.cloudtrail.processinglibrary.exceptions.CallbackException;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEvent;
 
+import java.util.List;
+
 /**
- * Provides a callback method that is used by an
- * {@link com.amazonaws.services.cloudtrail.processinglibrary.AWSCloudTrailProcessingExecutor} to deliver AWS CloudTrail
+ * Provides a callback method that is used by an {@link AWSCloudTrailProcessingExecutor} to deliver AWS CloudTrail
  * records for processing.
  * <p>
- * The <code>process()</code> method is invoked after the optional {@link EventFilter}'s callback is invoked. If the
- * event was rejected by the <code>EventFilter</code>, then it will not be sent to <code>process()</code>.
+ * The {@link #process(List)} is invoked after the optional {@link EventFilter}'s callback is invoked. If the
+ * event was rejected by the {@link EventFilter}, then it will not be sent to {@link #process(List)}.
  * <p>
  * The number of events in the list is configurable through the <code>maxEventsPerEmit</code> property.
  *
- * @see com.amazonaws.services.cloudtrail.processinglibrary.configuration.ProcessingConfiguraton
+ * @see ProcessingConfiguration
  */
 public interface EventsProcessor {
     /**
-     * A callback method that processes a list of <code>CloudTrailEvent</code> events.
+     * A callback method that processes a list of {@link CloudTrailEvent}.
      * <p>
-     * This callback is called by an
-     * {@link com.amazonaws.services.cloudtrail.processinglibrary.AWSCloudTrailProcessingExecutor}
-     * when it has records to process.
+     * This callback is called by an {@link AWSCloudTrailProcessingExecutor} when it has records to process.
      *
-     * @param events a list of {@link com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEvent}
-     *     objects.
-     * @throws CallbackException if an error occurs while processing events.
+     * @param events a list of {@link CloudTrailEvent}.
+     * @throws CallbackException if an error occurs while processing <code>events</code>.
      */
     public void process(List<CloudTrailEvent> events) throws CallbackException;
 }

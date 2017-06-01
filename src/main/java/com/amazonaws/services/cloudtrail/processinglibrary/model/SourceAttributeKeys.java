@@ -16,9 +16,10 @@
 package com.amazonaws.services.cloudtrail.processinglibrary.model;
 
 /**
- * Enumeration of source attribute key names
+ * Enumeration of source attribute key names.
  */
 public enum SourceAttributeKeys {
+    SOURCE_TYPE("SourceType"),
     ACCOUNT_ID("accountId"),
     APPROXIMATE_FIRST_RECEIVE_TIMESTAMP("ApproximateFirstReceiveTimestamp"),
     APPROXIMATE_RECEIVE_COUNT("ApproximateReceiveCount"),

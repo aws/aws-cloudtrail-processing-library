@@ -16,7 +16,7 @@
 package com.amazonaws.services.cloudtrail.processinglibrary.model;
 
 /**
- * CloudTrail log delivery information
+ * CloudTrail log delivery information.
  */
 public class LogDeliveryInfo implements CloudTrailEventMetadata{
     private CloudTrailLog log;
@@ -40,28 +40,28 @@ public class LogDeliveryInfo implements CloudTrailEventMetadata{
     }
 
     /**
-     * @return the CloudTrail log
+     * @return the CloudTrail log.
      */
     public CloudTrailLog getLog() {
         return log;
     }
 
     /**
-     * @return the location of the event's starting character
+     * @return the location of the event's starting character.
      */
     public long getCharStart() {
         return charStart;
     }
 
     /**
-     * @return the location of the event's ending character
+     * @return the location of the event's ending character.
      */
     public long getCharEnd() {
         return charEnd;
     }
 
     /**
-     * @return the CloudTrail event in raw String - as it is in the log file
+     * @return the CloudTrail event in raw String - as it is in the log file.
      */
     public String getRawEvent() {
         return rawEvent;
@@ -93,8 +93,8 @@ public class LogDeliveryInfo implements CloudTrailEventMetadata{
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (int) (charEnd ^ (charEnd >>> 32));
-        result = prime * result + (int) (charStart ^ (charStart >>> 32));
+        result = prime * result + (charEnd ^ (charEnd >>> 32));
+        result = prime * result + (charStart ^ (charStart >>> 32));
         result = prime * result + ((log == null) ? 0 : log.hashCode());
         result = prime * result + ((rawEvent == null) ? 0 : rawEvent.hashCode());
         return result;

@@ -22,7 +22,7 @@ import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ProgressRe
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus;
 
 /**
- * Default implementation of ProgressReporter that simply log the progress status.
+ * Default implementation of {@link ProgressReporter} that simply logs the {@link ProgressStatus}.
  */
 public class DefaultProgressReporter implements ProgressReporter{
     private static final Log logger = LogFactory.getLog(DefaultProgressReporter.class);

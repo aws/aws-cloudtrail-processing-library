@@ -15,20 +15,26 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.configuration;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.ClasspathPropertiesFileCredentialsProvider;
+import com.amazonaws.services.cloudtrail.processinglibrary.AWSCloudTrailProcessingExecutor;
+import com.amazonaws.services.cloudtrail.processinglibrary.manager.SqsManager;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
+import com.amazonaws.services.cloudtrail.processinglibrary.reader.EventReader;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * A class used to obtain AWS CloudTrail Processing Library configuration
  * information from a classpath properties file.
  * <p>
- * In addition to this class, you can use {@link ClientConfiguration}
- * to manually set configuration options.
+ * In addition to this class, you can use {@link ClientConfiguration} to manually set configuration options.
+ * </p>
  */
 public class PropertiesFileConfiguration implements ProcessingConfiguration{
     /* configuration file property names */
@@ -42,14 +48,15 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
     public static final String THREAD_TERMINATION_DELAY_SECONDS = "threadTerminationDelaySeconds";
     public static final String MAX_EVENTS_PER_EMIT = "maxEventsPerEmit";
     public static final String ENABLE_RAW_EVENT_INFO = "enableRawEventInfo";
+    public static final String DELETE_MESSAGE_UPON_FAILURE = "deleteMessageUponFailure";
 
     private static final String ERROR_CREDENTIALS_PROVIDER_NULL = "CredentialsProvider is null. Either put your " +
             "access key and secret key in the configuration file in your class path, or spcify it in the " +
             "ProcessingConfiguration object.";
 
     /**
-     * The <a
-     * href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/AWSCredentialsProvider.html">AWS credentials provider</a>
+     * The
+     * <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/AWSCredentialsProvider.html">AWS credentials provider</a>
      * used to obtain credentials.
      */
     private AWSCredentialsProvider awsCredentialsProvider;
@@ -64,8 +71,8 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
     /**
      * The SQS region to use.
      * <p>
-     * If not specified, the default SQS region
-     * ({@value ProcessingConfiguration#DEFAULT_SQS_REGION}) will be used.
+     * If not specified, the default SQS region ({@value ProcessingConfiguration#DEFAULT_SQS_REGION}) will be used.
+     * </p>
      */
     private String sqsRegion = DEFAULT_SQS_REGION;
 
@@ -79,6 +86,7 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
      * The S3 endpoint specific to a region.
      * <p>
      * If not specified, the default S3 region will be used.
+     * </p>
      */
     private String s3Region = DEFAULT_S3_REGION;
 
@@ -86,14 +94,16 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
      * The number of threads used to download log files from S3 in parallel.
      * <p>
      * Callbacks can be invoked from any thread.
+     * </p>
      */
     private int threadCount = DEFAULT_THREAD_COUNT;
 
     /**
-     * The time allowed, in seconds, for threads to shut down after AWSCloudTrailEventProcessingExecutor.stop() is
+     * The time allowed, in seconds, for threads to shut down after {@link AWSCloudTrailProcessingExecutor#stop()} is
      * called.
      * <p>
      * Any threads still running beyond this time will be forcibly terminated.
+     * </p>
      */
     private int threadTerminationDelaySeconds = DEFAULT_THREAD_TERMINATION_DELAY_SECONDS;
 
@@ -108,40 +118,47 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
     private boolean enableRawEventInfo = DEFAULT_ENABLE_RAW_EVENT_INFO;
 
     /**
-     * Creates a {@link PropertiesFileConfiguration} from values provided in a
-     * classpath properties file.
+     * Whether to delete messages if there is any failure during {@link SqsManager#parseMessage(List)} and
+     * {@link EventReader#processSource(CloudTrailSource)}.
+     */
+    private boolean deleteMessageUponFailure = DEFAULT_DELETE_MESSAGE_UPON_FAILURE;
+    /**
+     * Creates a {@link PropertiesFileConfiguration} from values provided in a classpath properties file.
      *
      * @param propertiesFile the classpath properties file to load.
      */
     public PropertiesFileConfiguration(String propertiesFile) {
         //load properties from configuration properties file
-        Properties prop = this.loadProperty(propertiesFile);
+        Properties prop = loadProperty(propertiesFile);
 
-        this.sqsUrl = prop.getProperty(SQS_URL);
-        LibraryUtils.checkArgumentNotNull(this.sqsUrl, "Cannot find SQS URL in properties file.");
+        sqsUrl = prop.getProperty(SQS_URL);
+        LibraryUtils.checkArgumentNotNull(sqsUrl, "Cannot find SQS URL in properties file.");
 
         String accessKey = prop.getProperty(ACCESS_KEY);
         String secretKey = prop.getProperty(SECRET_KEY);
 
         if (accessKey != null && secretKey != null) {
-            this.awsCredentialsProvider = new ClasspathPropertiesFileCredentialsProvider(propertiesFile);
+            awsCredentialsProvider = new ClasspathPropertiesFileCredentialsProvider(propertiesFile);
         }
 
-        this.s3Region = prop.getProperty(S3_REGION);
-        this.visibilityTimeout = this.getIntProperty(prop, VISIBILITY_TIMEOUT);
+        s3Region = prop.getProperty(S3_REGION);
+        visibilityTimeout = getIntProperty(prop, VISIBILITY_TIMEOUT);
 
-        this.sqsRegion = prop.getProperty(SQS_REGION);
+        sqsRegion = prop.getProperty(SQS_REGION);
 
-        this.threadCount = this.getIntProperty(prop, THREAD_COUNT);
-        this.threadTerminationDelaySeconds = this.getIntProperty(prop, THREAD_TERMINATION_DELAY_SECONDS);
+        threadCount = getIntProperty(prop, THREAD_COUNT);
+        threadTerminationDelaySeconds = getIntProperty(prop, THREAD_TERMINATION_DELAY_SECONDS);
 
-        this.maxEventsPerEmit = this.getIntProperty(prop, MAX_EVENTS_PER_EMIT);
-        this.enableRawEventInfo = this.getBooleanProperty(prop, ENABLE_RAW_EVENT_INFO);
+        maxEventsPerEmit = getIntProperty(prop, MAX_EVENTS_PER_EMIT);
+        enableRawEventInfo = getBooleanProperty(prop, ENABLE_RAW_EVENT_INFO);
+
+        deleteMessageUponFailure  = getBooleanProperty(prop, DELETE_MESSAGE_UPON_FAILURE);
     }
 
     /**
      * {@inheritDoc}
      */
+    @Override
     public AWSCredentialsProvider getAwsCredentialsProvider() {
         return awsCredentialsProvider;
     }
@@ -149,6 +166,7 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getSqsUrl() {
         return sqsUrl;
     }
@@ -156,6 +174,7 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getSqsRegion() {
         return sqsRegion;
     }
@@ -163,6 +182,7 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getVisibilityTimeout() {
         return visibilityTimeout;
     }
@@ -170,6 +190,7 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getS3Region() {
         return s3Region;
     }
@@ -177,6 +198,7 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getThreadCount() {
         return threadCount;
     }
@@ -184,6 +206,7 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getThreadTerminationDelaySeconds() {
         return threadTerminationDelaySeconds;
     }
@@ -191,6 +214,7 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getMaxEventsPerEmit() {
         return maxEventsPerEmit;
     }
@@ -198,6 +222,7 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isEnableRawEventInfo() {
         return enableRawEventInfo;
     }
@@ -206,16 +231,24 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
      * {@inheritDoc}
      */
     @Override
+    public boolean isDeleteMessageUponFailure() {
+        return deleteMessageUponFailure;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void validate() {
-        LibraryUtils.checkArgumentNotNull(this.getAwsCredentialsProvider(), ERROR_CREDENTIALS_PROVIDER_NULL);
-        LibraryUtils.checkArgumentNotNull(this.getSqsUrl(), "SQS URL is null.");
-        LibraryUtils.checkArgumentNotNull(this.getSqsRegion(), "SQS Region is null.");
-        LibraryUtils.checkArgumentNotNull(this.getVisibilityTimeout(), "Visibility Timeout is null.");
-        LibraryUtils.checkArgumentNotNull(this.getS3Region(), "S3 Region is null.");
-        LibraryUtils.checkArgumentNotNull(this.getThreadCount(), "Thread Count is null.");
-        LibraryUtils.checkArgumentNotNull(this.getThreadTerminationDelaySeconds(), "Thread Termination Delay Seconds is null.");
-        LibraryUtils.checkArgumentNotNull(this.getMaxEventsPerEmit(), "Maximum Events Per Emit is null.");
-        LibraryUtils.checkArgumentNotNull(this.isEnableRawEventInfo(), "Is Enable Raw Event Information is null.");
+        LibraryUtils.checkArgumentNotNull(getAwsCredentialsProvider(), ERROR_CREDENTIALS_PROVIDER_NULL);
+        LibraryUtils.checkArgumentNotNull(getSqsUrl(), "SQS URL is null.");
+        LibraryUtils.checkArgumentNotNull(getSqsRegion(), "SQS Region is null.");
+        LibraryUtils.checkArgumentNotNull(getS3Region(), "S3 Region is null.");
+
+        LibraryUtils.checkCondition(getMaxEventsPerEmit() <= 0, "Maximum Events Per Emit is a non-positive integer.");
+        LibraryUtils.checkCondition(getThreadCount() <= 0, "Thread Count is a non-positive integer.");
+        LibraryUtils.checkCondition(getThreadTerminationDelaySeconds() <= 0, "Thread Termination Delay Seconds is a non-positive integer.");
+        LibraryUtils.checkCondition(getVisibilityTimeout() <= 0, "Visibility Timeout is a non-positive integer.");
     }
 
     /**
@@ -240,7 +273,7 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
     /**
      * Convert a string representation of a property to an integer type.
      *
-     * @param prop the property class
+     * @param prop the {@link Properties} needs conversion.
      * @param name a name to evaluate in the property file.
      * @return an integer representation of the value associated with the property name.
      */
@@ -252,7 +285,7 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
     /**
      * Convert a string representation of a property to a boolean type.
      *
-     * @param prop the property class
+     * @param prop the {@link Properties} needs conversion.
      * @param name a name to evaluate in the property file.
      * @return a boolean representation of the value associated with the property name.
      */

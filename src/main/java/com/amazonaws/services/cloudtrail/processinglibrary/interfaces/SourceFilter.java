@@ -29,13 +29,12 @@ public interface SourceFilter{
     /**
      * A callback method used to filter a {@link CloudTrailSource} prior to process.
      * <p>
-     * For performance, the source object is not a copy; you should only filter
-     * the source here, not change its contents.
-     *
-     * @param source the {@link CloudTrailSource} to filter
+     * For performance, the source object is not a copy; you should only filter the source here, not change its contents.
+     * </p>
+     * @param source The {@link CloudTrailSource} to filter.
      * @return <code>true</code> if the source should be processed by the {@link SourceFilter}.
-     * @throws CallbackException when error happened during filter CloudTrailSource. AWS CloudTrail Processing Library
-     *         will eventually hand this exception back to ExceptionHandler.
+     * @throws CallbackException When error happened during filtering <code>source</code>. CPL will eventually hand this
+     * exception back to <code>ExceptionHandler</code>.
      */
     public boolean filterSource(final CloudTrailSource source) throws CallbackException;
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public abstract class AbstractEventSerializer implements EventSerializer {
 
     private static final Log logger = LogFactory.getLog(AbstractEventSerializer.class);
     private static final String RECORDS = "Records";
-    private static final double SUPPORTED_EVENT_VERSION = 1.05d;
+    private static final double SUPPORTED_EVENT_VERSION = 1.06d;
 
     /**
      * A Jackson JSON Parser object.
@@ -154,6 +154,9 @@ public abstract class AbstractEventSerializer implements EventSerializer {
             case "resources":
                 this.parseResources(eventData);
                 break;
+            case "managementEvent":
+                this.parseManagementEvent(eventData);
+                break;
             default:
                 eventData.add(key, parseDefaultValue(key));
                 break;
@@ -204,7 +207,7 @@ public abstract class AbstractEventSerializer implements EventSerializer {
     }
 
     /**
-     * Parse user identity in CloudTrailEventData
+     * Parses the {@link UserIdentity} in CloudTrailEventData
      *
      * @param eventData {@link CloudTrailEventData} needs to parse.
      * @throws IOException
@@ -262,7 +265,7 @@ public abstract class AbstractEventSerializer implements EventSerializer {
     }
 
     /**
-     * Parse session context object
+     * Parses the {@link SessionContext} object.
      *
      * @param userIdentity the {@link com.amazonaws.services.cloudtrail.processinglibrary.model.internal.UserIdentity}
      * @throws IOException
@@ -299,7 +302,7 @@ public abstract class AbstractEventSerializer implements EventSerializer {
     }
 
     /**
-     * Parse web identify session object
+     * Parses the {@link WebIdentitySessionContext} object.
      *
      * @param sessionContext {@link SessionContext}
      * @return the web identity session context
@@ -333,7 +336,9 @@ public abstract class AbstractEventSerializer implements EventSerializer {
 
 
     /**
-     * Parse session issuer object. It only happened on role session and federated session.
+     * Parses the {@link SessionContext} object.
+     * This runs only if the session is running with role-based or federated access permissions
+     * (in other words, temporary credentials in IAM).
      *
      * @param sessionContext
      * @return the session issuer object.
@@ -375,7 +380,7 @@ public abstract class AbstractEventSerializer implements EventSerializer {
     }
 
     /**
-     * Parse event read only attribute.
+     * Parses the event readOnly attribute.
      *
      * @param eventData
      *
@@ -392,7 +397,21 @@ public abstract class AbstractEventSerializer implements EventSerializer {
     }
 
     /**
-     * Parse a list of Resource
+     * Parses the event managementEvent attribute.
+     * @param eventData the interesting {@link CloudTrailEventData}
+     * @throws IOException
+     */
+    private void parseManagementEvent(CloudTrailEventData eventData) throws IOException {
+        jsonParser.nextToken();
+        Boolean managementEvent = null;
+        if (jsonParser.getCurrentToken() != JsonToken.VALUE_NULL) {
+            managementEvent = jsonParser.getBooleanValue();
+        }
+        eventData.add(CloudTrailEventField.managementEvent.name(), managementEvent);
+    }
+
+    /**
+     * Parses a list of Resource.
      *
      * @param eventData the resources belong to
      * @throws IOException
@@ -418,7 +437,7 @@ public abstract class AbstractEventSerializer implements EventSerializer {
     }
 
     /**
-     * Parse a single Resource
+     * Parses a single Resource.
      *
      * @return a single resource
      * @throws IOException
@@ -445,7 +464,7 @@ public abstract class AbstractEventSerializer implements EventSerializer {
     }
 
     /**
-     * Parse the event with key as default value.
+     * Parses the event with key as default value.
      *
      * If the value is JSON null, then we will return null.
      * If the value is JSON object (of starting with START_ARRAY or START_OBject) , then we will convert the object to String.
@@ -470,7 +489,7 @@ public abstract class AbstractEventSerializer implements EventSerializer {
     }
 
     /**
-     * Parse attributes as a Map, used in both parseWebIdentitySessionContext and parseSessionContext
+     * Parses attributes as a Map, used in both parseWebIdentitySessionContext and parseSessionContext
      *
      * @return attributes for either session context or web identity session context
      * @throws IOException

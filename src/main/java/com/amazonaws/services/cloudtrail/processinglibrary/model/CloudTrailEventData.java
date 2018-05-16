@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -214,6 +214,13 @@ public class CloudTrailEventData extends CloudTrailDataStore {
         return (Boolean) get(CloudTrailEventField.readOnly.name());
     }
 
+    /**
+     * Check whether the event is a management event.
+     * @return <code>true</code> if the event identified in the log is a management event.
+     */
+    public Boolean isManagementEvent() {
+        return (Boolean) get(CloudTrailEventField.managementEvent.name());
+    }
     /**
      * Get the resources used in the operation.
      *

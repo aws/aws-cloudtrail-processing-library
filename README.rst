@@ -64,6 +64,10 @@ build, use this command::
 
 Release Notes
 -------------
+Release 1.1.2 (May 16, 2018)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Patch Release 1.1.1
+
 Release 1.1.1 (Nov 30, 2017)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Added support for Boolean identification of management events.

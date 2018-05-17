@@ -64,14 +64,18 @@ build, use this command::
 
 Release Notes
 -------------
+
 Release 1.1.2 (May 16, 2018)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-* Patch Release 1.1.1
+* This release fixes an error with the previous release.  This release includes the following improvements:
 
-Release 1.1.1 (Nov 30, 2017)
+  * Adds support for Boolean identification of management events.
+  * Updates the CloudTrail event version to 1.06.
+
+Release 1.1.1 (Nov 30, 2017) (Recalled)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-* Added support for Boolean identification of management events.
-* Updated the CloudTrail event version to 1.06.
+
+* This release was intended to add support for the Boolean identification of management events and update the event version. An error has been identified with this release, and it has been withdrawn. Please update your version to the latest release.
 
 Release 1.1.0 (Jun 1, 2017)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

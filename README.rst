@@ -67,15 +67,15 @@ Release Notes
 
 Release 1.1.2 (May 16, 2018)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-* This release fixes an error with the previous release.  This release includes the following improvements:
+* 1.1.2 includes the changes previously listed under 1.1.1. Namely:
 
   * Adds support for Boolean identification of management events.
   * Updates the CloudTrail event version to 1.06.
 
 Release 1.1.1 (Nov 30, 2017) (Recalled)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* This release was intended to add support for the Boolean identification of management events and update the event version. An error has been identified with this release, and it has been withdrawn. Please update your version to the latest release.
+* Changes originally intended for this version are now included in 1.1.2.
 
 Release 1.1.0 (Jun 1, 2017)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

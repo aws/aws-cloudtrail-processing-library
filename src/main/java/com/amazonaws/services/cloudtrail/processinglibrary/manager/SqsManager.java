@@ -153,19 +153,20 @@ public class SqsManager {
             boolean parseMessageSuccess = false;
             ProgressStatus parseMessageStatus = new ProgressStatus(ProgressState.parseMessage, new BasicParseMessageInfo(sqsMessage, parseMessageSuccess));
             final Object reportObject = progressReporter.reportStart(parseMessageStatus);
+            CloudTrailSource ctSource = null;
 
             try {
-                CloudTrailSource ctSource = sourceSerializer.getSource(sqsMessage);
+                ctSource = sourceSerializer.getSource(sqsMessage);
+
                 if (containsCloudTrailLogs(ctSource)) {
                     sources.add(ctSource);
                     parseMessageSuccess = true;
                 }
-
             } catch (Exception e) {
                 LibraryUtils.handleException(exceptionHandler, parseMessageStatus, e, "Failed to parse sqs message.");
 
             } finally {
-                if (shouldDeleteMessageUponFailure(parseMessageSuccess)) {
+                if (containsCloudTrailValidationMessage(ctSource) || shouldDeleteMessageUponFailure(parseMessageSuccess)) {
                     deleteMessageFromQueue(sqsMessage, new ProgressStatus(ProgressState.deleteMessage, new BasicParseMessageInfo(sqsMessage, false)));
                 }
                 LibraryUtils.endToProcess(progressReporter, parseMessageSuccess, parseMessageStatus, reportObject);
@@ -204,11 +205,29 @@ public class SqsManager {
         switch(sourceType) {
             case CloudTrailLog:
                 return true;
+            case CloudTrailValidationMessage:
+                logger.warn(String.format("Delete CloudTrail validation message: %s.", ctSource.toString()));
+                return false;
             case Other:
             default:
                 logger.info(String.format("Skip Non CloudTrail Log File: %s.", ctSource.toString()));
                 return false;
         }
+    }
+
+    /**
+     * Check whether <code>ctSource</code> contains CloudTrail validation message.
+     * @param ctSource a {@link CloudTrailSource}.
+     * @return <code>true</code> if contains CloudTrail validation message, <code>false</code> otherwise.
+     *
+     */
+    private boolean containsCloudTrailValidationMessage(CloudTrailSource ctSource) {
+        if (ctSource == null){
+           return false;
+        }
+
+        SourceType sourceType = SourceType.valueOf(ctSource.getSourceAttributes().get(SourceAttributeKeys.SOURCE_TYPE.getAttributeKey()));
+        return sourceType == SourceType.CloudTrailValidationMessage;
     }
 
     /**

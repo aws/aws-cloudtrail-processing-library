@@ -65,17 +65,18 @@ build, use this command::
 Release Notes
 -------------
 
+Release 1.1.3 (Oct 18, 2018)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Added support for automatically deleting the initial SNS validation message sent whenever an SNS topic for a trail is configured or updated. In previous releases, these messages had to be manually deleted.
+
 Release 1.1.2 (May 16, 2018)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-* 1.1.2 includes the changes previously listed under 1.1.1. Namely:
+* Patch Release 1.1.1
 
-  * Adds support for Boolean identification of management events.
-  * Updates the CloudTrail event version to 1.06.
-
-Release 1.1.1 (Nov 30, 2017) (Recalled)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* Changes originally intended for this version are now included in 1.1.2.
+Release 1.1.1 (Nov 30, 2017)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Added support for Boolean identification of management events.
+* Updated the CloudTrail event version to 1.06.
 
 Release 1.1.0 (Jun 1, 2017)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

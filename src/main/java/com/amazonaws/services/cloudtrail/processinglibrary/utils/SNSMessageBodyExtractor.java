@@ -33,7 +33,10 @@ public class SNSMessageBodyExtractor {
     }
 
     public JsonNode getMessageBody(Message sqsMessage) throws IOException, NullPointerException {
-        String messageText = mapper.readTree(sqsMessage.getBody()).get(MESSAGE).textValue();
-        return mapper.readTree(messageText);
+        return mapper.readTree(getMessageText(sqsMessage));
+    }
+
+    public String getMessageText(Message sqsMessage) throws IOException, NullPointerException {
+        return mapper.readTree(sqsMessage.getBody()).get(MESSAGE).textValue();
     }
 }

@@ -44,7 +44,9 @@ public class SourceSerializerFactory {
         List<SourceSerializer> sourceSerializers = new ArrayList<>(Arrays.asList(
                 createCloudTrailSourceSerializer(),
                 createS3SNSSourceSerializer(),
-                createS3SourceSerializer()));
+                createS3SourceSerializer(),
+                createCloudTrailValidationMessageSerializer()
+                ));
         return new SourceSerializerChain(sourceSerializers);
     }
 
@@ -70,5 +72,13 @@ public class SourceSerializerFactory {
      */
     public static S3SNSSourceSerializer createS3SNSSourceSerializer() {
         return new S3SNSSourceSerializer(snsMessageExtractor, createS3SourceSerializer());
+    }
+
+    /**
+     * Default {@link CloudTrailValidationMessageSerializer} construction.
+     * @return {@link SourceSerializer}.
+     */
+    public static CloudTrailValidationMessageSerializer createCloudTrailValidationMessageSerializer() {
+        return new CloudTrailValidationMessageSerializer(snsMessageExtractor);
     }
 }

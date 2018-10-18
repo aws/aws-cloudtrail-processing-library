@@ -94,8 +94,6 @@ public class SourceSerializerChain implements SourceSerializer {
     private CloudTrailSource getCloudTrailSource(Message sqsMessage, SourceSerializer serializer, ExceptionChain exceptionChain) throws IOException {
         try {
             return serializer.getSource(sqsMessage);
-        } catch (JsonProcessingException invalidJson) {
-            throw new IOException("SourceSerializerChain expect JSON content", invalidJson);
         } catch (Exception e) {
             exceptionChain.addSuppressedException(e);
         }

@@ -18,6 +18,11 @@ public enum SourceType {
     CloudTrailLog,
 
     /**
+     * CloudTrail Validation Message.
+     */
+    CloudTrailValidationMessage,
+
+    /**
      * Non-CloudTrail log file.
      */
     Other

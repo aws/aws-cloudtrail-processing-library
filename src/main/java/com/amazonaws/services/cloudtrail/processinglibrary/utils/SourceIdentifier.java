@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
  * The following are valid source types: CloudTrailLog | Other
  */
 public class SourceIdentifier {
-    private static final String PUT_EVENT = "ObjectCreated:Put";
+    private static final String CREATE_EVENT_PREFIX = "ObjectCreated:";
 
     /**
      * Regex for the name format of CloudTrail log file objects that deliver to AWS S3 bucket:
@@ -36,7 +36,7 @@ public class SourceIdentifier {
      * @return {@link SourceType}
      */
     public SourceType identifyWithEventName(String source, String eventName) {
-        if (PUT_EVENT.equals(eventName)) {
+        if (eventName.startsWith(CREATE_EVENT_PREFIX)) {
             return getCloudTrailSourceType(source);
         }
         return SourceType.Other;

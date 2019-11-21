@@ -13,7 +13,21 @@
  * permissions and limitations under the License.
  ******************************************************************************/
 
+package com.amazonaws.services.cloudtrail.processinglibrary.model.internal;
+
 /**
- * Classes to provide processing progress to users.
+ * Data about the rate of calls that triggered the Insights event
+ * compared to the normal rate of calls to the subject API per minute.
  */
-package com.amazonaws.services.cloudtrail.processinglibrary.progress;
+public class InsightContext extends CloudTrailDataStore {
+
+    /**
+     * Get insight statistics
+     *
+     * @return {@link InsightStatistics}
+     */
+    public InsightStatistics getStatistics() {
+        return (InsightStatistics) this.get(CloudTrailEventField.statistics.name());
+    }
+
+}

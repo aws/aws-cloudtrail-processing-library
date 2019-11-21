@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.amazonaws.services.cloudtrail.processinglibrary.model;
 
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.CloudTrailDataStore;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.CloudTrailEventField;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.InsightDetails;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.Resource;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.UserIdentity;
 
@@ -244,6 +245,15 @@ public class CloudTrailEventData extends CloudTrailDataStore {
     }
 
     /**
+     * Get the event category.
+     *
+     * @return Identifies the category of CloudTrail event.
+     */
+    public String getEventCategory() {
+        return (String) get(CloudTrailEventField.eventCategory.name());
+    }
+
+    /**
      * Get the event type.
      *
      * @return Identifies the type of event that generated the event.
@@ -297,5 +307,15 @@ public class CloudTrailEventData extends CloudTrailDataStore {
      */
     public String getVpcEndpointId() {
         return (String) get(CloudTrailEventField.vpcEndpointId.name());
+    }
+
+    /**
+     * Get the insight details
+     *
+     * @return  information about the underlying triggers of an Insights event, such as event source,
+     *      statistics, API name, and whether the event is the start or end of the Insights event.
+     */
+    public InsightDetails getInsightDetails() {
+        return (InsightDetails) get(CloudTrailEventField.insightDetails.name());
     }
 }

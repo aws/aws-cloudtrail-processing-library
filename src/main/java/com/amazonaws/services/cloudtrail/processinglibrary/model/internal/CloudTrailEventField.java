@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -30,8 +30,10 @@ public enum CloudTrailEventField {
     ARNPrefix,
     attributes,
     awsRegion,
+    baseline,
     errorCode,
     errorMessage,
+    eventCategory,
     eventID,
     eventName,
     eventSource,
@@ -40,6 +42,11 @@ public enum CloudTrailEventField {
     eventVersion,
     federatedProvider,
     identityProvider,
+    insight,
+    insightContext,
+    insightDetails,
+    insightDuration,
+    insightType,
     invokedBy,
     managementEvent,
     principalId,
@@ -54,6 +61,8 @@ public enum CloudTrailEventField {
     sessionIssuer,
     sharedEventID,
     sourceIPAddress,
+    state,
+    statistics,
     type,
     userAgent,
     userIdentity,

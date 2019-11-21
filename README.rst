@@ -67,9 +67,9 @@ Release Notes
 
 Release 1.2.0 (Nov 20, 2019)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Added support for a new eventCategory attribute to indicate whether an event is a management, data, or Insights event.
- * Added support for Insights events, including new attributes like insightDetails or insightContext.
- * Updated the CloudTrail event version to 1.07.
+* Added support for a new eventCategory attribute to indicate whether an event is a management, data, or Insights event.
+* Added support for Insights events, including new attributes like insightDetails or insightContext.
+* Updated the CloudTrail event version to 1.07.
 
 Release 1.1.3 (Oct 18, 2018)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

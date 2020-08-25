@@ -15,28 +15,28 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.model.internal;
 
-import java.util.Map;
-
 /**
- * If the request was made with temporary security credentials obtained using web
- * identity federation, an element that lists information about the identity provider.
+ * POJO (Plain Old Java Object) that represents the attribute value entitle for a specific attribute type.
+ * Contains the value of the attribute and average for a specified time range
  */
-public class WebIdentitySessionContext extends CloudTrailDataStore{
+public class AttributeValue extends CloudTrailDataStore {
+
     /**
-     * Get federated provider.
-     * @return Who To grant temporary access to a non-AWS user.
+     * Get the value of the attribute.
+     *
+     * @return a string value representation of the attribute.
      */
-    public String getFederatedProvider() {
-        return (String) this.get(CloudTrailEventField.federatedProvider.name());
+    public String getValue() {
+        return (String) this.get(CloudTrailEventField.value.name());
     }
 
     /**
-     * Get attributes.
+     * Get the average number of occurrences for the attribute value within a time range (either the time range of
+     * insightDuration or baselineDuration).
      *
-     * @return additional web identity session contest attributes.
+     * @return {@link Double} representation, which is precise to the 10th decimal number.
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public Map<String, String> getAttributes() {
-        return (Map) this.get(CloudTrailEventField.attributes.name());
+    public Double getAverage() {
+        return (Double) this.get(CloudTrailEventField.average.name());
     }
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -28,9 +28,13 @@ public enum CloudTrailEventField {
     arn,
     ARN,
     ARNPrefix,
+    attribute,
     attributes,
+    attributions,
+    average,
     awsRegion,
     baseline,
+    baselineDuration,
     errorCode,
     errorMessage,
     eventCategory,
@@ -67,6 +71,7 @@ public enum CloudTrailEventField {
     userAgent,
     userIdentity,
     userName,
+    value,
     vpcEndpointId,
     webIdFederationData
 }

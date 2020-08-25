@@ -33,7 +33,7 @@ Minimum Requirements
 ~~~~~~~~~~~~~~~~~~~~
 
 * **AWS Java SDK 1.10.27**: In order to use the |library|, you'll need the `AWS Java SDK`__.
-* **Java 1.7**: The |library| requires `Java 1.7 (Java SE 7)`__ or later.
+* **Java 1.8**: The |library| requires `Java 1.8 (Java SE 8)`__ or later.
 
 .. __: https://github.com/aws/aws-sdk-java
 .. __: http://www.oracle.com/technetwork/java/javase/overview/index.html
@@ -64,6 +64,13 @@ build, use this command::
 
 Release Notes
 -------------
+
+Release 1.3.0 (Jul 30, 2020)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Added support for parsing new section, attributions, in insightContext.
+* Added support for parsing new fields, baselineDuration, in statistics section in insightContext.
+* Added thread configuration for s3 client, sqs client, and sqs reader to enable performance tuning.
+* Updated minimum required Java SE version to 1.8.
 
 Release 1.2.0 (Nov 20, 2019)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

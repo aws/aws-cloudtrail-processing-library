@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -52,6 +52,12 @@ public interface ProcessingConfiguration {
      * The default S3 thread count; {@value}.
      */
     public static final int DEFAULT_THREAD_COUNT = 1;
+
+
+    /**
+     * The default SQS reader thread count
+     */
+    public static final int DEFAULT_NUM_OF_PARALLEL_READERS = 1;
 
     /**
      * The default thread termination delay, in seconds; {@value}.
@@ -120,6 +126,12 @@ public interface ProcessingConfiguration {
      * @return the number of threads.
      */
     public int getThreadCount();
+
+    /**
+     * Get a number of reader threads
+     * @return
+     */
+    public int getNumOfParallelReaders();
 
     /**
      * Get the thread termination delay value.

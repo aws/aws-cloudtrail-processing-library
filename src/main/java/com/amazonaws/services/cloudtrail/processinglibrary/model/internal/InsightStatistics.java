@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -50,6 +50,16 @@ public class InsightStatistics extends CloudTrailDataStore {
      */
     public Integer getInsightDuration() {
         return (Integer) this.get(CloudTrailEventField.insightDuration.name());
+    }
+
+    /**
+     * Get baseline duration
+     *
+     * @return The baseline duration, in minutes, of an Insights event. Start day and time is 7 days before an Insights
+     * event occurs, rounded down to a full (or integral) day. The end time is when the Insights event occurs.
+     */
+    public Integer getBaselineDuration() {
+        return (Integer) this.get(CloudTrailEventField.baselineDuration.name());
     }
 
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -80,6 +80,11 @@ public class ClientConfiguration implements ProcessingConfiguration{
      * </p>
      */
     public int threadCount = DEFAULT_THREAD_COUNT;
+
+    /**
+     * The number of SQS reader threads
+     */
+    public int numOfParallelReaders = DEFAULT_NUM_OF_PARALLEL_READERS;
 
     /**
      * The time allowed, in seconds, for threads to shut down after {@link AWSCloudTrailProcessingExecutor#stop()} is
@@ -169,6 +174,14 @@ public class ClientConfiguration implements ProcessingConfiguration{
     @Override
     public int getThreadCount() {
         return threadCount;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getNumOfParallelReaders(){
+        return numOfParallelReaders;
     }
 
     /**
@@ -275,6 +288,14 @@ public class ClientConfiguration implements ProcessingConfiguration{
      */
     public void setThreadCount(int threadCount) {
         this.threadCount = threadCount;
+    }
+
+    /**
+     * The number of reader threads that pull messages from the SQS
+     * @param numOfParallelReaders
+     */
+    public void setNumOfParallelReaders(int numOfParallelReaders){
+        this.numOfParallelReaders = numOfParallelReaders;
     }
 
     /**

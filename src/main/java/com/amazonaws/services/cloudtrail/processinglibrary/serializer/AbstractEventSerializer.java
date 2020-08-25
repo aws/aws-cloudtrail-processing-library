@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -368,12 +368,14 @@ public abstract class AbstractEventSerializer implements EventSerializer {
             String key = jsonParser.getCurrentName();
 
             switch (key) {
-            case "statistics":
-                this.parseInsightStatistics(insightContext);
-                break;
-            default:
-                insightContext.add(key, parseDefaultValue(key));
-                break;
+                case "statistics":
+                    this.parseInsightStatistics(insightContext);
+                    break;
+                case "attributions":
+                    this.parseInsightAttributionsList(insightContext);
+                    break;
+                default:
+                    insightContext.add(key, parseDefaultValue(key));
             }
         }
 
@@ -397,23 +399,134 @@ public abstract class AbstractEventSerializer implements EventSerializer {
         while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
             String key = jsonParser.getCurrentName();
             switch (key) {
-            case "insightDuration":
-                insightStatistics.add(key, Integer.valueOf(jsonParser.getValueAsInt()));
-                break;
-            case "baseline":
-                insightStatistics.add(key, parseAttributesWithDoubleValues());
-                break;
-            case "insight":
-                insightStatistics.add(key, parseAttributesWithDoubleValues());
-                break;
-            default:
-                insightStatistics.add(key, parseDefaultValue(key));
-                break;
+                case "insightDuration":
+                    insightStatistics.add(key, Integer.valueOf(jsonParser.getValueAsInt()));
+                    break;
+                case "baselineDuration":
+                    insightStatistics.add(key, Integer.valueOf(jsonParser.getValueAsInt()));
+                    break;
+                case "baseline":
+                    insightStatistics.add(key, parseAttributesWithDoubleValues());
+                    break;
+                case "insight":
+                    insightStatistics.add(key, parseAttributesWithDoubleValues());
+                    break;
+                default:
+                    insightStatistics.add(key, parseDefaultValue(key));
+                    break;
             }
 
         }
 
         insightContext.add(CloudTrailEventField.statistics.name(), insightStatistics);
+    }
+
+    /**
+     * Parses a list of {@link InsightAttributions} objects.
+     *
+     * @param insightContext the {@link com.amazonaws.services.cloudtrail.processinglibrary.model.internal.InsightContext}
+     * @throws IOException
+     * @throws JsonParseException
+     */
+    private void parseInsightAttributionsList(InsightContext insightContext) throws IOException {
+        if (jsonParser.nextToken() != JsonToken.START_ARRAY) {
+            throw new JsonParseException("Not a InsightAttributions list", jsonParser.getCurrentLocation());
+        }
+
+        List<InsightAttributions> insightAttributionsList = new ArrayList<>();
+
+        while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+            insightAttributionsList.add(parseInsightAttributions());
+        }
+
+        insightContext.add(CloudTrailEventField.attributions.name(), insightAttributionsList);
+    }
+
+    /**
+     * Parses an {@link InsightAttributions} object.
+     *
+     * @return a single {@link InsightAttributions}
+     * @throws IOException
+     * @throws JsonParseException
+     */
+    private InsightAttributions parseInsightAttributions() throws IOException {
+        if (jsonParser.getCurrentToken() != JsonToken.START_OBJECT) {
+            throw new JsonParseException("Not a InsightAttributions object", jsonParser.getCurrentLocation());
+        }
+
+        InsightAttributions insightAttributions = new InsightAttributions();
+
+        while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+            String key = jsonParser.getCurrentName();
+            switch (key) {
+                case "attribute":
+                    insightAttributions.add(CloudTrailEventField.attribute.name(), jsonParser.nextTextValue());
+                    break;
+                case "baseline":
+                    insightAttributions.add(CloudTrailEventField.baseline.name(), parseAttributeValueList());
+                    break;
+                case "insight":
+                    insightAttributions.add(CloudTrailEventField.insight.name(), parseAttributeValueList());
+                    break;
+                default:
+                    insightAttributions.add(key, parseDefaultValue(key));
+            }
+        }
+
+        return insightAttributions;
+    }
+
+    /**
+     * Parses a list of {@link AttributeValue} objects.
+     *
+     * @return list of {@link AttributeValue}
+     * @throws IOException
+     * @throws JsonParseException
+     */
+    private List<AttributeValue> parseAttributeValueList() throws IOException {
+        if (jsonParser.nextToken() != JsonToken.START_ARRAY) {
+            throw new JsonParseException("Not a InsightAttributions list", jsonParser.getCurrentLocation());
+        }
+
+        List<AttributeValue> attributeValues = new ArrayList<>();
+
+        while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+            attributeValues.add(parseAttributeValue());
+        }
+
+        return attributeValues;
+    }
+
+    /**
+     * Parses a single {@link AttributeValue} object.
+     *
+     * @return a single {@link AttributeValue}, which contains the string value of the attribute, and the average number of
+     * occurrences.
+     * @throws IOException
+     * @throws JsonParseException
+     */
+    private AttributeValue parseAttributeValue() throws IOException {
+        if (jsonParser.getCurrentToken() != JsonToken.START_OBJECT) {
+            throw new JsonParseException("Not a InsightAttributions object", jsonParser.getCurrentLocation());
+        }
+
+        AttributeValue attributeValue = new AttributeValue();
+
+        while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+            String key = jsonParser.getCurrentName();
+            switch (key) {
+                case "value":
+                    attributeValue.add(CloudTrailEventField.value.name(), jsonParser.nextTextValue());
+                    break;
+                case "average":
+                    attributeValue.add(CloudTrailEventField.average.name(), Double.valueOf(jsonParser.getValueAsDouble()));
+                    break;
+                default:
+                    attributeValue.add(key, parseDefaultValue(key));
+            }
+        }
+
+        return attributeValue;
     }
 
     /**

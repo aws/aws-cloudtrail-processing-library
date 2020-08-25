@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -397,6 +397,7 @@ public class AWSCloudTrailProcessingExecutor {
             ClientConfiguration clientConfiguration = new ClientConfiguration();
             clientConfiguration.setConnectionTimeout(SDK_TIME_OUT);
             clientConfiguration.setSocketTimeout(SDK_TIME_OUT);
+            clientConfiguration.setMaxConnections(Math.max(clientConfiguration.DEFAULT_MAX_CONNECTIONS, config.getThreadCount()));
 
             if (s3Client == null) {
                 s3Client = AmazonS3ClientBuilder.standard()
@@ -408,8 +409,11 @@ public class AWSCloudTrailProcessingExecutor {
         }
         private void buildSqsClient() {
             if (sqsClient == null) {
+                ClientConfiguration clientConfiguration = new ClientConfiguration();
+                clientConfiguration.setMaxConnections(Math.max(clientConfiguration.DEFAULT_MAX_CONNECTIONS, config.getThreadCount()));
                 sqsClient = AmazonSQSClientBuilder.standard()
                         .withCredentials(config.getAwsCredentialsProvider())
+                        .withClientConfiguration(clientConfiguration)
                         .withRegion(config.getSqsRegion())
                         .build();
             }
@@ -431,7 +435,7 @@ public class AWSCloudTrailProcessingExecutor {
 
         private void buildThreadPools() {
             ThreadPoolFactory threadFactory = new ThreadPoolFactory(config.getThreadCount(), exceptionHandler);
-            scheduledThreadPool = threadFactory.createScheduledThreadPool();
+            scheduledThreadPool = threadFactory.createScheduledThreadPool(config.getNumOfParallelReaders());
 
             if (mainThreadPool == null) {
                 mainThreadPool = threadFactory.createMainThreadPool();

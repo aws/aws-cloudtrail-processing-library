@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.model.internal;
 
+import java.util.List;
+
 /**
  * Data about the rate of calls that triggered the Insights event
  * compared to the normal rate of calls to the subject API per minute.
@@ -28,6 +30,17 @@ public class InsightContext extends CloudTrailDataStore {
      */
     public InsightStatistics getStatistics() {
         return (InsightStatistics) this.get(CloudTrailEventField.statistics.name());
+    }
+
+    /**
+     * Get Insights event attributions. Each {@link InsightAttributions} contains attribute values for a specific
+     * type of attribute, such as userIdentityArn, userAgent and errorCode.
+     *
+     * @return list of {@link InsightAttributions}
+     */
+    @SuppressWarnings("unchecked")
+    public List<InsightAttributions> getAttributions() {
+        return (List<InsightAttributions>) this.get(CloudTrailEventField.attributions.name());
     }
 
 }

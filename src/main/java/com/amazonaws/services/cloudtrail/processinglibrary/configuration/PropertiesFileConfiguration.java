@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
     public static final String VISIBILITY_TIMEOUT = "visibilityTimeout";
     public static final String S3_REGION = "s3Region";
     public static final String THREAD_COUNT = "threadCount";
+    public static final String NUM_OF_PARALLEL_READERS = "numOfParallelReaders";
     public static final String THREAD_TERMINATION_DELAY_SECONDS = "threadTerminationDelaySeconds";
     public static final String MAX_EVENTS_PER_EMIT = "maxEventsPerEmit";
     public static final String ENABLE_RAW_EVENT_INFO = "enableRawEventInfo";
@@ -98,6 +99,12 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
      */
     private int threadCount = DEFAULT_THREAD_COUNT;
 
+
+    /**
+     * The number of threads used to get SQS messages
+     */
+    private int numOfParallelReaders = DEFAULT_NUM_OF_PARALLEL_READERS;
+
     /**
      * The time allowed, in seconds, for threads to shut down after {@link AWSCloudTrailProcessingExecutor#stop()} is
      * called.
@@ -147,6 +154,7 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
         sqsRegion = prop.getProperty(SQS_REGION);
 
         threadCount = getIntProperty(prop, THREAD_COUNT);
+        numOfParallelReaders = getIntProperty(prop, NUM_OF_PARALLEL_READERS);
         threadTerminationDelaySeconds = getIntProperty(prop, THREAD_TERMINATION_DELAY_SECONDS);
 
         maxEventsPerEmit = getIntProperty(prop, MAX_EVENTS_PER_EMIT);
@@ -206,6 +214,13 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
     /**
      * {@inheritDoc}
      */
+    public int getNumOfParallelReaders(){
+        return numOfParallelReaders;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getThreadTerminationDelaySeconds() {
         return threadTerminationDelaySeconds;
@@ -246,7 +261,8 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
         LibraryUtils.checkArgumentNotNull(getS3Region(), "S3 Region is null.");
 
         LibraryUtils.checkCondition(getMaxEventsPerEmit() <= 0, "Maximum Events Per Emit is a non-positive integer.");
-        LibraryUtils.checkCondition(getThreadCount() <= 0, "Thread Count is a non-positive integer.");
+        LibraryUtils.checkCondition(getThreadCount() <= 0, "Num of Parallel Readers Count is a non-positive integer.");
+        LibraryUtils.checkCondition(getNumOfParallelReaders() <= 0, "Thread Count is a non-positive integer.");
         LibraryUtils.checkCondition(getThreadTerminationDelaySeconds() <= 0, "Thread Termination Delay Seconds is a non-positive integer.");
         LibraryUtils.checkCondition(getVisibilityTimeout() <= 0, "Visibility Timeout is a non-positive integer.");
     }

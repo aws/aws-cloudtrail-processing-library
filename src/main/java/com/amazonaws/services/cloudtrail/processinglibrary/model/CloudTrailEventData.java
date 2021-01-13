@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -15,10 +15,12 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.model;
 
+import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.Addendum;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.CloudTrailDataStore;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.CloudTrailEventField;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.InsightDetails;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.Resource;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.TlsDetails;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.UserIdentity;
 
 import java.util.Date;
@@ -222,6 +224,7 @@ public class CloudTrailEventData extends CloudTrailDataStore {
     public Boolean isManagementEvent() {
         return (Boolean) get(CloudTrailEventField.managementEvent.name());
     }
+
     /**
      * Get the resources used in the operation.
      *
@@ -317,5 +320,51 @@ public class CloudTrailEventData extends CloudTrailDataStore {
      */
     public InsightDetails getInsightDetails() {
         return (InsightDetails) get(CloudTrailEventField.insightDetails.name());
+    }
+
+    /**
+     * Get the addendum
+     * <p>
+     * The Addendum block of an addendum event includes details to fill an auditing gap or update an older event.
+     * It only appears to update an older event.
+     * </p>
+     * @return Details of an Addendum block, such as a reason for the addendum,
+     * updated fields, original request ID, and original event ID..
+     */
+    public Addendum getAddendum() {
+        return (Addendum) get(CloudTrailEventField.addendum.name());
+    }
+
+    /**
+     * Get the edge device details
+     *
+     * @return Information about the edge device, such as device type, device ID.
+     */
+    public String getEdgeDeviceDetails() {
+        return (String) get(CloudTrailEventField.edgeDeviceDetails.name());
+    }
+
+    /**
+     * Get the TLS details
+     * <p>
+     * Shows information about the Transport Layer Security (TLS) version, cipher suites, and FQDN of the
+     * client-provided host name of the service API call.
+     * </p>
+     * @return The TLS details of a service API call.
+     */
+    public TlsDetails getTlsDetails() {
+        return (TlsDetails) get(CloudTrailEventField.tlsDetails.name());
+    }
+
+    /**
+     * Check whether an event originated from an AWS Management Console session.
+     * <p>
+     * The field is not shown unless the value is true, meaning that the client that was used to make the API call
+     * was either a proxy or an external client.
+     * </p>
+     * @return <code>true</code> if the event originated from an AWS Management Console session.
+     */
+    public String getSessionCredentialFromConsole() {
+        return (String) get(CloudTrailEventField.sessionCredentialFromConsole.name());
     }
 }

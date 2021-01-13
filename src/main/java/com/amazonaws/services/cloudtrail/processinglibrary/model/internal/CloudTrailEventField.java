@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ public enum CloudTrailEventField {
     Records,
     accessKeyId,
     accountId,
+    addendum,
     additionalEventData,
     annotation,
     apiVersion,
@@ -35,6 +36,9 @@ public enum CloudTrailEventField {
     awsRegion,
     baseline,
     baselineDuration,
+    cipherSuite,
+    clientProvidedHostHeader,
+    edgeDeviceDetails,
     errorCode,
     errorMessage,
     eventCategory,
@@ -53,8 +57,11 @@ public enum CloudTrailEventField {
     insightType,
     invokedBy,
     managementEvent,
+    originalRequestID,
+    originalEventID,
     principalId,
     readOnly,
+    reason,
     recipientAccountId,
     requestID,
     requestParameters,
@@ -62,12 +69,16 @@ public enum CloudTrailEventField {
     responseElements,
     serviceEventDetails,
     sessionContext,
+    sessionCredentialFromConsole,
     sessionIssuer,
     sharedEventID,
     sourceIPAddress,
     state,
     statistics,
+    tlsDetails,
+    tlsVersion,
     type,
+    updatedFields,
     userAgent,
     userIdentity,
     userName,

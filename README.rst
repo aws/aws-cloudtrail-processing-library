@@ -32,7 +32,7 @@ Getting Started
 Minimum Requirements
 ~~~~~~~~~~~~~~~~~~~~
 
-* **AWS Java SDK 1.10.27**: In order to use the |library|, you'll need the `AWS Java SDK`__.
+* **AWS Java SDK 1.11.830**: To use the |library|, you'll need the `AWS Java SDK`__.
 * **Java 1.8**: The |library| requires `Java 1.8 (Java SE 8)`__ or later.
 
 .. __: https://github.com/aws/aws-sdk-java
@@ -64,6 +64,17 @@ build, use this command::
 
 Release Notes
 -------------
+
+Release 1.4.0 (Jan 11, 2021)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Added support for parsing the following new top-level optional fields:
+
+  * addendum
+  * edgeDeviceDetails
+  * tlsDetails
+  * sessionCredentialFromConsole
+
+* Updated the CloudTrail event version to 1.08.
 
 Release 1.3.0 (Jul 30, 2020)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

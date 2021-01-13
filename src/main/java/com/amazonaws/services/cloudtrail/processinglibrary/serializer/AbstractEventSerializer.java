@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2010-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public abstract class AbstractEventSerializer implements EventSerializer {
 
     private static final Log logger = LogFactory.getLog(AbstractEventSerializer.class);
     private static final String RECORDS = "Records";
-    private static final double SUPPORTED_EVENT_VERSION = 1.07d;
+    private static final double SUPPORTED_EVENT_VERSION = 1.08d;
 
     /**
      * A Jackson JSON Parser object.
@@ -159,6 +159,12 @@ public abstract class AbstractEventSerializer implements EventSerializer {
                 break;
             case "insightDetails":
                 this.parseInsightDetails(eventData);
+                break;
+            case "addendum":
+                this.parseAddendum(eventData);
+                break;
+            case "tlsDetails":
+                this.parseTlsDetails(eventData);
                 break;
             default:
                 eventData.add(key, parseDefaultValue(key));
@@ -689,6 +695,85 @@ public abstract class AbstractEventSerializer implements EventSerializer {
         }
 
         return resource;
+    }
+
+
+    /**
+     * Parses the {@link Addendum} in CloudTrailEventData
+     *
+     * @param eventData {@link CloudTrailEventData} must parse.
+     * @throws IOException
+     */
+    private void parseAddendum(CloudTrailEventData eventData) throws IOException {
+        JsonToken nextToken = jsonParser.nextToken();
+        if (nextToken == JsonToken.VALUE_NULL) {
+            eventData.add(CloudTrailEventField.addendum.name(), null);
+            return;
+        }
+
+        if (nextToken != JsonToken.START_OBJECT) {
+            throw new JsonParseException("Not an Addendum object", jsonParser.getCurrentLocation());
+        }
+
+        Addendum addendum = new Addendum();
+
+        while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+            String key = jsonParser.getCurrentName();
+
+            switch (key) {
+                case "reason":
+                    addendum.add(CloudTrailEventField.reason.name(), jsonParser.nextTextValue());
+                    break;
+                case "updatedFields":
+                    addendum.add(CloudTrailEventField.updatedFields.name(), jsonParser.nextTextValue());
+                    break;
+                case "originalRequestID":
+                    addendum.add(CloudTrailEventField.originalRequestID.name(), jsonParser.nextTextValue());
+                    break;
+                case "originalEventID":
+                    addendum.add(CloudTrailEventField.originalEventID.name(), jsonParser.nextTextValue());
+                    break;
+                default:
+                    addendum.add(key, parseDefaultValue(key));
+                    break;
+            }
+        }
+        eventData.add(CloudTrailEventField.addendum.name(), addendum);
+    }
+
+    private void parseTlsDetails(CloudTrailEventData eventData) throws IOException {
+        JsonToken nextToken = jsonParser.nextToken();
+        if (nextToken == JsonToken.VALUE_NULL) {
+            eventData.add(CloudTrailEventField.tlsDetails.name(), null);
+            return;
+        }
+
+        if (nextToken != JsonToken.START_OBJECT) {
+            throw new JsonParseException("Not a TLS Details object", jsonParser.getCurrentLocation());
+        }
+
+        TlsDetails tlsDetails = new TlsDetails();
+
+        while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+            String key = jsonParser.getCurrentName();
+
+            switch (key) {
+                case "tlsVersion":
+                    tlsDetails.add(CloudTrailEventField.tlsVersion.name(), jsonParser.nextTextValue());
+                    break;
+                case "cipherSuite":
+                    tlsDetails.add(CloudTrailEventField.cipherSuite.name(), jsonParser.nextTextValue());
+                    break;
+                case "clientProvidedHostHeader":
+                    tlsDetails.add(CloudTrailEventField.clientProvidedHostHeader.name(), jsonParser.nextTextValue());
+                    break;
+                default:
+                    tlsDetails.add(key, this.parseDefaultValue(key));
+                    break;
+            }
+        }
+
+        eventData.add(CloudTrailEventField.tlsDetails.name(), tlsDetails);
     }
 
     /**

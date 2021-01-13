@@ -15,32 +15,35 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.model.internal;
 
-import java.util.List;
-
 /**
- * Data about the rate of calls that triggered the Insights event
- * compared to the normal rate of calls to the subject API per minute.
+ * Information about the Transport Layer Security (TLS) details of a service API call.
  */
-public class InsightContext extends CloudTrailDataStore {
+public class TlsDetails extends CloudTrailDataStore {
 
     /**
-     * Get insight statistics
+     * Get the TLS version of the request.
      *
-     * @return {@link InsightStatistics}
+     * @return The TLS version
      */
-    public InsightStatistics getStatistics() {
-        return (InsightStatistics) this.get(CloudTrailEventField.statistics.name());
+    public String getTlsVersion() {
+        return (String) this.get(CloudTrailEventField.tlsVersion.name());
     }
 
     /**
-     * Get Insights event attributions. Each {@link InsightAttributions} contains attribute values for a specific
-     * type of attribute, such as userIdentityArn, userAgent and errorCode.
+     * Get the cipher suite (combination of security algorithms used) of the request.
      *
-     * @return list of {@link InsightAttributions}
+     * @return The cipher suite
      */
-    @SuppressWarnings("unchecked")
-    public List<InsightAttributions> getAttributions() {
-        return (List<InsightAttributions>) this.get(CloudTrailEventField.attributions.name());
+    public String getCipherSuite() {
+        return (String) this.get(CloudTrailEventField.cipherSuite.name());
     }
 
+    /**
+     * Get the client-provided host header.
+     *
+     * @return the FQDN of the client that made the request.
+     */
+    public String getClientProvidedHostHeader() {
+        return (String) this.get(CloudTrailEventField.clientProvidedHostHeader.name());
+    }
 }

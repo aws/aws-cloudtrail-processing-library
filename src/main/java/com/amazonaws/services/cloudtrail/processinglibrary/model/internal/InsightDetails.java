@@ -54,7 +54,7 @@ public class InsightDetails extends CloudTrailDataStore {
     /**
      * Get insight type
      *
-     * @return The type of Insights event. Value is ApiCallRateInsight.
+     * @return The type of Insights event. Value is ApiCallRateInsight or ApiErrorRateInsight.
      */
     public String getInsightType() {
         return (String) this.get(CloudTrailEventField.insightType.name());
@@ -68,6 +68,15 @@ public class InsightDetails extends CloudTrailDataStore {
      */
     public String getState() {
         return (String) this.get(CloudTrailEventField.state.name());
+    }
+
+    /**
+     * Get error code
+     *
+     * @return The AWS API error code on which unusual activity is detected.
+     */
+    public String getErrorCode() {
+        return (String) this.get(CloudTrailEventField.errorCode.name());
     }
 
 

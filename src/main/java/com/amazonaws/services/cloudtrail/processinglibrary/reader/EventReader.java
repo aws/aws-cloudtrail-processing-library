@@ -246,18 +246,21 @@ public class EventReader {
     private void emitEvents(EventSerializer serializer) throws IOException, CallbackException {
         EventBuffer<CloudTrailEvent> eventBuffer = new EventBuffer<>(config.getMaxEventsPerEmit());
         while (serializer.hasNextEvent()) {
-
             CloudTrailEvent event = serializer.getNextEvent();
+            try {
+                if (eventFilter.filterEvent(event)) {
+                    eventBuffer.addEvent(event);
 
-            if (eventFilter.filterEvent(event)) {
-                eventBuffer.addEvent(event);
+                    if (eventBuffer.isBufferFull()) {
+                        eventsProcessor.process(eventBuffer.getEvents());
+                    }
 
-                if (eventBuffer.isBufferFull()) {
-                    eventsProcessor.process(eventBuffer.getEvents());
+                } else {
+                    logger.debug("AWSCloudTrailEvent " + event + " has been filtered out.");
                 }
-
-            } else {
-                logger.debug("AWSCloudTrailEvent " + event + " has been filtered out.");
+            } catch (Exception e) {
+                logger.error("AWSCloudTrailEvent " + event + " caused the following Exception: " + e.toString());
+                throw e;
             }
         }
 

@@ -31,6 +31,7 @@ import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.EventFilte
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.EventsProcessor;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ProgressReporter;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.SourceFilter;
+import com.amazonaws.services.cloudtrail.processinglibrary.manager.BasicS3Manager;
 import com.amazonaws.services.cloudtrail.processinglibrary.manager.S3Manager;
 import com.amazonaws.services.cloudtrail.processinglibrary.manager.SqsManager;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEvent;
@@ -230,6 +231,7 @@ public class AWSCloudTrailProcessingExecutor {
         private String propertyFilePath;
         private AmazonS3 s3Client;
         private AmazonSQS sqsClient;
+        private S3Manager s3Manager;
 
         /**
          * Builder for {@link AWSCloudTrailProcessingExecutor}.
@@ -332,12 +334,25 @@ public class AWSCloudTrailProcessingExecutor {
          * Applies a user-defined <a
          * href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/AmazonS3.html">AmazonS3</a>
          * to this instance.
+         * If user provides the user-defined S3Manager, then this s3Client will not be used.
          *
          * @param s3Client the <code>AmazonS3</code> object used to download CloudTrail log files
          * @return This <code>Builder</code> instance, using the specified <code>AmazonS3</code>.
          */
         public Builder withS3Client(AmazonS3 s3Client) {
             this.s3Client = s3Client;
+            return this;
+        }
+
+        /**
+         * Applies a user-defined {@link S3Manager} to this instance.
+         * User-defined s3Client will not be used if user provides the user-defined S3Manager.
+         *
+         * @param s3Manager the <code>S3Manager</code> object used to manage Amazon S3 service-related operations
+         * @return This <code>Builder</code> instance, using the specified <code>AmazonS3</code>.
+         */
+        public Builder withS3Manager(S3Manager s3Manager) {
+            this.s3Manager = s3Manager;
             return this;
         }
 
@@ -365,6 +380,7 @@ public class AWSCloudTrailProcessingExecutor {
             buildConfig();
             validateBeforeBuild();
             buildS3Client();
+            buildS3Manager();
             buildSqsClient();
             buildReaderFactory();
             buildThreadPools();
@@ -407,6 +423,13 @@ public class AWSCloudTrailProcessingExecutor {
                         .build();
             }
         }
+
+        private void buildS3Manager() {
+            if (s3Manager == null) {
+                s3Manager = new BasicS3Manager(s3Client, config, exceptionHandler, progressReporter);
+            }
+        }
+
         private void buildSqsClient() {
             if (sqsClient == null) {
                 ClientConfiguration clientConfiguration = new ClientConfiguration();
@@ -421,7 +444,6 @@ public class AWSCloudTrailProcessingExecutor {
 
         private void buildReaderFactory() {
             SqsManager sqsManager = new SqsManager(sqsClient, config, exceptionHandler, progressReporter, sourceSerializer);
-            S3Manager s3Manager = new S3Manager(s3Client, config, exceptionHandler, progressReporter);
 
             readerFactory = new EventReaderFactory.Builder(config)
                     .withEventsProcessor(eventsProcessor)

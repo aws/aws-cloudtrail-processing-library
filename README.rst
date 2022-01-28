@@ -65,6 +65,13 @@ build, use this command::
 Release Notes
 -------------
 
+Release 1.5.0 (Jan 26, 2022)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Added support for implementing custom S3 manager.
+* Added event logging to log file parsing-related exceptions.
+* Added support for parsing optional errorCode field in insightDetails.
+* Updated account ID parsing regex to accept non-numerical values.
+
 Release 1.4.0 (Jan 11, 2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Added support for parsing the following new top-level optional fields:

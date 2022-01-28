@@ -348,6 +348,9 @@ public abstract class AbstractEventSerializer implements EventSerializer {
                 case "insightContext":
                     this.parseInsightContext(insightDetails);
                     break;
+                case "errorCode":
+                    insightDetails.add(CloudTrailEventField.errorCode.name(), jsonParser.nextTextValue());
+                    break;
                 default:
                     insightDetails.add(key, parseDefaultValue(key));
                     break;

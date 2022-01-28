@@ -33,7 +33,7 @@ public class SourceIdentifier {
      *
      * We need this regex to filter out non-CloudTrail log files as it is possible that S3 send other object notifications
      */
-    private static final Pattern CT_LOGFILE_PATTERN = Pattern.compile(".*\\d+_CloudTrail_[\\w\\-]+_\\d{8}T\\d{4}Z_[\\w]+\\.json\\.gz");
+    private static final Pattern CT_LOGFILE_PATTERN = Pattern.compile(".+_CloudTrail_[\\w\\-]+_\\d{8}T\\d{4}Z_[\\w]+\\.json\\.gz");
 
     /**
      * Identify the source type.

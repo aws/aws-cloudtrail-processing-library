@@ -277,8 +277,7 @@ public class CloudTrailEventData extends CloudTrailDataStore {
     /**
      * Get the recipient account ID
      *
-     * @return the account ID that received this event. This will be the same as the User Identity Element's accountId
-     *     value.
+     * @return the account ID that received this event.
      */
     public String getRecipientAccountId() {
         return (String) get(CloudTrailEventField.recipientAccountId.name());

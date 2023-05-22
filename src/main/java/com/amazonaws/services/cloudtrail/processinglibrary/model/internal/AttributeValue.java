@@ -39,4 +39,15 @@ public class AttributeValue extends CloudTrailDataStore {
     public Double getAverage() {
         return (Double) this.get(CloudTrailEventField.average.name());
     }
+
+    public static class OnBehalfOf extends CloudTrailDataStore {
+
+        public String getUserId() {
+            return (String) this.get(CloudTrailEventField.onBehalfOfUserId.name());
+        }
+
+        public String getIdentityStoreArn() {
+            return (String) this.get(CloudTrailEventField.onBehalfOfIdentityStoreArn.name());
+        }
+    }
 }

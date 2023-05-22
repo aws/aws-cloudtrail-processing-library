@@ -19,6 +19,8 @@ import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEvent
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventData;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.*;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.OnBehalfOf;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.UserIdentity;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -53,13 +55,13 @@ public abstract class AbstractEventSerializer implements EventSerializer {
      *     use for interpreting JSON objects.
      * @throws IOException under no conditions.
      */
-    public AbstractEventSerializer (JsonParser jsonParser) throws IOException {
+    public AbstractEventSerializer(JsonParser jsonParser) throws IOException {
         this.jsonParser = jsonParser;
     }
 
     /**
      * An abstract class that returns an
-     * {@link com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata} object.
+     * {@link CloudTrailEventMetadata} object.
      *
      * @param charStart the character count at which to begin reading event data.
      * @param charEnd the character count at which to stop reading event data.
@@ -120,7 +122,7 @@ public abstract class AbstractEventSerializer implements EventSerializer {
         CloudTrailEventData eventData = new CloudTrailEventData();
         String key;
 
-         /* Get next CloudTrailEvent event from log file. When failed to parse a event,
+        /* Get next CloudTrailEvent event from log file. When failed to parse a event,
          * IOException will be thrown. In this case, the charEnd index the place we
          * encountered parsing error. */
 
@@ -132,43 +134,43 @@ public abstract class AbstractEventSerializer implements EventSerializer {
             key = jsonParser.getCurrentName();
 
             switch (key) {
-            case "eventVersion":
-                String eventVersion = jsonParser.nextTextValue();
-                if (Double.parseDouble(eventVersion) > SUPPORTED_EVENT_VERSION) {
-                    logger.debug(String.format("EventVersion %s is not supported by CloudTrail.", eventVersion));
-                }
-                eventData.add(key, eventVersion);
-                break;
-            case "userIdentity":
-                this.parseUserIdentity(eventData);
-                break;
-            case "eventTime":
-                eventData.add(CloudTrailEventField.eventTime.name(), convertToDate(jsonParser.nextTextValue()));
-                break;
-            case "eventID":
-                eventData.add(key, convertToUUID(jsonParser.nextTextValue()));
-                break;
-            case "readOnly":
-                this.parseReadOnly(eventData);
-                break;
-            case "resources":
-                this.parseResources(eventData);
-                break;
-            case "managementEvent":
-                this.parseManagementEvent(eventData);
-                break;
-            case "insightDetails":
-                this.parseInsightDetails(eventData);
-                break;
-            case "addendum":
-                this.parseAddendum(eventData);
-                break;
-            case "tlsDetails":
-                this.parseTlsDetails(eventData);
-                break;
-            default:
-                eventData.add(key, parseDefaultValue(key));
-                break;
+                case "eventVersion":
+                    String eventVersion = jsonParser.nextTextValue();
+                    if (Double.parseDouble(eventVersion) > SUPPORTED_EVENT_VERSION) {
+                        logger.debug(String.format("EventVersion %s is not supported by CloudTrail.", eventVersion));
+                    }
+                    eventData.add(key, eventVersion);
+                    break;
+                case "userIdentity":
+                    this.parseUserIdentity(eventData);
+                    break;
+                case "eventTime":
+                    eventData.add(CloudTrailEventField.eventTime.name(), convertToDate(jsonParser.nextTextValue()));
+                    break;
+                case "eventID":
+                    eventData.add(key, convertToUUID(jsonParser.nextTextValue()));
+                    break;
+                case "readOnly":
+                    this.parseReadOnly(eventData);
+                    break;
+                case "resources":
+                    this.parseResources(eventData);
+                    break;
+                case "managementEvent":
+                    this.parseManagementEvent(eventData);
+                    break;
+                case "insightDetails":
+                    this.parseInsightDetails(eventData);
+                    break;
+                case "addendum":
+                    this.parseAddendum(eventData);
+                    break;
+                case "tlsDetails":
+                    this.parseTlsDetails(eventData);
+                    break;
+                default:
+                    eventData.add(key, parseDefaultValue(key));
+                    break;
             }
         }
         this.setAccountId(eventData);
@@ -201,22 +203,22 @@ public abstract class AbstractEventSerializer implements EventSerializer {
         }
 
         if (eventData.getUserIdentity() != null &&
-            eventData.getUserIdentity().getAccountId() != null) {
+                eventData.getUserIdentity().getAccountId() != null) {
             eventData.add("accountId", eventData.getUserIdentity().getAccountId());
             return;
         }
 
         if (eventData.getUserIdentity() != null &&
-            eventData.getUserIdentity().getAccountId() == null &&
-            eventData.getUserIdentity().getSessionContext() != null &&
-            eventData.getUserIdentity().getSessionContext().getSessionIssuer() != null &&
-            eventData.getUserIdentity().getSessionContext().getSessionIssuer().getAccountId() != null) {
+                eventData.getUserIdentity().getAccountId() == null &&
+                eventData.getUserIdentity().getSessionContext() != null &&
+                eventData.getUserIdentity().getSessionContext().getSessionIssuer() != null &&
+                eventData.getUserIdentity().getSessionContext().getSessionIssuer().getAccountId() != null) {
             eventData.add("accountId", eventData.getUserIdentity().getSessionContext().getSessionIssuer().getAccountId());
         }
     }
 
     /**
-     * Parses the {@link UserIdentity} in CloudTrailEventData
+     * Parses the {@link CloudTrailDataStore.UserIdentity} in CloudTrailEventData
      *
      * @param eventData {@link CloudTrailEventData} needs to parse.
      * @throws IOException
@@ -231,52 +233,81 @@ public abstract class AbstractEventSerializer implements EventSerializer {
         if (nextToken != JsonToken.START_OBJECT) {
             throw new JsonParseException("Not a UserIdentity object", jsonParser.getCurrentLocation());
         }
-
         UserIdentity userIdentity = new UserIdentity();
 
         while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
             String key = jsonParser.getCurrentName();
 
             switch (key) {
-            case "type":
-                userIdentity.add(CloudTrailEventField.type.name(), jsonParser.nextTextValue());
-                break;
-            case "principalId":
-                userIdentity.add(CloudTrailEventField.principalId.name(), jsonParser.nextTextValue());
-                break;
-            case "arn":
-                userIdentity.add(CloudTrailEventField.arn.name(), jsonParser.nextTextValue());
-                break;
-            case "accountId":
-                userIdentity.add(CloudTrailEventField.accountId.name(), jsonParser.nextTextValue());
-                break;
-            case "accessKeyId":
-                userIdentity.add(CloudTrailEventField.accessKeyId.name(), jsonParser.nextTextValue());
-                break;
-            case "userName":
-                userIdentity.add(CloudTrailEventField.userName.name(), jsonParser.nextTextValue());
-                break;
-            case "sessionContext":
-                this.parseSessionContext(userIdentity);
-                break;
-            case "invokedBy":
-                userIdentity.add(CloudTrailEventField.invokedBy.name(), jsonParser.nextTextValue());
-                break;
-            case "identityProvider":
-                userIdentity.add(CloudTrailEventField.identityProvider.name(), jsonParser.nextTextValue());
-                break;
-            default:
-                userIdentity.add(key, parseDefaultValue(key));
-                break;
+                case "type":
+                    userIdentity.add(CloudTrailEventField.type.name(), jsonParser.nextTextValue());
+                    break;
+                case "principalId":
+                    userIdentity.add(CloudTrailEventField.principalId.name(), jsonParser.nextTextValue());
+                    break;
+                case "arn":
+                    userIdentity.add(CloudTrailEventField.arn.name(), jsonParser.nextTextValue());
+                    break;
+                case "accountId":
+                    userIdentity.add(CloudTrailEventField.accountId.name(), jsonParser.nextTextValue());
+                    break;
+                case "accessKeyId":
+                    userIdentity.add(CloudTrailEventField.accessKeyId.name(), jsonParser.nextTextValue());
+                    break;
+                case "userName":
+                    userIdentity.add(CloudTrailEventField.userName.name(), jsonParser.nextTextValue());
+                    break;
+                case "sessionContext":
+                    this.parseSessionContext(userIdentity);
+                    break;
+                case "invokedBy":
+                    userIdentity.add(CloudTrailEventField.invokedBy.name(), jsonParser.nextTextValue());
+                    break;
+                case "identityProvider":
+                    userIdentity.add(CloudTrailEventField.identityProvider.name(), jsonParser.nextTextValue());
+                    break;
+                case "credentialId":
+                    userIdentity.add(CloudTrailEventField.credentialId.name(), jsonParser.nextTextValue());
+                    break;
+                case "onBehalfOf":
+                    this.parseOnBehalfOf(userIdentity);
+                    break;
+                default:
+                    userIdentity.add(key, parseDefaultValue(key));
+                    break;
             }
         }
         eventData.add(CloudTrailEventField.userIdentity.name(), userIdentity);
     }
 
+    private void parseOnBehalfOf(UserIdentity userIdentity) throws IOException{
+        if (jsonParser.nextToken() != JsonToken.START_OBJECT) {
+            throw new JsonParseException("Not a SessionContext object", jsonParser.getCurrentLocation());
+        }
+
+        OnBehalfOf onBehalfOf = new OnBehalfOf();
+
+        while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+            String key = jsonParser.getCurrentName();
+            switch (key) {
+                case "userId":
+                    onBehalfOf.add(CloudTrailEventField.onBehalfOfUserId.name(), jsonParser.nextTextValue());
+                    break;
+                case "identityStoreArn":
+                    onBehalfOf.add(CloudTrailEventField.onBehalfOfIdentityStoreArn.name(), jsonParser.nextTextValue());
+                    break;
+                default:
+                    onBehalfOf.add(key, parseDefaultValue(key));
+                    break;
+            }
+            userIdentity.add(CloudTrailEventField.onBehalfOf.name(), onBehalfOf);
+        }
+    }
+
     /**
      * Parses the {@link SessionContext} object.
      *
-     * @param userIdentity the {@link com.amazonaws.services.cloudtrail.processinglibrary.model.internal.UserIdentity}
+     * @param userIdentity the {@link UserIdentity}
      * @throws IOException
      * @throws JsonParseException
      */
@@ -291,18 +322,18 @@ public abstract class AbstractEventSerializer implements EventSerializer {
             String key = jsonParser.getCurrentName();
 
             switch (key) {
-            case "attributes":
-                sessionContext.add(CloudTrailEventField.attributes.name(), parseAttributes());
-                break;
-            case "sessionIssuer":
-                sessionContext.add(CloudTrailEventField.sessionIssuer.name(), parseSessionIssuer(sessionContext));
-                break;
-            case "webIdFederationData":
-                sessionContext.add(CloudTrailEventField.webIdFederationData.name(), parseWebIdentitySessionContext(sessionContext));
-                break;
-            default:
-                sessionContext.add(key, parseDefaultValue(key));
-                break;
+                case "attributes":
+                    sessionContext.add(CloudTrailEventField.attributes.name(), parseAttributes());
+                    break;
+                case "sessionIssuer":
+                    sessionContext.add(CloudTrailEventField.sessionIssuer.name(), parseSessionIssuer(sessionContext));
+                    break;
+                case "webIdFederationData":
+                    sessionContext.add(CloudTrailEventField.webIdFederationData.name(), parseWebIdentitySessionContext(sessionContext));
+                    break;
+                default:
+                    sessionContext.add(key, parseDefaultValue(key));
+                    break;
             }
         }
 
@@ -362,7 +393,7 @@ public abstract class AbstractEventSerializer implements EventSerializer {
     /**
      * Parses the {@link InsightContext} object.
      *
-     * @param insightDetails the {@link com.amazonaws.services.cloudtrail.processinglibrary.model.internal.InsightDetails}
+     * @param insightDetails the {@link InsightDetails}
      * @throws IOException
      * @throws JsonParseException
      */
@@ -394,7 +425,7 @@ public abstract class AbstractEventSerializer implements EventSerializer {
     /**
      * Parses the {@link InsightStatistics} object.
      *
-     * @param insightContext the {@link com.amazonaws.services.cloudtrail.processinglibrary.model.internal.InsightContext}
+     * @param insightContext the {@link InsightContext}
      * @throws IOException
      * @throws JsonParseException
      */
@@ -433,7 +464,7 @@ public abstract class AbstractEventSerializer implements EventSerializer {
     /**
      * Parses a list of {@link InsightAttributions} objects.
      *
-     * @param insightContext the {@link com.amazonaws.services.cloudtrail.processinglibrary.model.internal.InsightContext}
+     * @param insightContext the {@link InsightContext}
      * @throws IOException
      * @throws JsonParseException
      */
@@ -556,15 +587,15 @@ public abstract class AbstractEventSerializer implements EventSerializer {
             String key = jsonParser.getCurrentName();
 
             switch (key) {
-            case "attributes":
-                webIdFederationData.add(CloudTrailEventField.attributes.name(), parseAttributes());
-                break;
-            case "federatedProvider":
-                webIdFederationData.add(CloudTrailEventField.federatedProvider.name(), jsonParser.nextTextValue());
-                break;
-            default:
-                webIdFederationData.add(key, parseDefaultValue(key));
-                break;
+                case "attributes":
+                    webIdFederationData.add(CloudTrailEventField.attributes.name(), parseAttributes());
+                    break;
+                case "federatedProvider":
+                    webIdFederationData.add(CloudTrailEventField.federatedProvider.name(), jsonParser.nextTextValue());
+                    break;
+                default:
+                    webIdFederationData.add(key, parseDefaultValue(key));
+                    break;
             }
         }
 
@@ -592,24 +623,24 @@ public abstract class AbstractEventSerializer implements EventSerializer {
             String key = jsonParser.getCurrentName();
 
             switch (key) {
-            case "type":
-                sessionIssuer.add(CloudTrailEventField.type.name(), this.jsonParser.nextTextValue());
-                break;
-            case "principalId":
-                sessionIssuer.add(CloudTrailEventField.principalId.name(), this.jsonParser.nextTextValue());
-                break;
-            case "arn":
-                sessionIssuer.add(CloudTrailEventField.arn.name(), this.jsonParser.nextTextValue());
-                break;
-            case "accountId":
-                sessionIssuer.add(CloudTrailEventField.accountId.name(), this.jsonParser.nextTextValue());
-                break;
-            case "userName":
-                sessionIssuer.add(CloudTrailEventField.userName.name(), this.jsonParser.nextTextValue());
-                break;
-            default:
-                sessionIssuer.add(key, this.parseDefaultValue(key));
-                break;
+                case "type":
+                    sessionIssuer.add(CloudTrailEventField.type.name(), this.jsonParser.nextTextValue());
+                    break;
+                case "principalId":
+                    sessionIssuer.add(CloudTrailEventField.principalId.name(), this.jsonParser.nextTextValue());
+                    break;
+                case "arn":
+                    sessionIssuer.add(CloudTrailEventField.arn.name(), this.jsonParser.nextTextValue());
+                    break;
+                case "accountId":
+                    sessionIssuer.add(CloudTrailEventField.accountId.name(), this.jsonParser.nextTextValue());
+                    break;
+                case "userName":
+                    sessionIssuer.add(CloudTrailEventField.userName.name(), this.jsonParser.nextTextValue());
+                    break;
+                default:
+                    sessionIssuer.add(key, this.parseDefaultValue(key));
+                    break;
             }
         }
 
@@ -691,9 +722,9 @@ public abstract class AbstractEventSerializer implements EventSerializer {
             String key = jsonParser.getCurrentName();
 
             switch (key) {
-            default:
-                resource.add(key, parseDefaultValue(key));
-                break;
+                default:
+                    resource.add(key, parseDefaultValue(key));
+                    break;
             }
         }
 
@@ -743,6 +774,7 @@ public abstract class AbstractEventSerializer implements EventSerializer {
         }
         eventData.add(CloudTrailEventField.addendum.name(), addendum);
     }
+
 
     private void parseTlsDetails(CloudTrailEventData eventData) throws IOException {
         JsonToken nextToken = jsonParser.nextToken();
@@ -877,3 +909,4 @@ public abstract class AbstractEventSerializer implements EventSerializer {
         return date;
     }
 }
+

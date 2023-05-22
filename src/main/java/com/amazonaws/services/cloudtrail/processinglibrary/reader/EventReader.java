@@ -259,7 +259,7 @@ public class EventReader {
                     logger.debug("AWSCloudTrailEvent " + event + " has been filtered out.");
                 }
             } catch (Exception e) {
-                logger.error("AWSCloudTrailEvent " + event + " caused the following Exception: " + e.toString());
+                logger.error("AWSCloudTrailEvent " + event + " caused the following Exception:", e);
                 throw e;
             }
         }

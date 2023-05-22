@@ -32,7 +32,7 @@ Getting Started
 Minimum Requirements
 ~~~~~~~~~~~~~~~~~~~~
 
-* **AWS Java SDK 1.12.1**: To use the |library|, you'll need the `AWS Java SDK`__.
+* **AWS Java SDK 1.12.261**: To use the |library|, you'll need the `AWS Java SDK`__.
 * **Java 1.8**: The |library| requires `Java 1.8 (Java SE 8)`__ or later.
 
 .. __: https://github.com/aws/aws-sdk-java
@@ -64,6 +64,19 @@ build, use this command::
 
 Release Notes
 -------------
+
+Release 1.6.1 (May19,2023)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Added Ssupport for test scenario for UserType IdentityCenterUser
+
+Release 1.6.0 (May8,2023)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Updated CloudTrailEvent version to 1.12
+* Added support for USerIdentity
+
+Release 1.5.2 (Sep 6, 2022)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Update AWS Java SDK (S3/SQS) version to 1.12.261.
 
 Release 1.5.1 (July 26, 2022)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

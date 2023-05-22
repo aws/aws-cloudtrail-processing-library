@@ -16,11 +16,16 @@
 package com.amazonaws.services.cloudtrail.processinglibrary.model.internal;
 
 
+import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.CloudTrailDataStore;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.CloudTrailEventField;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.OnBehalfOf;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.SessionContext;
+
 /**
  * Information about the user that made a request is included in the userIdentity element.
  * This information can help you determine how your AWS resources have been accessed.
  */
-public class UserIdentity extends CloudTrailDataStore{
+public class UserIdentity extends CloudTrailDataStore {
     /**
      * Get identity type.
      *
@@ -105,9 +110,17 @@ public class UserIdentity extends CloudTrailDataStore{
      * Get identity provider.
      *
      * @return The principal name of the external identity provider.
-     *      This field appears only for SAMLUser or WebIdentityUser types.
+     * This field appears only for SAMLUser or WebIdentityUser types.
      */
     public String getIdentityProvider() {
         return (String) this.get(CloudTrailEventField.identityProvider.name());
     }
+    public String getCredentialId() {
+        return (String) this.get(CloudTrailEventField.credentialId.name());
+    }
+    public OnBehalfOf getOnBehalfOf() {
+        return (OnBehalfOf) this.get(CloudTrailEventField.onBehalfOf.name());
+    }
 }
+
+

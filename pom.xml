@@ -5,7 +5,7 @@
     <artifactId>aws-cloudtrail-processing-library</artifactId>
     <packaging>jar</packaging>
     <name>AWS CloudTrail Processing Library for Java</name>
-    <version>1.5.1</version>
+    <version>1.6.1</version>
     <description>AWS CloudTrail Processing Library for Java helps Java
         developers to easily consume and process log files from AWS
         CloudTrail.
@@ -26,7 +26,7 @@
     </licenses>
 
     <properties>
-        <aws-java-sdk.version>1.12.1</aws-java-sdk.version>
+        <aws-java-sdk.version>1.12.261</aws-java-sdk.version>
     </properties>
 
     <dependencies>

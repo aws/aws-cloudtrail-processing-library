@@ -21,6 +21,7 @@ import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.CloudT
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.InsightDetails;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.Resource;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.TlsDetails;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.EdgeDeviceDetails;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.UserIdentity;
 
 import java.util.Date;
@@ -339,8 +340,8 @@ public class CloudTrailEventData extends CloudTrailDataStore {
      *
      * @return Information about the edge device, such as device type, device ID.
      */
-    public String getEdgeDeviceDetails() {
-        return (String) get(CloudTrailEventField.edgeDeviceDetails.name());
+    public EdgeDeviceDetails getEdgeDeviceDetails() {
+        return (EdgeDeviceDetails) get(CloudTrailEventField.edgeDeviceDetails.name());
     }
 
     /**

@@ -168,6 +168,9 @@ public abstract class AbstractEventSerializer implements EventSerializer {
                 case "tlsDetails":
                     this.parseTlsDetails(eventData);
                     break;
+                case "edgeDeviceDetails":
+                    this.parseEdgeDeviceDetails(eventData);
+                    break;
                 default:
                     eventData.add(key, parseDefaultValue(key));
                     break;
@@ -809,6 +812,47 @@ public abstract class AbstractEventSerializer implements EventSerializer {
         }
 
         eventData.add(CloudTrailEventField.tlsDetails.name(), tlsDetails);
+    }
+
+    private void parseEdgeDeviceDetails(CloudTrailEventData eventData) throws IOException {
+        JsonToken nextToken = jsonParser.nextToken();
+        if (nextToken == JsonToken.VALUE_NULL) {
+            eventData.add(CloudTrailEventField.edgeDeviceDetails.name(), null);
+            return;
+        }
+
+        if (nextToken != JsonToken.START_OBJECT) {
+            throw new JsonParseException("Not a EdgeDevice Details object", jsonParser.getCurrentLocation());
+        }
+
+        EdgeDeviceDetails edgeDeviceDetails = new EdgeDeviceDetails();
+
+        while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+            String key = jsonParser.getCurrentName();
+
+            switch (key) {
+                case "attributes":
+                    edgeDeviceDetails.add(CloudTrailEventField.attributes.name(), parseAttributes());
+                    break;
+                case "type":
+                    edgeDeviceDetails.add(CloudTrailEventField.type.name(), jsonParser.nextTextValue());
+                    break;
+                case "snowJobId":
+                    edgeDeviceDetails.add(CloudTrailEventField.snowJobId.name(), jsonParser.nextTextValue());
+                    break;
+                case "deviceId":
+                    edgeDeviceDetails.add(CloudTrailEventField.deviceId.name(), jsonParser.nextTextValue());
+                    break;
+                case "deviceFamily":
+                    edgeDeviceDetails.add(CloudTrailEventField.deviceFamily.name(), jsonParser.nextTextValue());
+                    break;
+                default:
+                    edgeDeviceDetails.add(key, this.parseDefaultValue(key));
+                    break;
+            }
+        }
+
+        eventData.add(CloudTrailEventField.edgeDeviceDetails.name(), edgeDeviceDetails);
     }
 
     /**

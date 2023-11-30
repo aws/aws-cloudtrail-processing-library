@@ -65,14 +65,18 @@ build, use this command::
 Release Notes
 -------------
 
-Release 1.6.1 (May19,2023)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-* Added Ssupport for test scenario for UserType IdentityCenterUser
+Release 1.6.2 (Nov 30, 2023)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Added support for modeling EdgeDeviceDetails
 
-Release 1.6.0 (May8,2023)
+Release 1.6.1 (May 19,2023)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Added support for test scenario for UserType IdentityCenterUser
+
+Release 1.6.0 (May 8,2023)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Updated CloudTrailEvent version to 1.12
-* Added support for USerIdentity
+* Added support for UserIdentity
 
 Release 1.5.2 (Sep 6, 2022)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

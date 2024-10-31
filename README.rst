@@ -65,6 +65,11 @@ build, use this command::
 Release Notes
 -------------
 
+Release 1.6.3 (Oct 25, 2024)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Added support for modeling InScopeOf
+* Added support for modeling VpcEndpointAccountId
+
 Release 1.6.2 (Nov 30, 2023)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Added support for modeling EdgeDeviceDetails

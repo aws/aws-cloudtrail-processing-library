@@ -171,6 +171,9 @@ public abstract class AbstractEventSerializer implements EventSerializer {
                 case "edgeDeviceDetails":
                     this.parseEdgeDeviceDetails(eventData);
                     break;
+                case "inScopeOf":
+                    this.parseInScopeOf(eventData);
+                    break;
                 default:
                     eventData.add(key, parseDefaultValue(key));
                     break;
@@ -853,6 +856,43 @@ public abstract class AbstractEventSerializer implements EventSerializer {
         }
 
         eventData.add(CloudTrailEventField.edgeDeviceDetails.name(), edgeDeviceDetails);
+    }
+
+    private void parseInScopeOf(CloudTrailEventData eventData) throws IOException {
+        JsonToken nextToken = jsonParser.nextToken();
+        if (nextToken == JsonToken.VALUE_NULL) {
+            eventData.add(CloudTrailEventField.inScopeOf.name(), null);
+            return;
+        }
+
+        if (nextToken != JsonToken.START_OBJECT) {
+            throw new JsonParseException("Not an inScopeOf object", jsonParser.getCurrentLocation());
+        }
+
+        InScopeOf inScopeOf = new InScopeOf();
+
+        while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+            String key = jsonParser.getCurrentName();
+
+            switch (key) {
+                case "sourceAccount":
+                    inScopeOf.add(CloudTrailEventField.sourceAccount.name(), jsonParser.nextTextValue());
+                    break;
+                case "sourceArn":
+                    inScopeOf.add(CloudTrailEventField.sourceArn.name(), jsonParser.nextTextValue());
+                    break;
+                case "issuerType":
+                    inScopeOf.add(CloudTrailEventField.issuerType.name(), jsonParser.nextTextValue());
+                    break;
+                case "credentialsIssuedTo":
+                    inScopeOf.add(CloudTrailEventField.credentialsIssuedTo.name(), jsonParser.nextTextValue());
+                    break;
+                default:
+                    inScopeOf.add(key, parseDefaultValue(key));
+                    break;
+            }
+        }
+        eventData.add(CloudTrailEventField.inScopeOf.name(), inScopeOf);
     }
 
     /**

@@ -39,6 +39,7 @@ public enum CloudTrailEventField {
     cipherSuite,
     clientProvidedHostHeader,
     credentialId,
+    credentialsIssuedTo,
     deviceFamily,
     deviceId,
     edgeDeviceDetails,
@@ -53,6 +54,8 @@ public enum CloudTrailEventField {
     eventVersion,
     federatedProvider,
     identityProvider,
+    issuerType,
+    inScopeOf,
     insight,
     insightContext,
     insightDetails,
@@ -80,6 +83,8 @@ public enum CloudTrailEventField {
     sharedEventID,
     snowJobId,
     sourceIPAddress,
+    sourceAccount,
+    sourceArn,
     state,
     statistics,
     tlsDetails,
@@ -90,6 +95,7 @@ public enum CloudTrailEventField {
     userIdentity,
     userName,
     value,
+    vpcEndpointAccountId,
     vpcEndpointId,
     webIdFederationData
 }

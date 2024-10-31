@@ -26,6 +26,7 @@ import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStat
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import org.apache.commons.logging.Log;
@@ -36,7 +37,7 @@ import java.io.IOException;
 /**
  * Manages Amazon S3 service-related operations.
  */
-public class BasicS3Manager implements S3Manager{
+public class BasicS3Manager implements S3Manager {
     private static final Log logger = LogFactory.getLog(S3Manager.class);
 
     private AmazonS3 s3Client;
@@ -109,7 +110,8 @@ public class BasicS3Manager implements S3Manager{
      */
     public S3Object getObject(String bucketName, String objectKey) {
         try {
-            return s3Client.getObject(bucketName, objectKey);
+            GetObjectRequest request = new GetObjectRequest(bucketName, objectKey).withRequesterPays(true);
+            return s3Client.getObject(request);
         } catch (AmazonServiceException e) {
             logger.error("Failed to get object " + objectKey + " from s3 bucket " + bucketName);
             throw e;

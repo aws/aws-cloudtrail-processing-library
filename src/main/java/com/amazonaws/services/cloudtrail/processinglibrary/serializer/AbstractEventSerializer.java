@@ -171,9 +171,6 @@ public abstract class AbstractEventSerializer implements EventSerializer {
                 case "edgeDeviceDetails":
                     this.parseEdgeDeviceDetails(eventData);
                     break;
-                case "inScopeOf":
-                    this.parseInScopeOf(eventData);
-                    break;
                 default:
                     eventData.add(key, parseDefaultValue(key));
                     break;
@@ -278,6 +275,12 @@ public abstract class AbstractEventSerializer implements EventSerializer {
                 case "onBehalfOf":
                     this.parseOnBehalfOf(userIdentity);
                     break;
+                case "inScopeOf":
+                    this.parseInScopeOf(userIdentity);
+                    break;
+                case "invokedByDelegate":
+                    this.parseInvokedByDelegate(userIdentity);
+                    break;
                 default:
                     userIdentity.add(key, parseDefaultValue(key));
                     break;
@@ -288,7 +291,7 @@ public abstract class AbstractEventSerializer implements EventSerializer {
 
     private void parseOnBehalfOf(UserIdentity userIdentity) throws IOException{
         if (jsonParser.nextToken() != JsonToken.START_OBJECT) {
-            throw new JsonParseException("Not a SessionContext object", jsonParser.getCurrentLocation());
+            throw new JsonParseException("Not an OnBehalfOf object", jsonParser.getCurrentLocation());
         }
 
         OnBehalfOf onBehalfOf = new OnBehalfOf();
@@ -858,10 +861,10 @@ public abstract class AbstractEventSerializer implements EventSerializer {
         eventData.add(CloudTrailEventField.edgeDeviceDetails.name(), edgeDeviceDetails);
     }
 
-    private void parseInScopeOf(CloudTrailEventData eventData) throws IOException {
+    private void parseInScopeOf(UserIdentity userIdentity) throws IOException {
         JsonToken nextToken = jsonParser.nextToken();
         if (nextToken == JsonToken.VALUE_NULL) {
-            eventData.add(CloudTrailEventField.inScopeOf.name(), null);
+            userIdentity.add(CloudTrailEventField.inScopeOf.name(), null);
             return;
         }
 
@@ -876,23 +879,44 @@ public abstract class AbstractEventSerializer implements EventSerializer {
 
             switch (key) {
                 case "sourceAccount":
-                    inScopeOf.add(CloudTrailEventField.sourceAccount.name(), jsonParser.nextTextValue());
+                    inScopeOf.add(CloudTrailEventField.inScopeOfSourceAccount.name(), jsonParser.nextTextValue());
                     break;
                 case "sourceArn":
-                    inScopeOf.add(CloudTrailEventField.sourceArn.name(), jsonParser.nextTextValue());
+                    inScopeOf.add(CloudTrailEventField.inScopeOfSourceArn.name(), jsonParser.nextTextValue());
                     break;
                 case "issuerType":
-                    inScopeOf.add(CloudTrailEventField.issuerType.name(), jsonParser.nextTextValue());
+                    inScopeOf.add(CloudTrailEventField.inScopeOfIssuerType.name(), jsonParser.nextTextValue());
                     break;
                 case "credentialsIssuedTo":
-                    inScopeOf.add(CloudTrailEventField.credentialsIssuedTo.name(), jsonParser.nextTextValue());
+                    inScopeOf.add(CloudTrailEventField.inScopeOfCredentialsIssuedTo.name(), jsonParser.nextTextValue());
                     break;
                 default:
                     inScopeOf.add(key, parseDefaultValue(key));
                     break;
             }
         }
-        eventData.add(CloudTrailEventField.inScopeOf.name(), inScopeOf);
+        userIdentity.add(CloudTrailEventField.inScopeOf.name(), inScopeOf);
+    }
+
+    private void parseInvokedByDelegate(UserIdentity userIdentity) throws IOException {
+        if (jsonParser.nextToken() != JsonToken.START_OBJECT) {
+            throw new JsonParseException("Not an InvokedByDelegate object", jsonParser.getCurrentLocation());
+        }
+
+        InvokedByDelegate invokedByDelegate = new InvokedByDelegate();
+
+        while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+            String key = jsonParser.getCurrentName();
+            switch (key) {
+                case "accountId":
+                    invokedByDelegate.add(CloudTrailEventField.invokedByDelegateAccountId.name(), jsonParser.nextTextValue());
+                    break;
+                default:
+                    invokedByDelegate.add(key, parseDefaultValue(key));
+                    break;
+            }
+            userIdentity.add(CloudTrailEventField.invokedByDelegate.name(), invokedByDelegate);
+        }
     }
 
     /**

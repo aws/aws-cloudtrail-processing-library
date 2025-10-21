@@ -65,6 +65,11 @@ build, use this command::
 Release Notes
 -------------
 
+Release 1.6.4 (Oct 21, 2025)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Added support for modeling InvokedByDelegate
+* Restructured InScopeOf field in UserIdentity modeling: `CloudTrail User Identity Reference <https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html>`_
+
 Release 1.6.3 (Oct 25, 2024)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Added support for modeling InScopeOf

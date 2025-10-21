@@ -20,6 +20,7 @@ import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.CloudT
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.CloudTrailEventField;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.InScopeOf;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.InsightDetails;
+import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.InvokedByDelegate;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.Resource;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.TlsDetails;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.EdgeDeviceDetails;
@@ -367,10 +368,6 @@ public class CloudTrailEventData extends CloudTrailDataStore {
      */
     public String getSessionCredentialFromConsole() {
         return (String) get(CloudTrailEventField.sessionCredentialFromConsole.name());
-    }
-
-    public InScopeOf getInScopeOf() {
-        return (InScopeOf) get(CloudTrailEventField.inScopeOf.name());
     }
 
     public String getVpcEndpointAccountId() {

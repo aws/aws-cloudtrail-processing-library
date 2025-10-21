@@ -115,11 +115,21 @@ public class UserIdentity extends CloudTrailDataStore {
     public String getIdentityProvider() {
         return (String) this.get(CloudTrailEventField.identityProvider.name());
     }
+
     public String getCredentialId() {
         return (String) this.get(CloudTrailEventField.credentialId.name());
     }
+
     public OnBehalfOf getOnBehalfOf() {
         return (OnBehalfOf) this.get(CloudTrailEventField.onBehalfOf.name());
+    }
+
+    public InvokedByDelegate getInvokedByDelegate() {
+        return (InvokedByDelegate) this.get(CloudTrailEventField.invokedByDelegate.name());
+    }
+
+    public InScopeOf getInScopeOf() {
+        return (InScopeOf) get(CloudTrailEventField.inScopeOf.name());
     }
 }
 

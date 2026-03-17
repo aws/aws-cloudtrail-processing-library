@@ -15,7 +15,6 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary;
 
-import com.amazonaws.ClientConfiguration;
 import com.amazonaws.services.cloudtrail.processinglibrary.configuration.ProcessingConfiguration;
 import com.amazonaws.services.cloudtrail.processinglibrary.configuration.PropertiesFileConfiguration;
 import com.amazonaws.services.cloudtrail.processinglibrary.factory.EventReaderFactory;
@@ -39,10 +38,12 @@ import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSourc
 import com.amazonaws.services.cloudtrail.processinglibrary.reader.EventReader;
 import com.amazonaws.services.cloudtrail.processinglibrary.serializer.SourceSerializer;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
+import software.amazon.awssdk.http.apache.ApacheHttpClient;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.sqs.SqsClient;
+
+import java.time.Duration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -212,7 +213,10 @@ public class AWSCloudTrailProcessingExecutor {
      * A class that builds an {@link AWSCloudTrailProcessingExecutor} object.
      */
     public static class Builder {
-        private static final int SDK_TIME_OUT = 10000; // 10 seconds
+        /** Connection and socket timeout in milliseconds, preserved from SDK v1 ClientConfiguration. */
+        static final int SDK_TIME_OUT = 10000; // 10 seconds
+        /** Default max HTTP connections, preserved from SDK v1 where ClientConfiguration.DEFAULT_MAX_CONNECTIONS was 50. */
+        static final int DEFAULT_MAX_CONNECTIONS = 50;
 
         private ProcessingConfiguration config;
 
@@ -229,8 +233,8 @@ public class AWSCloudTrailProcessingExecutor {
 
         private SourceSerializer sourceSerializer = SourceSerializerFactory.createSourceSerializerChain();
         private String propertyFilePath;
-        private AmazonS3 s3Client;
-        private AmazonSQS sqsClient;
+        private S3Client s3Client;
+        private SqsClient sqsClient;
         private S3Manager s3Manager;
 
         /**
@@ -332,14 +336,14 @@ public class AWSCloudTrailProcessingExecutor {
 
         /**
          * Applies a user-defined <a
-         * href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/AmazonS3.html">AmazonS3</a>
+         * href="https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/s3/S3Client.html">S3Client</a>
          * to this instance.
          * If user provides the user-defined S3Manager, then this s3Client will not be used.
          *
-         * @param s3Client the <code>AmazonS3</code> object used to download CloudTrail log files
-         * @return This <code>Builder</code> instance, using the specified <code>AmazonS3</code>.
+         * @param s3Client the <code>S3Client</code> object used to download CloudTrail log files
+         * @return This <code>Builder</code> instance, using the specified <code>S3Client</code>.
          */
-        public Builder withS3Client(AmazonS3 s3Client) {
+        public Builder withS3Client(S3Client s3Client) {
             this.s3Client = s3Client;
             return this;
         }
@@ -349,7 +353,7 @@ public class AWSCloudTrailProcessingExecutor {
          * User-defined s3Client will not be used if user provides the user-defined S3Manager.
          *
          * @param s3Manager the <code>S3Manager</code> object used to manage Amazon S3 service-related operations
-         * @return This <code>Builder</code> instance, using the specified <code>AmazonS3</code>.
+         * @return This <code>Builder</code> instance, using the specified <code>SqsClient</code>.
          */
         public Builder withS3Manager(S3Manager s3Manager) {
             this.s3Manager = s3Manager;
@@ -358,15 +362,15 @@ public class AWSCloudTrailProcessingExecutor {
 
         /**
          * Applies a user-defined <a
-         * href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQS.html">AmazonSQS</a>
+         * href="https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/sqs/SqsClient.html">SqsClient</a>
          * to this instance.
          *
-         * @param sqsClient The <code>AmazonSQS</code> that will be used to poll messages from
+         * @param sqsClient The <code>SqsClient</code> that will be used to poll messages from
          *                  the SQS queue.
          * @return This <code>Builder</code> instance, using the specified
-         *         <code>AmazonSQS</code>.
+         *         <code>SqsClient</code>.
          */
-        public Builder withSQSClient(AmazonSQS sqsClient) {
+        public Builder withSQSClient(SqsClient sqsClient) {
             this.sqsClient = sqsClient;
             return this;
         }
@@ -398,7 +402,7 @@ public class AWSCloudTrailProcessingExecutor {
         private void validateBeforeBuild() {
             LibraryUtils.checkArgumentNotNull(config, ERROR_CONFIGURATION_NULL);
             LibraryUtils.checkArgumentNotNull(config.getAwsCredentialsProvider(),
-                    "ProcessingConfiguration missing AWSCredentialsProvider attribute");
+                    "ProcessingConfiguration missing AwsCredentialsProvider attribute");
 
             LibraryUtils.checkArgumentNotNull(eventsProcessor, "eventsProcessor is null.");
             LibraryUtils.checkArgumentNotNull(sourceFilter, "sourceFilter is null.");
@@ -409,17 +413,12 @@ public class AWSCloudTrailProcessingExecutor {
         }
 
         private void buildS3Client() {
-            // override default timeout for S3Client
-            ClientConfiguration clientConfiguration = new ClientConfiguration();
-            clientConfiguration.setConnectionTimeout(SDK_TIME_OUT);
-            clientConfiguration.setSocketTimeout(SDK_TIME_OUT);
-            clientConfiguration.setMaxConnections(Math.max(clientConfiguration.DEFAULT_MAX_CONNECTIONS, config.getThreadCount()));
-
             if (s3Client == null) {
-                s3Client = AmazonS3ClientBuilder.standard()
-                        .withCredentials(config.getAwsCredentialsProvider())
-                        .withClientConfiguration(clientConfiguration)
-                        .withRegion(config.getS3Region())
+                s3Client = S3Client.builder()
+                        .credentialsProvider(config.getAwsCredentialsProvider())
+                        .region(Region.of(config.getS3Region()))
+                        .httpClientBuilder(createHttpClientBuilder(
+                                SDK_TIME_OUT, Math.max(DEFAULT_MAX_CONNECTIONS, config.getThreadCount())))
                         .build();
             }
         }
@@ -432,14 +431,23 @@ public class AWSCloudTrailProcessingExecutor {
 
         private void buildSqsClient() {
             if (sqsClient == null) {
-                ClientConfiguration clientConfiguration = new ClientConfiguration();
-                clientConfiguration.setMaxConnections(Math.max(clientConfiguration.DEFAULT_MAX_CONNECTIONS, config.getThreadCount()));
-                sqsClient = AmazonSQSClientBuilder.standard()
-                        .withCredentials(config.getAwsCredentialsProvider())
-                        .withClientConfiguration(clientConfiguration)
-                        .withRegion(config.getSqsRegion())
+                sqsClient = SqsClient.builder()
+                        .credentialsProvider(config.getAwsCredentialsProvider())
+                        .region(Region.of(config.getSqsRegion()))
+                        .httpClientBuilder(createHttpClientBuilder(
+                                SDK_TIME_OUT, Math.max(DEFAULT_MAX_CONNECTIONS, config.getThreadCount())))
                         .build();
             }
+        }
+
+        /**
+         * Creates an HTTP client builder with the specified timeout and max connections.
+         */
+        static ApacheHttpClient.Builder createHttpClientBuilder(int timeoutMillis, int maxConnections) {
+            return ApacheHttpClient.builder()
+                    .connectionTimeout(Duration.ofMillis(timeoutMillis))
+                    .socketTimeout(Duration.ofMillis(timeoutMillis))
+                    .maxConnections(maxConnections);
         }
 
         private void buildReaderFactory() {

@@ -17,7 +17,8 @@ package com.amazonaws.services.cloudtrail.processinglibrary.manager;
 
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailLog;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
-import com.amazonaws.services.s3.model.S3Object;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 
 /**
  * Manages Amazon S3 service-related operations.
@@ -39,7 +40,7 @@ public interface S3Manager {
      * @param bucketName The S3 bucket name from which to download the object.
      * @param objectKey The S3 key name of the object to download.
      * @return The downloaded
-     *     <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/model/S3Object.html">S3Object</a>.
+     *     <a href="https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/s3/model/GetObjectResponse.html">GetObjectResponse</a>.
      */
-    S3Object getObject(String bucketName, String objectKey);
+    ResponseInputStream<GetObjectResponse> getObject(String bucketName, String objectKey);
 }

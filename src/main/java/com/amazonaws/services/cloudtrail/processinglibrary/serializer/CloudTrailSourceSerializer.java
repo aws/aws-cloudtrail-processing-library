@@ -24,7 +24,7 @@ import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.Source
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.SNSMessageBodyExtractor;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.SourceIdentifier;
-import com.amazonaws.services.sqs.model.Message;
+import software.amazon.awssdk.services.sqs.model.Message;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,8 +58,8 @@ public class CloudTrailSourceSerializer implements SourceSerializer {
         List<CloudTrailLog> cloudTrailLogs = new ArrayList<>();
         JsonNode messageNode = messageExtractor.getMessageBody(sqsMessage);
 
-        addCloudTrailLogsAndMessageAttributes(sqsMessage, cloudTrailLogs, messageNode);
-        addRestMessageAttributes(sqsMessage, messageNode);
+        sqsMessage = addCloudTrailLogsAndMessageAttributes(sqsMessage, cloudTrailLogs, messageNode);
+        sqsMessage = addRestMessageAttributes(sqsMessage, messageNode);
 
         return new SQSBasedSource(sqsMessage, cloudTrailLogs);
     }
@@ -76,7 +76,7 @@ public class CloudTrailSourceSerializer implements SourceSerializer {
      * to the <code>sqsMessage</code>.
      *
      */
-    private void addCloudTrailLogsAndMessageAttributes(Message sqsMessage, List<CloudTrailLog> cloudTrailLogs, JsonNode messageNode) throws IOException {
+    private Message addCloudTrailLogsAndMessageAttributes(Message sqsMessage, List<CloudTrailLog> cloudTrailLogs, JsonNode messageNode) throws IOException {
         SourceType sourceType = SourceType.Other;
 
         String bucketName = messageNode.get(S3_BUCKET_NAME).textValue();
@@ -87,26 +87,38 @@ public class CloudTrailSourceSerializer implements SourceSerializer {
             if (currSourceType == SourceType.CloudTrailLog) {
                 cloudTrailLogs.add(new CloudTrailLog(bucketName, objectKey));
                 sourceType = currSourceType;
-                LibraryUtils.setMessageAccountId(sqsMessage, objectKey);
+                sqsMessage = LibraryUtils.setMessageAccountId(sqsMessage, objectKey);
             }
         }
 
-        sqsMessage.addAttributesEntry(SourceAttributeKeys.SOURCE_TYPE.getAttributeKey(), sourceType.name());
+        sqsMessage = addAttributeToMessage(sqsMessage, SourceAttributeKeys.SOURCE_TYPE.getAttributeKey(), sourceType.name());
+        return sqsMessage;
+    }
+
+    /**
+     * Helper method to add an attribute to an immutable SQS Message.
+     */
+    private Message addAttributeToMessage(Message message, String key, String value) {
+        java.util.Map<String, String> updatedAttributes = new java.util.HashMap<>(message.attributesAsStrings());
+        updatedAttributes.put(key, value);
+        return message.toBuilder().attributesWithStrings(updatedAttributes).build();
     }
 
     /**
      * Excluding S3_BUCKET, S3_OBJECT_KEY, add all other attributes from the message body to <code>sqsMessage</code>.
      * @param sqsMessage The SQS message.
      * @param messageNode The message body.
+     * @return The updated SQS message with additional attributes.
      */
-    private void addRestMessageAttributes(Message sqsMessage, JsonNode messageNode) {
+    private Message addRestMessageAttributes(Message sqsMessage, JsonNode messageNode) {
         Iterator<String> it = messageNode.fieldNames();
         while(it.hasNext()) {
             String key = it.next();
             if (!key.equals(S3_OBJECT_KEY) && !key.equals(S3_BUCKET_NAME)) {
-                sqsMessage.addAttributesEntry(key, messageNode.get(key).textValue());
+                sqsMessage = addAttributeToMessage(sqsMessage, key, messageNode.get(key).textValue());
             }
         }
+        return sqsMessage;
     }
 
 

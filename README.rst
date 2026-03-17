@@ -65,6 +65,14 @@ build, use this command::
 Release Notes
 -------------
 
+Release 2.0.1 (Mar 16, 2026)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Fixed Maven POM dependencies to correctly declare AWS SDK v2 and Jackson dependencies.
+
+Release 2.0.0 (Mar 13, 2026)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Updated EagleEyeLib to use AWS SDK v2 instead of AWS SDK v1.
+
 Release 1.6.4 (Oct 21, 2025)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Added support for modeling InvokedByDelegate

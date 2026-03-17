@@ -15,8 +15,9 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.configuration;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.ClasspathPropertiesFileCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import com.amazonaws.services.cloudtrail.processinglibrary.AWSCloudTrailProcessingExecutor;
 import com.amazonaws.services.cloudtrail.processinglibrary.manager.SqsManager;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata;
@@ -57,10 +58,10 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
 
     /**
      * The
-     * <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/AWSCredentialsProvider.html">AWS credentials provider</a>
+     * <a href="https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/auth/credentials/AwsCredentialsProvider.html">AWS credentials provider</a>
      * used to obtain credentials.
      */
-    private AWSCredentialsProvider awsCredentialsProvider;
+    private AwsCredentialsProvider awsCredentialsProvider;
 
     /**
      * The SQS Queue URL used to receive events.
@@ -145,7 +146,7 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
         String secretKey = prop.getProperty(SECRET_KEY);
 
         if (accessKey != null && secretKey != null) {
-            awsCredentialsProvider = new ClasspathPropertiesFileCredentialsProvider(propertiesFile);
+            awsCredentialsProvider = StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey));
         }
 
         s3Region = prop.getProperty(S3_REGION);
@@ -167,7 +168,7 @@ public class PropertiesFileConfiguration implements ProcessingConfiguration{
      * {@inheritDoc}
      */
     @Override
-    public AWSCredentialsProvider getAwsCredentialsProvider() {
+    public AwsCredentialsProvider getAwsCredentialsProvider() {
         return awsCredentialsProvider;
     }
 

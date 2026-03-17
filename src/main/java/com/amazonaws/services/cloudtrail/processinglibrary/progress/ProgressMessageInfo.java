@@ -15,7 +15,7 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.progress;
 
-import com.amazonaws.services.sqs.model.Message;
+import software.amazon.awssdk.services.sqs.model.Message;
 
 /**
  * In addition to {@link ProgressInfo}, provides SQS {@link Message} information.

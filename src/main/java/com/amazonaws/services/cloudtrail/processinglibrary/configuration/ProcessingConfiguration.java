@@ -15,7 +15,7 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.configuration;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import com.amazonaws.services.cloudtrail.processinglibrary.manager.SqsManager;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
@@ -84,10 +84,10 @@ public interface ProcessingConfiguration {
      * Get the AWS Credentials provider used to access AWS.
      *
      * @return an
-     *     <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/AWSCredentialsProvider.html">AWSCredentialsProvider</a>
+     *     <a href="https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/auth/credentials/AwsCredentialsProvider.html">AwsCredentialsProvider</a>
      *     object.
      */
-    public AWSCredentialsProvider getAwsCredentialsProvider();
+    public AwsCredentialsProvider getAwsCredentialsProvider();
 
     /**
      * Gets the SQS URL used to obtain CloudTrail logs.

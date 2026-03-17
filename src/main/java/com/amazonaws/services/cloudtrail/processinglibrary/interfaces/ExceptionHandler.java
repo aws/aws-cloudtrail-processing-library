@@ -22,7 +22,7 @@ import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailLog;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus;
 import com.amazonaws.services.cloudtrail.processinglibrary.reader.EventReader;
-import com.amazonaws.services.sqs.model.Message;
+import software.amazon.awssdk.services.sqs.model.Message;
 
 import java.util.List;
 

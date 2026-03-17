@@ -16,7 +16,7 @@
 package com.amazonaws.services.cloudtrail.processinglibrary.model.internal;
 
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
-import com.amazonaws.services.sqs.model.Message;
+import software.amazon.awssdk.services.sqs.model.Message;
 
 /**
  *  Enumeration of type of {@link CloudTrailSource}.

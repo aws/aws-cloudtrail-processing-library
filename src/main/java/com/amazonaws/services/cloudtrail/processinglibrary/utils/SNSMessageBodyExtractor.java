@@ -14,7 +14,7 @@
  ******************************************************************************/
 package com.amazonaws.services.cloudtrail.processinglibrary.utils;
 
-import com.amazonaws.services.sqs.model.Message;
+import software.amazon.awssdk.services.sqs.model.Message;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -37,6 +37,6 @@ public class SNSMessageBodyExtractor {
     }
 
     public String getMessageText(Message sqsMessage) throws IOException, NullPointerException {
-        return mapper.readTree(sqsMessage.getBody()).get(MESSAGE).textValue();
+        return mapper.readTree(sqsMessage.body()).get(MESSAGE).textValue();
     }
 }

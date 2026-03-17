@@ -19,7 +19,7 @@ package com.amazonaws.services.cloudtrail.processinglibrary.serializer;
 import com.amazonaws.services.cloudtrail.processinglibrary.factory.SourceSerializerFactory;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.SNSMessageBodyExtractor;
-import com.amazonaws.services.sqs.model.Message;
+import software.amazon.awssdk.services.sqs.model.Message;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.IOException;

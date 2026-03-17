@@ -15,7 +15,7 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.configuration;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import com.amazonaws.services.cloudtrail.processinglibrary.AWSCloudTrailProcessingExecutor;
 import com.amazonaws.services.cloudtrail.processinglibrary.manager.SqsManager;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailEventMetadata;
@@ -39,10 +39,10 @@ public class ClientConfiguration implements ProcessingConfiguration{
 
     /**
      * The <a
-     * href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/AWSCredentialsProvider.html">AWS credentials provider</a>
+     * href="https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/auth/credentials/AwsCredentialsProvider.html">AWS credentials provider</a>
      * used to obtain credentials.
      */
-    public AWSCredentialsProvider awsCredentialsProvider;
+    public AwsCredentialsProvider awsCredentialsProvider;
 
     /**
      * The SQS Queue URL used to receive events.
@@ -117,13 +117,13 @@ public class ClientConfiguration implements ProcessingConfiguration{
      * Both parameters are required.
      * </p>
      * @see <a href="http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/ImportantIdentifiers.html">Queue and Message Identifiers</a>
-     * @see <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/AWSCredentialsProvider.html">AWSCredentialsProvider</a>
+     * @see <a href="https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/auth/credentials/AwsCredentialsProvider.html">AwsCredentialsProvider</a>
      *
      * @param sqsUrl the SQS URL to use to get CloudTrail events.
      * @param awsCredentialsProvider The AWS Credentials provider to use to
      *   obtain AWS access credentials.
      */
-    public ClientConfiguration(String sqsUrl, AWSCredentialsProvider awsCredentialsProvider) {
+    public ClientConfiguration(String sqsUrl, AwsCredentialsProvider awsCredentialsProvider) {
         this.sqsUrl = sqsUrl;
         this.awsCredentialsProvider = awsCredentialsProvider;
     }
@@ -132,7 +132,7 @@ public class ClientConfiguration implements ProcessingConfiguration{
      * {@inheritDoc}
      */
     @Override
-    public AWSCredentialsProvider getAwsCredentialsProvider() {
+    public AwsCredentialsProvider getAwsCredentialsProvider() {
         return awsCredentialsProvider;
     }
 
@@ -238,10 +238,10 @@ public class ClientConfiguration implements ProcessingConfiguration{
      * Set the AWS Credentials Provider used to access AWS.
      *
      * @param awsCredentialsProvider the
-     *     <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/AWSCredentialsProvider.html">AWSCredentialsProvider</a>
+     *     <a href="https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/auth/credentials/AwsCredentialsProvider.html">AwsCredentialsProvider</a>
      *     to set.
      */
-    public void setAwsCredentialsProvider(AWSCredentialsProvider awsCredentialsProvider) {
+    public void setAwsCredentialsProvider(AwsCredentialsProvider awsCredentialsProvider) {
         this.awsCredentialsProvider = awsCredentialsProvider;
     }
 

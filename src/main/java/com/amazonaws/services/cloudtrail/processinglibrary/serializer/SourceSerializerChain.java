@@ -16,8 +16,7 @@ package com.amazonaws.services.cloudtrail.processinglibrary.serializer;
 
 import com.amazonaws.services.cloudtrail.processinglibrary.factory.SourceSerializerFactory;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
-import com.amazonaws.services.sqs.model.Message;
-import com.amazonaws.util.CollectionUtils;
+import software.amazon.awssdk.services.sqs.model.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.io.IOException;
@@ -56,7 +55,7 @@ public class SourceSerializerChain implements SourceSerializer {
      * @param sourceSerializers A list of at least one {@link SourceSerializer} implementation instance.
      */
     public SourceSerializerChain(List<? extends SourceSerializer> sourceSerializers) {
-        if (CollectionUtils.isNullOrEmpty(sourceSerializers) || sourceSerializers.contains(null)) {
+        if (sourceSerializers == null || sourceSerializers.isEmpty() || sourceSerializers.contains(null)) {
             throw new IllegalArgumentException("No source serializer specified or contains null serializers.");
         }
         this.sourceSerializers = new LinkedList<>(sourceSerializers);

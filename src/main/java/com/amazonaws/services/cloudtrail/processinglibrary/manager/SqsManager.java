@@ -15,7 +15,6 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.manager;
 
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.cloudtrail.processinglibrary.configuration.ProcessingConfiguration;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ExceptionHandler;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ProgressReporter;
@@ -28,11 +27,12 @@ import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStat
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus;
 import com.amazonaws.services.cloudtrail.processinglibrary.serializer.SourceSerializer;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
-import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.model.DeleteMessageRequest;
-import com.amazonaws.services.sqs.model.Message;
-import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
-import com.amazonaws.services.sqs.model.ReceiveMessageResult;
+import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.DeleteMessageRequest;
+import software.amazon.awssdk.services.sqs.model.Message;
+import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
+import software.amazon.awssdk.services.sqs.model.ReceiveMessageResponse;
+import software.amazon.awssdk.services.sqs.model.SqsException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -64,9 +64,9 @@ public class SqsManager {
     private ProcessingConfiguration config;
 
     /**
-     * An instance of AmazonSQSClient.
+     * An instance of SqsClient.
      */
-    private AmazonSQS sqsClient;
+    private SqsClient sqsClient;
 
     /**
      * An instance of SourceSerializer.
@@ -91,7 +91,7 @@ public class SqsManager {
      * @param progressReporter user provided progressReporter.
      * @param sourceSerializer user provided SourceSerializer.
      */
-    public SqsManager(AmazonSQS sqsClient,
+    public SqsManager(SqsClient sqsClient,
                       ProcessingConfiguration config,
                       ExceptionHandler exceptionHandler,
                       ProgressReporter progressReporter,
@@ -115,21 +115,23 @@ public class SqsManager {
         ProgressStatus pollQueueStatus = new ProgressStatus(ProgressState.pollQueue, new BasicPollQueueInfo(0, success));
         final Object reportObject = progressReporter.reportStart(pollQueueStatus);
 
-        ReceiveMessageRequest request = new ReceiveMessageRequest().withAttributeNames(ALL_ATTRIBUTES);
-        request.setQueueUrl(config.getSqsUrl());
-        request.setVisibilityTimeout(config.getVisibilityTimeout());
-        request.setMaxNumberOfMessages(DEFAULT_SQS_MESSAGE_SIZE_LIMIT);
-        request.setWaitTimeSeconds(DEFAULT_WAIT_TIME_SECONDS);
+        ReceiveMessageRequest request = ReceiveMessageRequest.builder()
+                .queueUrl(config.getSqsUrl())
+                .visibilityTimeout(config.getVisibilityTimeout())
+                .maxNumberOfMessages(DEFAULT_SQS_MESSAGE_SIZE_LIMIT)
+                .waitTimeSeconds(DEFAULT_WAIT_TIME_SECONDS)
+                .attributeNamesWithStrings(ALL_ATTRIBUTES)
+                .build();
 
         List<Message> sqsMessages = new ArrayList<Message>();
         try {
 
-            ReceiveMessageResult result = sqsClient.receiveMessage(request);
-            sqsMessages = result.getMessages();
+            ReceiveMessageResponse result = sqsClient.receiveMessage(request);
+            sqsMessages = result.messages();
             logger.info("Polled " + sqsMessages.size() + " sqs messages from " + config.getSqsUrl());
 
             success = true;
-        } catch (AmazonServiceException e) {
+        } catch (SqsException e) {
             LibraryUtils.handleException(exceptionHandler, pollQueueStatus, e, "Failed to poll sqs message.");
 
         } finally {
@@ -186,9 +188,12 @@ public class SqsManager {
         final Object reportObject = progressReporter.reportStart(progressStatus);
         boolean deleteMessageSuccess = false;
         try {
-            sqsClient.deleteMessage(new DeleteMessageRequest(config.getSqsUrl(), sqsMessage.getReceiptHandle()));
+            sqsClient.deleteMessage(DeleteMessageRequest.builder()
+                    .queueUrl(config.getSqsUrl())
+                    .receiptHandle(sqsMessage.receiptHandle())
+                    .build());
             deleteMessageSuccess = true;
-        } catch (AmazonServiceException e) {
+        } catch (SqsException e) {
             LibraryUtils.handleException(exceptionHandler, progressStatus, e, "Failed to delete sqs message.");
         }
         LibraryUtils.endToProcess(progressReporter, deleteMessageSuccess, progressStatus, reportObject);

@@ -15,13 +15,12 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.utils;
 
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.cloudtrail.processinglibrary.exceptions.ProcessingLibraryException;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ExceptionHandler;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ProgressReporter;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.SourceAttributeKeys;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus;
-import com.amazonaws.services.sqs.model.Message;
+import software.amazon.awssdk.services.sqs.model.Message;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -149,18 +148,22 @@ public class LibraryUtils {
      * Add the account ID attribute to the <code>sqsMessage</code> if it does not exist.
      * @param sqsMessage The SQS message.
      * @param s3ObjectKey The S3 object key.
+     * @return The updated SQS message with account ID attribute, or the original message if unchanged.
      */
-    public static void setMessageAccountId(Message sqsMessage, String s3ObjectKey) {
-        if (!sqsMessage.getAttributes().containsKey(SourceAttributeKeys.ACCOUNT_ID.getAttributeKey())) {
+    public static Message setMessageAccountId(Message sqsMessage, String s3ObjectKey) {
+        if (!sqsMessage.attributesAsStrings().containsKey(SourceAttributeKeys.ACCOUNT_ID.getAttributeKey())) {
             String accountId = extractAccountIdFromObjectKey(s3ObjectKey);
             if (accountId != null) {
-                sqsMessage.addAttributesEntry(SourceAttributeKeys.ACCOUNT_ID.getAttributeKey(), accountId);
+                java.util.Map<String, String> updatedAttributes = new java.util.HashMap<>(sqsMessage.attributesAsStrings());
+                updatedAttributes.put(SourceAttributeKeys.ACCOUNT_ID.getAttributeKey(), accountId);
+                return sqsMessage.toBuilder().attributesWithStrings(updatedAttributes).build();
             }
         }
+        return sqsMessage;
     }
 
     /**
-     * A wrapper function of handling exceptions that have a known root cause, such as {@link AmazonServiceException}.
+     * A wrapper function of handling exceptions that have a known root cause, such as {@link software.amazon.awssdk.core.exception.SdkServiceException}.
      * @param exceptionHandler the {@link ExceptionHandler} to handle exceptions.
      * @param progressStatus the current progress status {@link ProgressStatus}.
      * @param e the exception needs to be handled.

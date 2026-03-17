@@ -22,7 +22,7 @@ import com.amazonaws.services.cloudtrail.processinglibrary.model.SourceAttribute
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.SourceType;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.SourceIdentifier;
-import com.amazonaws.services.sqs.model.Message;
+import software.amazon.awssdk.services.sqs.model.Message;
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,7 +51,7 @@ public class S3SourceSerializer implements SourceSerializer {
 
     @Override
     public CloudTrailSource getSource(Message sqsMessage) throws IOException{
-        JsonNode s3MessageNode = mapper.readTree(sqsMessage.getBody());
+        JsonNode s3MessageNode = mapper.readTree(sqsMessage.body());
         return getCloudTrailSource(sqsMessage, s3MessageNode);
     }
 
@@ -59,7 +59,7 @@ public class S3SourceSerializer implements SourceSerializer {
         JsonNode s3RecordsNode = s3MessageNode.get(RECORDS);
         List<CloudTrailLog> cloudTrailLogs = new ArrayList<>();
 
-        addCloudTrailLogsAndMessageAttributes(sqsMessage, s3RecordsNode, cloudTrailLogs);
+        sqsMessage = addCloudTrailLogsAndMessageAttributes(sqsMessage, s3RecordsNode, cloudTrailLogs);
 
         return new SQSBasedSource(sqsMessage, cloudTrailLogs);
     }
@@ -77,7 +77,7 @@ public class S3SourceSerializer implements SourceSerializer {
      * to the <code>sqsMessage</code>.
      *
      */
-    private void addCloudTrailLogsAndMessageAttributes(Message sqsMessage, JsonNode s3RecordsNode, List<CloudTrailLog> cloudTrailLogs) {
+    private Message addCloudTrailLogsAndMessageAttributes(Message sqsMessage, JsonNode s3RecordsNode, List<CloudTrailLog> cloudTrailLogs) {
         SourceType sourceType = SourceType.Other;
 
         for (JsonNode s3Record: s3RecordsNode) {
@@ -89,10 +89,13 @@ public class S3SourceSerializer implements SourceSerializer {
             if (currSourceType == SourceType.CloudTrailLog) {
                 cloudTrailLogs.add(new CloudTrailLog(bucketName, objectKey));
                 sourceType = currSourceType;
-                LibraryUtils.setMessageAccountId(sqsMessage, objectKey);
+                sqsMessage = LibraryUtils.setMessageAccountId(sqsMessage, objectKey);
             }
         }
 
-        sqsMessage.addAttributesEntry(SourceAttributeKeys.SOURCE_TYPE.getAttributeKey(), sourceType.name());
+        java.util.Map<String, String> updatedAttributes = new java.util.HashMap<>(sqsMessage.attributesAsStrings());
+        updatedAttributes.put(SourceAttributeKeys.SOURCE_TYPE.getAttributeKey(), sourceType.name());
+        sqsMessage = sqsMessage.toBuilder().attributesWithStrings(updatedAttributes).build();
+        return sqsMessage;
     }
 }

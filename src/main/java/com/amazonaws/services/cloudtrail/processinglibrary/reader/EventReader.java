@@ -37,7 +37,7 @@ import com.amazonaws.services.cloudtrail.processinglibrary.serializer.EventSeria
 import com.amazonaws.services.cloudtrail.processinglibrary.serializer.RawLogDeliveryEventSerializer;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.EventBuffer;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
-import com.amazonaws.services.sqs.model.Message;
+import software.amazon.awssdk.services.sqs.model.Message;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.logging.Log;

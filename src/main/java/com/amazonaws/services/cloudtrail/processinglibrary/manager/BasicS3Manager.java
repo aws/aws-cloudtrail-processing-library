@@ -15,7 +15,6 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.manager;
 
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.cloudtrail.processinglibrary.configuration.ProcessingConfiguration;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ExceptionHandler;
 import com.amazonaws.services.cloudtrail.processinglibrary.interfaces.ProgressReporter;
@@ -25,10 +24,12 @@ import com.amazonaws.services.cloudtrail.processinglibrary.progress.BasicProcess
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressState;
 import com.amazonaws.services.cloudtrail.processinglibrary.progress.ProgressStatus;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.LibraryUtils;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.RequestPayer;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -40,7 +41,7 @@ import java.io.IOException;
 public class BasicS3Manager implements S3Manager {
     private static final Log logger = LogFactory.getLog(S3Manager.class);
 
-    private AmazonS3 s3Client;
+    private S3Client s3Client;
     private ProcessingConfiguration config;
     private ExceptionHandler exceptionHandler;
     private ProgressReporter progressReporter;
@@ -48,12 +49,12 @@ public class BasicS3Manager implements S3Manager {
     /**
      * S3Manager constructor.
      *
-     * @param s3Client A {@link AmazonS3}.
+     * @param s3Client A {@link S3Client}.
      * @param config A {@link ProcessingConfiguration}.
      * @param exceptionHandler An implementation of {@link ExceptionHandler} used to handle errors.
      * @param progressReporter An implementation of {@link ProgressReporter} used to report progress.
      */
-    public BasicS3Manager(AmazonS3 s3Client,
+    public BasicS3Manager(S3Client s3Client,
                           ProcessingConfiguration config,
                           ExceptionHandler exceptionHandler,
                           ProgressReporter progressReporter) {
@@ -81,15 +82,17 @@ public class BasicS3Manager implements S3Manager {
 
         // start to download CloudTrail log
         try {
-            S3Object s3Object = this.getObject(ctLog.getS3Bucket(), ctLog.getS3ObjectKey());
-            try (S3ObjectInputStream s3InputStream = s3Object.getObjectContent()){
-                s3ObjectBytes = LibraryUtils.toByteArray(s3InputStream);
+            ResponseInputStream<GetObjectResponse> response = this.getObject(ctLog.getS3Bucket(), ctLog.getS3ObjectKey());
+            try {
+                s3ObjectBytes = LibraryUtils.toByteArray(response);
+                ctLog.setLogFileSize(response.response().contentLength());
+            } finally {
+                response.close();
             }
-            ctLog.setLogFileSize(s3Object.getObjectMetadata().getContentLength());
             success = true;
             logger.info("Downloaded log file " + ctLog.getS3ObjectKey() + " from " + ctLog.getS3Bucket());
 
-        } catch (AmazonServiceException | IOException e) {
+        } catch (S3Exception | IOException e) {
             String exceptionMessage = String.format("Fail to download log file %s/%s.", ctLog.getS3Bucket(), ctLog.getS3ObjectKey());
             LibraryUtils.handleException(exceptionHandler, downloadLogStatus, e, exceptionMessage);
 
@@ -106,13 +109,17 @@ public class BasicS3Manager implements S3Manager {
      * @param bucketName The S3 bucket name from which to download the object.
      * @param objectKey The S3 key name of the object to download.
      * @return The downloaded
-     *     <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/model/S3Object.html">S3Object</a>.
+     *     <a href="https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/s3/model/GetObjectResponse.html">GetObjectResponse</a>.
      */
-    public S3Object getObject(String bucketName, String objectKey) {
+    public ResponseInputStream<GetObjectResponse> getObject(String bucketName, String objectKey) {
         try {
-            GetObjectRequest request = new GetObjectRequest(bucketName, objectKey).withRequesterPays(true);
+            GetObjectRequest request = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(objectKey)
+                    .requestPayer(RequestPayer.REQUESTER)
+                    .build();
             return s3Client.getObject(request);
-        } catch (AmazonServiceException e) {
+        } catch (S3Exception e) {
             logger.error("Failed to get object " + objectKey + " from s3 bucket " + bucketName);
             throw e;
         }

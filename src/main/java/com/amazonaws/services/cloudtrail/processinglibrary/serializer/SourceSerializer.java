@@ -16,7 +16,7 @@
 package com.amazonaws.services.cloudtrail.processinglibrary.serializer;
 
 import com.amazonaws.services.cloudtrail.processinglibrary.model.CloudTrailSource;
-import com.amazonaws.services.sqs.model.Message;
+import software.amazon.awssdk.services.sqs.model.Message;
 
 import java.io.IOException;
 

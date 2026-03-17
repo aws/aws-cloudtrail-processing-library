@@ -21,7 +21,7 @@ import com.amazonaws.services.cloudtrail.processinglibrary.model.SQSBasedSource;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.SourceAttributeKeys;
 import com.amazonaws.services.cloudtrail.processinglibrary.model.internal.SourceType;
 import com.amazonaws.services.cloudtrail.processinglibrary.utils.SNSMessageBodyExtractor;
-import com.amazonaws.services.sqs.model.Message;
+import software.amazon.awssdk.services.sqs.model.Message;
 
 import java.io.IOException;
 
@@ -41,7 +41,9 @@ public class CloudTrailValidationMessageSerializer implements SourceSerializer {
     @Override
     public CloudTrailSource getSource(Message sqsMessage) throws IOException {
         if (messageExtractor.getMessageText(sqsMessage).equals(CLOUD_TRAIL_VALIDATION_MESSAGE)) {
-            sqsMessage.addAttributesEntry(SourceAttributeKeys.SOURCE_TYPE.getAttributeKey(), SourceType.CloudTrailValidationMessage.name());
+            java.util.Map<String, String> updatedAttributes = new java.util.HashMap<>(sqsMessage.attributesAsStrings());
+            updatedAttributes.put(SourceAttributeKeys.SOURCE_TYPE.getAttributeKey(), SourceType.CloudTrailValidationMessage.name());
+            sqsMessage = sqsMessage.toBuilder().attributesWithStrings(updatedAttributes).build();
             return new SQSBasedSource(sqsMessage, null);
         }
 

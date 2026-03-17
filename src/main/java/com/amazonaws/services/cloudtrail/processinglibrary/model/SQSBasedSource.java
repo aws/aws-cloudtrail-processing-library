@@ -15,7 +15,7 @@
 
 package com.amazonaws.services.cloudtrail.processinglibrary.model;
 
-import com.amazonaws.services.sqs.model.Message;
+import software.amazon.awssdk.services.sqs.model.Message;
 
 import java.util.List;
 import java.util.Map;
@@ -49,7 +49,7 @@ public class SQSBasedSource implements CloudTrailSource{
      */
     @Override
     public Map<String, String> getSourceAttributes() {
-        return sqsMessage.getAttributes();
+        return sqsMessage.attributesAsStrings();
     }
 
     /**
